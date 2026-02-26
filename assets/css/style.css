@@ -19,6 +19,9 @@ body {
   --popup-muted-text: #44516f;
   --popup-title-bg: #f4f7ff;
   --popup-shadow: 0 14px 30px rgba(13, 27, 111, 0.2);
+  --detalle-panel-bg: rgba(13, 27, 63, 0.95);
+  --detalle-panel-border: rgba(124, 160, 255, 0.35);
+  --detalle-panel-text: #ecf1ff;
 }
 
 [data-bs-theme="dark"] {
@@ -28,6 +31,9 @@ body {
   --popup-muted-text: #bdc7ea;
   --popup-title-bg: rgba(124, 160, 255, 0.12);
   --popup-shadow: 0 16px 32px rgba(3, 8, 24, 0.55);
+  --detalle-panel-bg: rgba(8, 16, 42, 0.96);
+  --detalle-panel-border: rgba(124, 160, 255, 0.45);
+  --detalle-panel-text: #ecf1ff;
 }
 
 #map {
@@ -290,6 +296,55 @@ body {
   flex: 1;
   white-space: normal;
   word-break: break-word;
+}
+
+.detalle-lote-panel {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(900px, calc(100% - 40px));
+  z-index: 1000;
+  background: var(--detalle-panel-bg);
+  color: var(--detalle-panel-text);
+  border: 1px solid var(--detalle-panel-border);
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(6, 12, 40, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.detalle-lote-head {
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--detalle-panel-border) 75%, transparent);
+}
+
+.detalle-lote-table-wrapper {
+  max-height: 230px;
+}
+
+.detalle-lote-table {
+  color: var(--detalle-panel-text);
+}
+
+.detalle-lote-table th,
+.detalle-lote-table td {
+  border-color: color-mix(
+    in srgb,
+    var(--detalle-panel-border) 55%,
+    transparent
+  ) !important;
+  background: transparent !important;
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+
+.detalle-lote-table a {
+  color: #9cc0ff;
+  font-weight: 600;
 }
 
 .main-wrapper .page-wrapper .page-content {

@@ -752,6 +752,33 @@
             <div id="popup-content"></div>
           </div>
 
+          <section id="detalle-lote-panel" class="detalle-lote-panel d-none">
+            <div class="detalle-lote-head">
+              <h6 class="mb-0">Detalle de propietarios</h6>
+              <button
+                type="button"
+                id="detalle-lote-cerrar"
+                class="btn btn-sm btn-outline-light"
+              >
+                Cerrar
+              </button>
+            </div>
+            <div class="table-responsive detalle-lote-table-wrapper">
+              <table class="table table-sm mb-0 detalle-lote-table">
+                <thead>
+                  <tr>
+                    <th>Apellido paterno</th>
+                    <th>Apellido materno</th>
+                    <th>Nombres / Razón social</th>
+                    <th>Documento</th>
+                    <th>Ficha individual</th>
+                  </tr>
+                </thead>
+                <tbody id="detalle-lote-body"></tbody>
+              </table>
+            </div>
+          </section>
+
           <div id="button-group" class="button-group">
             <button
               id="controlVistaGeneral"

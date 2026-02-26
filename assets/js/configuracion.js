@@ -47,7 +47,8 @@ const configuracionPorUbigeo = {
 
 global.activoInformacion;
 
-export const centroide3857 = xy,
+export const ubigeo = UBIGEO,
+  centroide3857 = xy,
   zoomMapa = zoom,
   hostServicios = HOST,
   puertoServicios = PORT,

@@ -1,11 +1,14 @@
 import {
   colores,
   direccionServicioWFS,
+  direccionApiGIS,
   proyeccion3857,
   formatoGeoJson,
   formatoTexto,
   fechaHoy,
   buscarCapaId,
+  ubigeo,
+  mostrarToast,
 } from "./configuracion";
 import { Tooltip } from "bootstrap";
 import ImageWMS from "ol/source/ImageWMS";
@@ -22,11 +25,137 @@ const legendDiv = document.getElementById("legenda"),
   mensajeBuscarLote = document.getElementById("mensajeBuscarLote"),
   buscarLote = document.getElementById("buscarLote"),
   estilo = new Style({ stroke: new Stroke({ color: "red", width: 2 }) }),
-  contenido = document.getElementById("popup-content");
+  contenido = document.getElementById("popup-content"),
+  detalleLotePanel = document.getElementById("detalle-lote-panel"),
+  detalleLoteBody = document.getElementById("detalle-lote-body"),
+  detalleLoteCerrar = document.getElementById("detalle-lote-cerrar"),
+  popupCloser = document.getElementById("popup-closer");
 
 const legendTooltip = legendButton
   ? Tooltip.getOrCreateInstance(legendButton)
   : null;
+
+function obtenerIdLoteDesdePopup() {
+  const filas = Array.from(
+    contenido?.querySelectorAll(".popup-lote-row") ?? [],
+  );
+  const filaIdLote = filas.find((fila) => {
+    const etiqueta = fila.querySelector(".popup-lote-label")?.textContent ?? "";
+    return etiqueta.trim().toLowerCase() === "id lote";
+  });
+
+  if (filaIdLote) {
+    const valor =
+      filaIdLote
+        .querySelector(".popup-lote-value")
+        ?.textContent?.replace(/\s+/g, "")
+        .trim() ?? "";
+    if (valor) return valor;
+  }
+
+  return "";
+}
+
+function construirIdLoteCompleto(idLotePopup) {
+  const lote = (idLotePopup || "").replace(/\s+/g, "").trim();
+  if (!lote) return "";
+  if (lote.startsWith(ubigeo)) return lote;
+  return `${ubigeo}${lote}`;
+}
+
+function ocultarDetalleLote() {
+  if (detalleLoteBody) {
+    detalleLoteBody.innerHTML = "";
+  }
+  detalleLotePanel?.classList.add("d-none");
+}
+
+function construirNombrePersona(propietario = {}) {
+  if (propietario.tipo_persona === "2" && propietario.razon_social) {
+    return propietario.razon_social;
+  }
+
+  return [propietario.nombres, propietario.razon_social]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function construirTipoDocumento(propietario = {}) {
+  const tipo = propietario.tipo_doc ? `(${propietario.tipo_doc})` : "";
+  const numero = propietario.nume_doc || "-";
+  return `${numero} ${tipo}`.trim();
+}
+
+function renderizarDetalleLote(respuesta) {
+  if (!detalleLoteBody || !detalleLotePanel) return;
+
+  const propietarios = Array.isArray(respuesta?.datos_personales)
+    ? respuesta.datos_personales
+    : [];
+  const idFicha = respuesta?.id_ficha_individual || "";
+
+  if (!propietarios.length || !idFicha) {
+    ocultarDetalleLote();
+    mostrarToast("El lote no cuenta con detalle de propietarios.", "warning");
+    return;
+  }
+
+  const urlFicha = `https://catastro.muniwanchaq.gob.pe:9100/pdf/individual/${idFicha}`;
+
+  detalleLoteBody.innerHTML = propietarios
+    .map((propietario) => {
+      const nombres = construirNombrePersona(propietario) || "-";
+      return `<tr>
+        <td>${propietario.ape_paterno || "-"}</td>
+        <td>${propietario.ape_materno || "-"}</td>
+        <td>${nombres}</td>
+        <td>${construirTipoDocumento(propietario)}</td>
+        <td><a href="${urlFicha}" target="_blank" rel="noopener noreferrer">Ver ficha</a></td>
+      </tr>`;
+    })
+    .join("");
+
+  detalleLotePanel.classList.remove("d-none");
+}
+
+async function cargarDetalleLoteDesdePopup() {
+  if (!document.body.classList.contains("usuario-autenticado")) {
+    mostrarToast("Debes iniciar sesión para ver detalles del lote.", "warning");
+    return;
+  }
+
+  const idLotePopup = obtenerIdLoteDesdePopup();
+  const idLoteCompleto = construirIdLoteCompleto(idLotePopup);
+
+  if (!idLoteCompleto) {
+    mostrarToast("No se encontró el ID de lote en el popup.", "warning");
+    return;
+  }
+
+  try {
+    const respuesta = await fetch(`${direccionApiGIS}lotes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idlote: idLoteCompleto }),
+      credentials: "include",
+    });
+
+    const data = await respuesta.json();
+
+    if (!respuesta.ok || !data?.estado) {
+      throw new Error(data?.msj || "No se pudo obtener el detalle del lote.");
+    }
+
+    renderizarDetalleLote(data);
+  } catch (error) {
+    ocultarDetalleLote();
+    mostrarToast(
+      error?.message || "No se pudo obtener el detalle del lote.",
+      "danger",
+    );
+  }
+}
 
 function formatearContenidoPopup(data) {
   if (!data) return "<p>Sin información disponible.</p>";
@@ -245,6 +374,31 @@ dropdownItems.forEach((item) => {
   });
 });
 
+detalleLoteCerrar?.addEventListener("click", () => {
+  ocultarDetalleLote();
+});
+
+contenido?.addEventListener("click", (event) => {
+  const enlace = event.target.closest("a");
+  if (!enlace) return;
+
+  const texto = enlace.textContent?.trim().toLowerCase() || "";
+  if (enlace.getAttribute("href") === "#" || texto === "ver") {
+    event.preventDefault();
+    cargarDetalleLoteDesdePopup();
+  }
+});
+
+popupCloser?.addEventListener("click", () => {
+  ocultarDetalleLote();
+});
+
+document.addEventListener("estado-autenticacion", (event) => {
+  if (!event.detail?.autenticado) {
+    ocultarDetalleLote();
+  }
+});
+
 export function obtenerInformacion(e) {
   const coordenadas = e.coordinate;
   const resolucionVista = /** @type {number} */ (global.vista.getResolution());
@@ -271,11 +425,13 @@ export function obtenerInformacion(e) {
   fetch(url)
     .then((response) => response.text())
     .then((data) => {
+      ocultarDetalleLote();
       contenido.innerHTML = formatearContenidoPopup(data);
       global.cubrir.setPosition(e.coordinate);
     })
     .catch((error) => {
       console.error("Error al obtener GetFeatureInfo:", error);
+      ocultarDetalleLote();
       contenido.innerHTML = `<p>No se pudo obtener información de la capa ${capaActivaId} seleccionada.</p>`;
       global.cubrir.setPosition(e.coordinate);
     });
