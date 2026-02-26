@@ -41,7 +41,7 @@ function formatearContenidoPopup(data) {
       "Área gráfica",
       "Área verificada",
       "Fotografía",
-      "",
+      "Ver detalles",
     ];
     const autenticado = document.body.classList.contains("usuario-autenticado");
     const parser = new DOMParser();

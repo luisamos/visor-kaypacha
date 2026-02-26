@@ -16,6 +16,7 @@ body {
   --popup-bg: #ffffff;
   --popup-border: #dbe3f5;
   --popup-text: #1f2a44;
+  --popup-muted-text: #44516f;
   --popup-title-bg: #f4f7ff;
   --popup-shadow: 0 14px 30px rgba(13, 27, 111, 0.2);
 }
@@ -24,6 +25,7 @@ body {
   --popup-bg: #101a34;
   --popup-border: rgba(124, 160, 255, 0.35);
   --popup-text: #e6ebff;
+  --popup-muted-text: #bdc7ea;
   --popup-title-bg: rgba(124, 160, 255, 0.12);
   --popup-shadow: 0 16px 32px rgba(3, 8, 24, 0.55);
 }
@@ -105,10 +107,10 @@ body {
 }
 
 .popup-lote-item {
-  border: 1px solid var(--bs-border-color, #e9ecef);
+  border: 1px solid color-mix(in srgb, var(--popup-border) 82%, transparent);
   border-radius: 10px;
   padding: 0.5rem 0.65rem;
-  background: var(--bs-card-bg, #fff);
+  background: color-mix(in srgb, var(--popup-bg) 92%, transparent);
 }
 
 .popup-lote-row {
@@ -121,7 +123,7 @@ body {
 
 .popup-lote-label {
   font-weight: 700;
-  color: var(--bs-secondary-color, #555);
+  color: var(--popup-muted-text);
 }
 
 .popup-lote-value {
@@ -191,6 +193,29 @@ body {
   min-width: 350px;
   font-size: 12px;
   backdrop-filter: blur(4px);
+}
+
+.ol-popup::before,
+.ol-popup::after {
+  content: "";
+  position: absolute;
+  left: 32px;
+  top: 100%;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.ol-popup::before {
+  border-width: 11px 11px 0 11px;
+  border-color: var(--popup-border) transparent transparent transparent;
+}
+
+.ol-popup::after {
+  margin-top: -1px;
+  border-width: 10px 10px 0 10px;
+  border-color: var(--popup-bg) transparent transparent transparent;
 }
 
 .ol-popup-closer {
