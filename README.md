@@ -1,10 +1,4 @@
-#
-
 # Guía de Despliegue — Geo KayPacha | Visor Catastral
-
-# Visor Catastral Geo – Kay Pacha es una plataforma geoespacial diseñada para el despliegue y visualización de información catastral a nivel provincial y distrital. Permite la consulta, análisis y gestión de datos territoriales mediante servicios geográficos estandarizados, facilitando la toma de decisiones y el ordenamiento territorial en el ámbito local.
-
-#
 
 ---
 
