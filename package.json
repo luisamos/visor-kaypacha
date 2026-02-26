@@ -1,0 +1,22 @@
+{
+  "name": "visor-kaypacha",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview --host"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
+    "feather-icons": "^4.29.2",
+    "jszip": "^3.10.1",
+    "ol": "latest",
+    "perfect-scrollbar": "^1.5.3",
+    "proj4": "^2.14.0",
+    "shpjs": "^6.1.0"
+  }
+}
