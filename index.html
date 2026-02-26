@@ -104,7 +104,7 @@
                         name="base"
                         id="osm"
                       />
-                      <label class="form-check-label" for="base"
+                      <label class="form-check-label" for="osm"
                         >Open Street Map</label
                       >
                     </div>
@@ -117,7 +117,7 @@
                         name="base"
                         id="ortofoto"
                       />
-                      <label class="form-check-label" for="base"
+                      <label class="form-check-label" for="ortofoto"
                         >Ortofoto</label
                       >
                     </div>
@@ -131,7 +131,7 @@
                         id="googleMapSatelite"
                         checked
                       />
-                      <label class="form-check-label" for="base"
+                      <label class="form-check-label" for="googleMapSatelite"
                         >Google Map Satélite</label
                       >
                     </div>
@@ -144,7 +144,7 @@
                         name="base"
                         id="googleMapCalle"
                       />
-                      <label class="form-check-label" for="base"
+                      <label class="form-check-label" for="googleMapCalle"
                         >Google Map Calle</label
                       >
                     </div>
@@ -748,6 +748,7 @@
           <div id="legenda" class="legend"></div>
           <div id="popup" class="ol-popup">
             <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div class="popup-title">Información del lote</div>
             <div id="popup-content"></div>
           </div>
 
@@ -836,7 +837,9 @@
           aria-labelledby="filtroLote"
           aria-hidden="true"
         >
-          <div class="modal-dialog">
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable filtro-lote-dialog"
+          >
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">
@@ -851,33 +854,33 @@
               </div>
               <div class="modal-body">
                 <div class="mb-3">
-                  <label class="form-label"
-                    ><strong>Mostrar lote por:</strong></label
-                  >
-                  <div>
-                    <div class="form-check form-check-inline">
+                  <p class="form-label mb-2">
+                    <strong>Mostrar lote por:</strong>
+                  </p>
+                  <div class="filtro-lote-opciones d-flex flex-column gap-2">
+                    <div class="form-check d-flex align-items-center gap-2">
                       <input
                         type="checkbox"
                         id="conFichaLote"
                         class="form-check-input"
                       />
-                      <label class="form-check-label">Con ficha catastral</label
-                      >&nbsp;<span
-                        class="badge fw-bolder ms-auto"
-                        style="background: #646b63"
+                      <label class="form-check-label mb-0" for="conFichaLote"
+                        >Con ficha catastral</label
+                      >
+                      <span class="badge fw-bolder" style="background: #646b63"
                         >&nbsp;</span
                       >
                     </div>
-                    <div class="form-check form-check-inline">
+                    <div class="form-check d-flex align-items-center gap-2">
                       <input
                         type="checkbox"
                         id="sinFichaLote"
                         class="form-check-input"
                       />
-                      <label class="form-check-label">Sin ficha catastral</label
-                      >&nbsp;<span
-                        class="badge fw-bolder ms-auto"
-                        style="background: #ff6600"
+                      <label class="form-check-label mb-0" for="sinFichaLote"
+                        >Sin ficha catastral</label
+                      >
+                      <span class="badge fw-bolder" style="background: #ff6600"
                         >&nbsp;</span
                       >
                     </div>
@@ -926,7 +929,7 @@
               </div>
               <div class="modal-body">
                 <div class="mb-3">
-                  <label class="form-label"><strong>Buscar por:</strong></label>
+                  <p class="form-label mb-0"><strong>Buscar por:</strong></p>
                 </div>
                 <div class="mb-3">
                   <select id="tipoColumna" class="form-select mb-3">
@@ -1083,7 +1086,7 @@
             </div>
             <div class="mb-3">
               <label
-                for="coordenadasX"
+                for="coordenadaX"
                 class="col-form-label col-form-label-sm"
                 id="labelX"
                 >Longitud:</label
@@ -1096,7 +1099,7 @@
             </div>
             <div class="mb-3">
               <label
-                for="coordenadasY"
+                for="coordenadaY"
                 class="col-form-label col-form-label-sm"
                 id="labelY"
                 >Latitud:</label

@@ -25,12 +25,12 @@ export default defineConfig({
     global: "globalThis",
   },
   server: {
-    host: "127.0.0.3",
+    host: "127.0.0.2",
     port: 5173,
   },
   proxy: {
     "/*": {
-      target: "http://127.0.0.3:5000",
+      target: "http://127.0.0.2:5000",
       changeOrigin: true,
     },
   },

@@ -32,11 +32,82 @@ function formatearContenidoPopup(data) {
   if (!data) return "<p>Sin información disponible.</p>";
 
   try {
+    const labelsLote = [
+      "ID lote",
+      "CUC",
+      "Código de sector",
+      "Código de manzana",
+      "Código de lote",
+      "Área gráfica",
+      "Área verificada",
+      "Fotografía",
+      "",
+    ];
+    const autenticado = document.body.classList.contains("usuario-autenticado");
     const parser = new DOMParser();
     const doc = parser.parseFromString(data, "text/html");
     const tabla = doc.querySelector("table");
 
     if (tabla) {
+      const filas = Array.from(tabla.querySelectorAll("tbody tr, tr")).filter(
+        (fila) => fila.querySelectorAll("td").length,
+      );
+
+      const esTablaLote = filas.some(
+        (fila) => fila.querySelectorAll("td").length >= labelsLote.length,
+      );
+
+      if (esTablaLote) {
+        const contenedorVertical = document.createElement("div");
+        contenedorVertical.classList.add("popup-lote-vertical");
+
+        filas.forEach((fila) => {
+          const celdas = Array.from(fila.querySelectorAll("td"));
+          if (!celdas.length) return;
+
+          const item = document.createElement("article");
+          item.classList.add("popup-lote-item");
+
+          celdas.forEach((celda, indice) => {
+            if (!labelsLote[indice]) return;
+            if (indice === 8 && !autenticado) return;
+
+            const filaDato = document.createElement("div");
+            filaDato.classList.add("popup-lote-row");
+
+            const etiqueta = document.createElement("span");
+            etiqueta.classList.add("popup-lote-label");
+            etiqueta.textContent = labelsLote[indice];
+
+            const valor = document.createElement("span");
+            valor.classList.add("popup-lote-value");
+            valor.innerHTML = celda.innerHTML.trim() || "-";
+
+            const esEnlaceDetalles =
+              indice === 8 &&
+              valor
+                .querySelector('a[href="#"]')
+                ?.textContent?.trim()
+                .toLowerCase()
+                .includes("detalles");
+
+            if (esEnlaceDetalles && !autenticado) return;
+
+            filaDato.appendChild(etiqueta);
+            filaDato.appendChild(valor);
+            item.appendChild(filaDato);
+          });
+
+          if (item.childElementCount > 0) {
+            contenedorVertical.appendChild(item);
+          }
+        });
+
+        if (contenedorVertical.childElementCount > 0) {
+          return contenedorVertical.outerHTML;
+        }
+      }
+
       tabla.classList.add("table", "table-sm", "table-striped", "mb-0");
       const envoltorio = document.createElement("div");
       envoltorio.classList.add("table-responsive", "popup-table-wrapper");

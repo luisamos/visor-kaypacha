@@ -9,6 +9,15 @@ const panel2Button = document.querySelector('button[data-panel="panel2"]');
 const panel2 = document.getElementById("panel2");
 const logoutItem = document.getElementById("logoutItem");
 
+const actualizarEstadoAutenticacion = (autenticado) => {
+  document.body.classList.toggle("usuario-autenticado", autenticado);
+  document.dispatchEvent(
+    new CustomEvent("estado-autenticacion", {
+      detail: { autenticado },
+    }),
+  );
+};
+
 const ocultarPanel2 = () => {
   if (panel2Button) {
     panel2Button.style.display = "none";
@@ -70,6 +79,7 @@ const limpiarCredenciales = () => {
 ocultarPanel2();
 ocultarPerfil();
 mostrarLoginForm();
+actualizarEstadoAutenticacion(false);
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
@@ -110,10 +120,12 @@ if (loginForm) {
         mostrarPanel2();
         mostrarPerfil();
         ocultarLoginForm();
+        actualizarEstadoAutenticacion(true);
       } else {
         ocultarPanel2();
         ocultarPerfil();
         mostrarLoginForm();
+        actualizarEstadoAutenticacion(false);
         const mensaje = data?.msj || "Usuario no autorizado.";
         mostrarToast(mensaje, "danger");
       }
@@ -121,6 +133,7 @@ if (loginForm) {
       ocultarPanel2();
       ocultarPerfil();
       mostrarLoginForm();
+      actualizarEstadoAutenticacion(false);
       mostrarToast(
         "Error al conectar con el servicio de autenticación.",
         "danger",
@@ -152,6 +165,7 @@ if (logoutItem) {
       ocultarPanel2();
       ocultarPerfil();
       mostrarLoginForm();
+      actualizarEstadoAutenticacion(false);
       restablecerPerfil();
       limpiarCredenciales();
     }

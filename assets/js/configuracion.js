@@ -19,7 +19,7 @@ const configuracionPorUbigeo = {
       logo_dark: "./assets/images/logo-mdw-white.png",
       logo_container: "./assets/images/proyecto-catastro-mdw.jpg",
     },
-    "080108": {
+    "080601": {
       HOST: IS_DEV ? "http://127.0.0.3" : "http://10.0.10.66",
       PORT: IS_DEV ? "80" : "8081",
       xy: [-7929226.8315, -1604831.885],

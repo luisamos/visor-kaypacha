@@ -3,7 +3,7 @@
 #
 git init
 git add .
-git commit -m "v.3.0 | 26/02/2026 11:00"
+git commit -m "v.3.0 | 26/02/2026 14:20"
 git branch -M main
 git remote add origin https://github.com/luisamos/visor-kaypacha.git
 git push -u origin main

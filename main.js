@@ -1,4 +1,4 @@
-import "./style.css";
+import "./assets/css/style.css";
 import "bootstrap";
 
 import Map from "ol/Map";
