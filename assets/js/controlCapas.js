@@ -9,7 +9,11 @@ import {
   buscarCapaId,
   ubigeo,
   mostrarToast,
+  obtenerCookie,
+  obtenerTokenAcceso,
+  construirHeadersConCsrf,
 } from "./configuracion";
+
 import { Tooltip } from "bootstrap";
 import ImageWMS from "ol/source/ImageWMS";
 import GeoJSON from "ol/format/GeoJSON";
@@ -136,7 +140,9 @@ async function cargarDetalleLoteDesdePopup() {
   try {
     const respuesta = await fetch(`${direccionApiGIS}lotes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: construirHeadersConCsrf({
+        "Content-Type": "application/json",
+      }),
       body: JSON.stringify({ idlote: idLoteCompleto }),
       credentials: "include",
     });

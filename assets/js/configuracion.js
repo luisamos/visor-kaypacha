@@ -207,3 +207,34 @@ export function mostrarToast(mensaje, color = "primary") {
   const toast = new bootstrap.Toast(toastEl);
   toast.show();
 }
+
+export function obtenerCookie(nombre) {
+  const cookies = document.cookie ? document.cookie.split(";") : [];
+  const prefijo = `${nombre}=`;
+
+  for (const cookie of cookies) {
+    const cookieLimpia = cookie.trim();
+    if (cookieLimpia.startsWith(prefijo)) {
+      return decodeURIComponent(cookieLimpia.substring(prefijo.length));
+    }
+  }
+
+  return null;
+}
+
+export function obtenerTokenAcceso() {
+  return obtenerCookie("access_geotoken");
+}
+
+export function construirHeadersConCsrf(headers = {}) {
+  const csrfToken = obtenerCookie("csrf_access_token");
+  const accessToken = obtenerTokenAcceso();
+  const headersConToken = accessToken
+    ? { ...headers, Authorization: `Bearer ${accessToken}` }
+    : headers;
+  if (csrfToken) {
+    return { ...headersConToken, "X-CSRF-TOKEN": csrfToken };
+  }
+
+  return headersConToken;
+}

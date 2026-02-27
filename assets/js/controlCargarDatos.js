@@ -1,5 +1,11 @@
 import shp from "shpjs";
-import { direccionApiGIS, mostrarToast } from "./configuracion";
+import {
+  direccionApiGIS,
+  mostrarToast,
+  obtenerCookie,
+  obtenerTokenAcceso,
+  construirHeadersConCsrf,
+} from "./configuracion";
 
 const configuracionCapas = {
   Sector: {
@@ -89,37 +95,6 @@ let ultimoPayloadValidacion = null;
 let validacionEnCurso = false;
 
 let columnasDisponibles = [];
-
-function obtenerCookie(nombre) {
-  const cookies = document.cookie ? document.cookie.split(";") : [];
-  const prefijo = `${nombre}=`;
-
-  for (const cookie of cookies) {
-    const cookieLimpia = cookie.trim();
-    if (cookieLimpia.startsWith(prefijo)) {
-      return decodeURIComponent(cookieLimpia.substring(prefijo.length));
-    }
-  }
-
-  return null;
-}
-
-function obtenerTokenAcceso() {
-  return obtenerCookie("access_geotoken");
-}
-
-function construirHeadersConCsrf(headers = {}) {
-  const csrfToken = obtenerCookie("csrf_access_token");
-  const accessToken = obtenerTokenAcceso();
-  const headersConToken = accessToken
-    ? { ...headers, Authorization: `Bearer ${accessToken}` }
-    : headers;
-  if (csrfToken) {
-    return { ...headersConToken, "X-CSRF-TOKEN": csrfToken };
-  }
-
-  return headersConToken;
-}
 
 function construirListadoErrores(errores) {
   if (!errores || typeof errores !== "object") return "";
