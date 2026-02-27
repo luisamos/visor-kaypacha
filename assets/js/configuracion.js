@@ -22,6 +22,7 @@ const configuracionPorUbigeo = {
         "https://catastro.muniwanchaq.gob.pe:9100/pdf/individual/",
       ruta_fotografia:
         "https://catastro.muniwanchaq.gob.pe:9100/storage/img/imageneslotes/",
+      ortofotos: "ortofoto",
     },
     "080601": {
       HOST: IS_DEV ? "http://127.0.0.3" : "http://10.0.10.66",
@@ -35,6 +36,7 @@ const configuracionPorUbigeo = {
       logo_container: "./assets/images/proyecto-catastro-mpc.png",
       ficha_individual: "",
       ruta_fotografia: "",
+      ortofotos: "mpc_tramo_01,mpc_tramo_02",
     },
   },
   configuracionUbigeo =
@@ -51,6 +53,7 @@ const configuracionPorUbigeo = {
     logo_container,
     ficha_individual,
     ruta_fotografia,
+    ortofotos,
   } = configuracionUbigeo;
 
 global.activoInformacion;
@@ -59,6 +62,7 @@ export const ubigeo = UBIGEO,
   centroide3857 = xy,
   fichaIndividual = ficha_individual,
   rutaFotografia = ruta_fotografia,
+  ortoFotos = ortofotos,
   zoomMapa = zoom,
   hostServicios = HOST,
   puertoServicios = PORT,

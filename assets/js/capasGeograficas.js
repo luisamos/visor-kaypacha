@@ -3,6 +3,7 @@ import {
   formatoPNG,
   formatoJPEG,
   direccionServicioMapCache,
+  ortoFotos,
 } from "./configuracion.js";
 
 import TileLayer from "ol/layer/Tile";
@@ -18,7 +19,7 @@ global.ortofoto = new TileLayer({
   source: new TileWMS({
     url: direccionServicioMapCache,
     params: {
-      LAYERS: "mpc_tramo_01,mpc_tramo_02",
+      LAYERS: ortoFotos,
       TILED: true,
       FORMAT: formatoJPEG,
     },
