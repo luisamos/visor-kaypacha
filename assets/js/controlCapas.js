@@ -10,6 +10,7 @@ import {
   ubigeo,
   mostrarToast,
   construirHeadersConCsrf,
+  ruta_fotografia,
 } from "./configuracion";
 
 import { Modal, Tooltip } from "bootstrap";
@@ -171,8 +172,9 @@ function renderizarListadoLotes(data) {
   listadoLoteBody.innerHTML = lotes
     .map((feature, index) => {
       const propiedades = feature.properties || {};
-      const foto = propiedades.foto_lote
-        ? `<a href="${propiedades.foto_lote}" target="_blank" rel="noopener noreferrer">${propiedades.foto_lote}</a>`
+      const fotoLote = propiedades.foto_lote || "";
+      const foto = fotoLote
+        ? `<a href="${ruta_fotografia}/${fotoLote}" target="_blank" rel="noopener noreferrer">Ver</a>`
         : "-";
 
       return `<tr>
@@ -181,7 +183,9 @@ function renderizarListadoLotes(data) {
         <td>${propiedades.a_verifi || "-"}</td>
         <td>${foto}</td>
         <td>
-          <button type="button" class="btn btn-sm btn-primary" data-indice-lote="${index}">Acercarse</button>
+          <button type="button" class="btn btn-sm btn-primary" data-indice-lote="${index}" title="Acercarse" aria-label="Acercarse">
+            <i class="icon feather icon-search"></i> +
+          </button>
         </td>
       </tr>`;
     })
@@ -460,7 +464,7 @@ dropdownItems.forEach((item) => {
       if (nombre.substring(0, 1) === "i") {
         global.activoInformacion = nombre.substring(1);
       } else if (nombre === "blote") {
-        document.getElementById("tipoColumna").value = "idlote";
+        document.getElementById("tipoColumna").value = "id_lote";
         document.getElementById("valorColumna").value = "";
         mensajeBuscarLote.innerHTML = "";
         //buscarLote.setAttribute('data-bs-dismiss', '');

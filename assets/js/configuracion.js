@@ -18,6 +18,8 @@ const configuracionPorUbigeo = {
       logo_light: "./assets/images/logo-mdw.png",
       logo_dark: "./assets/images/logo-mdw-white.png",
       logo_container: "./assets/images/proyecto-catastro-mdw.jpg",
+      ruta_fotografia:
+        "https://catastro.muniwanchaq.gob.pe:9100/storage/img/imageneslotes/",
     },
     "080601": {
       HOST: IS_DEV ? "http://127.0.0.3" : "http://10.0.10.66",
@@ -29,6 +31,7 @@ const configuracionPorUbigeo = {
       logo_light: "./assets/images/logo-mpc.png",
       logo_dark: "./assets/images/logo-mpc.png",
       logo_container: "./assets/images/proyecto-catastro-mpc.png",
+      ruta_fotografia: "",
     },
   },
   configuracionUbigeo =
@@ -43,6 +46,7 @@ const configuracionPorUbigeo = {
     logo_light,
     logo_dark,
     logo_container,
+    ruta_fotografia,
   } = configuracionUbigeo;
 
 global.activoInformacion;
