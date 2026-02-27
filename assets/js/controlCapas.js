@@ -12,7 +12,7 @@ import {
   construirHeadersConCsrf,
 } from "./configuracion";
 
-import { Tooltip } from "bootstrap";
+import { Modal, Tooltip } from "bootstrap";
 import ImageWMS from "ol/source/ImageWMS";
 import GeoJSON from "ol/format/GeoJSON";
 import { Vector as VectorSource } from "ol/source";
@@ -39,6 +39,8 @@ const legendDiv = document.getElementById("legenda"),
 const legendTooltip = legendButton
   ? Tooltip.getOrCreateInstance(legendButton)
   : null;
+
+const busquedaLoteModal = document.getElementById("busquedaLote");
 
 let capaBusquedaLotes = null;
 let lotesBusquedaActual = [];
@@ -602,6 +604,9 @@ buscarLote.addEventListener("click", function () {
         ocultarDetalleLote();
         mensajeBuscarLote.innerHTML = "";
         renderizarListadoLotes(data);
+        if (busquedaLoteModal) {
+          Modal.getOrCreateInstance(busquedaLoteModal).hide();
+        }
       } else {
         limpiarCapaBusquedaLotes();
         ocultarListadoLotes();
