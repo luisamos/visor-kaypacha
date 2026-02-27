@@ -103,6 +103,7 @@ function construirNombrePersona(propietario = {}) {
 
 function construirTipoDocumento(propietario = {}) {
   const tiposDocumento = {
+    "00": "RUC",
     "01": "No presentó documentos",
     "02": "DNI",
     "03": "Carnet de identidad de policia nacional",
