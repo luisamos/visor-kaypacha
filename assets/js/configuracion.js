@@ -4,7 +4,7 @@ import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import imagenVerde from "../images/ubicacionVerde.png";
 
-const IS_DEV = true,
+const IS_DEV = false,
   UBIGEO = "080108";
 
 const configuracionPorUbigeo = {

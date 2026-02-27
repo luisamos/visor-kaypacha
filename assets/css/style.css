@@ -666,8 +666,7 @@ body.sidebar-open .legend {
   transform: scale(1);
   width: 18px;
   height: 18px;
-  background: url("./assets/images/ubicar_coordenadas.svg") no-repeat center
-    center;
+  background: url("../images/ubicar_coordenadas.svg") no-repeat center center;
   background-size: contain;
   display: inline-block;
   filter: brightness(0) saturate(100%);
