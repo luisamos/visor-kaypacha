@@ -377,7 +377,7 @@ dropdownItems.forEach((item) => {
       if (nombre.substring(0, 1) === "i") {
         global.activoInformacion = nombre.substring(1);
       } else if (nombre === "blote") {
-        document.getElementById("tipoColumna").value = "nume_doc";
+        document.getElementById("tipoColumna").value = "id_lote";
         document.getElementById("valorColumna").value = "";
         mensajeBuscarLote.innerHTML = "";
         //buscarLote.setAttribute('data-bs-dismiss', '');

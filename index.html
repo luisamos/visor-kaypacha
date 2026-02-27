@@ -941,11 +941,13 @@
           aria-labelledby="busquedaLote"
           aria-hidden="true"
         >
-          <div class="modal-dialog">
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+          >
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">
-                  <i data-feather="search"></i> Buscar por lote
+                  <i data-feather="search"></i> Buscar lote
                 </h5>
                 <button
                   type="button"
@@ -960,8 +962,9 @@
                 </div>
                 <div class="mb-3">
                   <select id="tipoColumna" class="form-select mb-3">
-                    <option value="nume_doc" selected="">D.N.I.</option>
-                    <option value="lote_id">ID. Lote</option>
+                    <!--<option value="dni">D.N.I.</option>
+                    <option value="ruc">R.U.C.</option>-->
+                    <option value="id_lote" selected>ID. Lote</option>
                   </select>
                 </div>
                 <div class="mb-3">
