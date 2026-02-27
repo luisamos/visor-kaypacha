@@ -9,8 +9,6 @@ import {
   buscarCapaId,
   ubigeo,
   mostrarToast,
-  obtenerCookie,
-  obtenerTokenAcceso,
   construirHeadersConCsrf,
 } from "./configuracion";
 
@@ -86,9 +84,28 @@ function construirNombrePersona(propietario = {}) {
 }
 
 function construirTipoDocumento(propietario = {}) {
-  const tipo = propietario.tipo_doc ? `(${propietario.tipo_doc})` : "";
-  const numero = propietario.nume_doc || "-";
-  return `${numero} ${tipo}`.trim();
+  const tiposDocumento = {
+    "01": "No presentó documentos",
+    "02": "DNI",
+    "03": "Carnet de identidad de policia nacional",
+    "04": "Carnet de identidad de fuerzas armadas",
+    "05": "Partida de Nacimiento",
+    "06": "Pasaporte",
+    "07": "Carnet de extranjería",
+    "08": "Otros",
+  };
+
+  const tipoDocumento = (propietario.tipo_doc || "")
+    .toString()
+    .padStart(2, "0");
+  const descripcionDocumento = tiposDocumento[tipoDocumento] || tipoDocumento;
+  const numeroDocumento = propietario.nume_doc || "-";
+
+  if (!descripcionDocumento) {
+    return numeroDocumento;
+  }
+
+  return `(${descripcionDocumento}) ${numeroDocumento}`;
 }
 
 function renderizarDetalleLote(respuesta) {

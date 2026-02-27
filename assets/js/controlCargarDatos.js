@@ -2,8 +2,6 @@ import shp from "shpjs";
 import {
   direccionApiGIS,
   mostrarToast,
-  obtenerCookie,
-  obtenerTokenAcceso,
   construirHeadersConCsrf,
 } from "./configuracion";
 
