@@ -31,11 +31,17 @@ const legendDiv = document.getElementById("legenda"),
   detalleLotePanel = document.getElementById("detalle-lote-panel"),
   detalleLoteBody = document.getElementById("detalle-lote-body"),
   detalleLoteCerrar = document.getElementById("detalle-lote-cerrar"),
+  listadoLotePanel = document.getElementById("listado-lote-panel"),
+  listadoLoteBody = document.getElementById("listado-lote-body"),
+  listadoLoteCerrar = document.getElementById("listado-lote-cerrar"),
   popupCloser = document.getElementById("popup-closer");
 
 const legendTooltip = legendButton
   ? Tooltip.getOrCreateInstance(legendButton)
   : null;
+
+let capaBusquedaLotes = null;
+let lotesBusquedaActual = [];
 
 function obtenerIdLoteDesdePopup() {
   const filas = Array.from(
@@ -70,6 +76,14 @@ function ocultarDetalleLote() {
     detalleLoteBody.innerHTML = "";
   }
   detalleLotePanel?.classList.add("d-none");
+}
+
+function ocultarListadoLotes() {
+  if (listadoLoteBody) {
+    listadoLoteBody.innerHTML = "";
+  }
+  lotesBusquedaActual = [];
+  listadoLotePanel?.classList.add("d-none");
 }
 
 function construirNombrePersona(propietario = {}) {
@@ -108,7 +122,74 @@ function construirTipoDocumento(propietario = {}) {
   return `(${descripcionDocumento}) ${numeroDocumento}`;
 }
 
+function limpiarCapaBusquedaLotes() {
+  if (!capaBusquedaLotes) return;
+  global.mapa.removeLayer(capaBusquedaLotes);
+  capaBusquedaLotes = null;
+}
+
+function enfocarLoteBusqueda(indice) {
+  const loteSeleccionado = lotesBusquedaActual[indice];
+  if (!loteSeleccionado) return;
+
+  limpiarCapaBusquedaLotes();
+
+  const vectorSource = new VectorSource({
+    features: new GeoJSON().readFeatures(loteSeleccionado, {
+      featureProjection: proyeccion3857,
+      dataProjection: "EPSG:4326",
+    }),
+  });
+
+  capaBusquedaLotes = new VectorLayer({
+    source: vectorSource,
+    style: estilo,
+    id: `busqueda-lote-${indice}`,
+  });
+
+  global.mapa.addLayer(capaBusquedaLotes);
+  global.mapa.getView().fit(vectorSource.getExtent(), {
+    duration: 1000,
+    maxZoom: 19,
+    padding: [20, 20, 20, 20],
+  });
+}
+
+function renderizarListadoLotes(data) {
+  if (!listadoLoteBody || !listadoLotePanel) return;
+
+  const lotes = Array.isArray(data?.features) ? data.features : [];
+  if (!lotes.length) {
+    ocultarListadoLotes();
+    return;
+  }
+
+  lotesBusquedaActual = lotes;
+
+  listadoLoteBody.innerHTML = lotes
+    .map((feature, index) => {
+      const propiedades = feature.properties || {};
+      const foto = propiedades.foto_lote
+        ? `<a href="${propiedades.foto_lote}" target="_blank" rel="noopener noreferrer">${propiedades.foto_lote}</a>`
+        : "-";
+
+      return `<tr>
+        <td>${propiedades.id_lote || "-"}</td>
+        <td>${propiedades.a_grafi || "-"}</td>
+        <td>${propiedades.a_verifi || "-"}</td>
+        <td>${foto}</td>
+        <td>
+          <button type="button" class="btn btn-sm btn-primary" data-indice-lote="${index}">Acercarse</button>
+        </td>
+      </tr>`;
+    })
+    .join("");
+
+  listadoLotePanel.classList.remove("d-none");
+}
+
 function renderizarDetalleLote(respuesta) {
+  ocultarListadoLotes();
   if (!detalleLoteBody || !detalleLotePanel) return;
 
   const propietarios = Array.isArray(respuesta?.datos_personales)
@@ -377,7 +458,7 @@ dropdownItems.forEach((item) => {
       if (nombre.substring(0, 1) === "i") {
         global.activoInformacion = nombre.substring(1);
       } else if (nombre === "blote") {
-        document.getElementById("tipoColumna").value = "id_lote";
+        document.getElementById("tipoColumna").value = "idlote";
         document.getElementById("valorColumna").value = "";
         mensajeBuscarLote.innerHTML = "";
         //buscarLote.setAttribute('data-bs-dismiss', '');
@@ -401,6 +482,10 @@ detalleLoteCerrar?.addEventListener("click", () => {
   ocultarDetalleLote();
 });
 
+listadoLoteCerrar?.addEventListener("click", () => {
+  ocultarListadoLotes();
+});
+
 contenido?.addEventListener("click", (event) => {
   const enlace = event.target.closest("a");
   if (!enlace) return;
@@ -414,11 +499,13 @@ contenido?.addEventListener("click", (event) => {
 
 popupCloser?.addEventListener("click", () => {
   ocultarDetalleLote();
+  ocultarListadoLotes();
 });
 
 document.addEventListener("estado-autenticacion", (event) => {
   if (!event.detail?.autenticado) {
     ocultarDetalleLote();
+    ocultarListadoLotes();
   }
 });
 
@@ -449,12 +536,14 @@ export function obtenerInformacion(e) {
     .then((response) => response.text())
     .then((data) => {
       ocultarDetalleLote();
+      ocultarListadoLotes();
       contenido.innerHTML = formatearContenidoPopup(data);
       global.cubrir.setPosition(e.coordinate);
     })
     .catch((error) => {
       console.error("Error al obtener GetFeatureInfo:", error);
       ocultarDetalleLote();
+      ocultarListadoLotes();
       contenido.innerHTML = `<p>No se pudo obtener información de la capa ${capaActivaId} seleccionada.</p>`;
       global.cubrir.setPosition(e.coordinate);
     });
@@ -483,59 +572,53 @@ document.getElementById("filtrarLote").addEventListener("click", function () {
 });
 
 buscarLote.addEventListener("click", function () {
-  let tipoColumna = document.getElementById("tipoColumna").value,
-    valorColumna = document.getElementById("valorColumna"),
-    parametros = new URLSearchParams({
-      SERVICE: "WFS",
-      VERSION: "2.0.0",
-      REQUEST: "GetFeature",
-      TYPENAME: "lote",
-      SRSNAME: proyeccion3857,
-      FILTER: `<Filter><PropertyIsEqualTo><PropertyName>${tipoColumna}</PropertyName><Literal>${valorColumna.value}</Literal></PropertyIsEqualTo></Filter>`,
-      OUTPUTFORMAT: formatoGeoJson,
-    }),
-    urlWFS = `${direccionServicioWFS}${parametros.toString()}`;
+  const tipoColumna = document.getElementById("tipoColumna").value;
+  const valorColumna = document.getElementById("valorColumna");
+  const valorBusqueda = valorColumna.value.trim();
 
-  if (valorColumna.value.length != 0) {
-    try {
-      fetch(urlWFS)
-        .then((response) => response.json())
-        .then((data) => {
-          let totalRegistros = data.numberMatched;
-          if (totalRegistros > 0) {
-            data.features.forEach((f) => {
-              const vectorSource = new VectorSource({
-                features: new GeoJSON().readFeatures(f.geometry, {
-                  featureProjection: proyeccion3857,
-                }),
-              });
-              const vectorLayer = new VectorLayer({
-                source: vectorSource,
-                style: estilo,
-                id: `${valorColumna.value}`,
-              });
-              global.mapa.getLayers().push(vectorLayer);
-              const extension = vectorSource.getExtent();
-              global.mapa
-                .getView()
-                .fit(extension, { duration: 1000, maxZoom: 19 });
-            });
-            mensajeBuscarLote.innerHTML = "";
-            //buscarLote.setAttribute('data-bs-dismiss', 'modal');
-            //buscarLote.click();
-          } else {
-            mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se encontró ningun registro.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
-            valorColumna.focus();
-          }
-        })
-        .catch((error) =>
-          console.log("Error al obtener los datos WFS:", error),
-        );
-    } catch (error) {
-      console.error("Error WFS:", error);
-    }
-  } else {
+  if (!valorBusqueda.length) {
     mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-warning alert-dismissible fade show" role="alert"><strong>Error!</strong> Ingresar un campo.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
     valorColumna.focus();
+    return;
   }
+
+  const parametros = new URLSearchParams({
+    SERVICE: "WFS",
+    VERSION: "2.0.0",
+    REQUEST: "GetFeature",
+    TYPENAME: "lote",
+    SRSNAME: proyeccion3857,
+    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${tipoColumna}</PropertyName><Literal>*${valorBusqueda}*</Literal></PropertyIsLike></Filter>`,
+    OUTPUTFORMAT: formatoGeoJson,
+  });
+
+  const urlWFS = `${direccionServicioWFS}${parametros.toString()}`;
+
+  fetch(urlWFS)
+    .then((response) => response.json())
+    .then((data) => {
+      const totalRegistros = data.numberMatched || data.features?.length || 0;
+      if (totalRegistros > 0) {
+        ocultarDetalleLote();
+        mensajeBuscarLote.innerHTML = "";
+        renderizarListadoLotes(data);
+      } else {
+        limpiarCapaBusquedaLotes();
+        ocultarListadoLotes();
+        mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se encontró ningun registro.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
+        valorColumna.focus();
+      }
+    })
+    .catch((error) => {
+      console.log("Error al obtener los datos WFS:", error);
+      mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se pudo realizar la consulta.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
+    });
+});
+
+listadoLoteBody?.addEventListener("click", (event) => {
+  const botonAcercarse = event.target.closest("button[data-indice-lote]");
+  if (!botonAcercarse) return;
+
+  const indice = Number(botonAcercarse.dataset.indiceLote);
+  enfocarLoteBusqueda(indice);
 });
