@@ -18,6 +18,8 @@ const configuracionPorUbigeo = {
       logo_light: "./assets/images/logo-mdw.png",
       logo_dark: "./assets/images/logo-mdw-white.png",
       logo_container: "./assets/images/proyecto-catastro-mdw.jpg",
+      ficha_individual:
+        "https://catastro.muniwanchaq.gob.pe:9100/pdf/individual/",
       ruta_fotografia:
         "https://catastro.muniwanchaq.gob.pe:9100/storage/img/imageneslotes/",
     },
@@ -31,6 +33,7 @@ const configuracionPorUbigeo = {
       logo_light: "./assets/images/logo-mpc.png",
       logo_dark: "./assets/images/logo-mpc.png",
       logo_container: "./assets/images/proyecto-catastro-mpc.png",
+      ficha_individual: "",
       ruta_fotografia: "",
     },
   },
@@ -46,6 +49,7 @@ const configuracionPorUbigeo = {
     logo_light,
     logo_dark,
     logo_container,
+    ficha_individual,
     ruta_fotografia,
   } = configuracionUbigeo;
 
@@ -53,6 +57,8 @@ global.activoInformacion;
 
 export const ubigeo = UBIGEO,
   centroide3857 = xy,
+  fichaIndividual = ficha_individual,
+  rutaFotografia = ruta_fotografia,
   zoomMapa = zoom,
   hostServicios = HOST,
   puertoServicios = PORT,

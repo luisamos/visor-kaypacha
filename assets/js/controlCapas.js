@@ -10,7 +10,8 @@ import {
   ubigeo,
   mostrarToast,
   construirHeadersConCsrf,
-  ruta_fotografia,
+  fichaIndividual,
+  rutaFotografia,
 } from "./configuracion";
 
 import { Modal, Tooltip } from "bootstrap";
@@ -174,7 +175,7 @@ function renderizarListadoLotes(data) {
       const propiedades = feature.properties || {};
       const fotoLote = propiedades.foto_lote || "";
       const foto = fotoLote
-        ? `<a href="${ruta_fotografia}/${fotoLote}" target="_blank" rel="noopener noreferrer">Ver</a>`
+        ? `<a href="${rutaFotografia}/${fotoLote}" target="_blank" rel="noopener noreferrer">Ver</a>`
         : "-";
 
       return `<tr>
@@ -184,7 +185,7 @@ function renderizarListadoLotes(data) {
         <td>${foto}</td>
         <td>
           <button type="button" class="btn btn-sm btn-primary" data-indice-lote="${index}" title="Acercarse" aria-label="Acercarse">
-            <i class="icon feather icon-search"></i> +
+            <i class="icon feather icon-search"></i>
           </button>
         </td>
       </tr>`;
@@ -209,7 +210,7 @@ function renderizarDetalleLote(respuesta) {
     return;
   }
 
-  const urlFicha = `https://catastro.muniwanchaq.gob.pe:9100/pdf/individual/${idFicha}`;
+  const urlFicha = `${fichaIndividual}${idFicha}`;
 
   detalleLoteBody.innerHTML = propietarios
     .map((propietario) => {
