@@ -4,7 +4,7 @@ import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import imagenVerde from "../images/ubicacionVerde.png";
 
-const IS_DEV = false,
+const IS_DEV = true,
   UBIGEO = "080108";
 
 const configuracionPorUbigeo = {
@@ -25,7 +25,7 @@ const configuracionPorUbigeo = {
       ortofotos: "ortofoto",
     },
     "080601": {
-      HOST: IS_DEV ? "http://127.0.0.3" : "http://10.0.10.66",
+      HOST: IS_DEV ? "http://127.0.0.2" : "http://10.0.10.66",
       PORT: IS_DEV ? "80" : "8081",
       xy: [-7929226.8315, -1604831.885],
       zoom: 13,
