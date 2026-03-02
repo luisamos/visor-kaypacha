@@ -115,9 +115,39 @@ export const ubigeo = UBIGEO,
                         <div class="legend-item"></div>`,
     },
     {
+      id: "ejeVia",
+      texto:
+        '<div class="legend-item"><i style="background:#adadad"></i> Eje de vía</div>',
+    },
+    {
       id: "habilitacionUrbana",
       texto:
         '<div class="legend-item"><i style="background:#0000ff"></i> Habilitación Urbana</div>',
+    },
+    {
+      id: "comercio",
+      texto: `<div class="legend-item"><strong>Comercio</strong></div>
+            <div class="legend-item2"><i style="background:#ff0000"></i> 1</div>
+            <div class="legend-item"></div>`,
+    },
+    {
+      id: "construccion",
+      texto: `<div class="legend-item"><strong>Construcción</strong></div>
+            <div class="legend-item2"><i style="background:#ffff00"></i> 1</div>
+            <div class="legend-item"></div>`,
+    },
+    {
+      id: "parque",
+      texto:
+        '<div class="legend-item"><i style="background:#00FF3F"></i> Parque</div>',
+    },
+    {
+      id: "puerta",
+      texto: `<div class="legend-item"><strong>Puerta</strong></div>
+                <div class="legend-item2"><i style="background:#000000"></i> P</div>
+                <div class="legend-item2"><i style="background:#ff0000"></i> S</div>
+                <div class="legend-item2"><i style="background:#ffff00"></i> G</div>
+                <div class="legend-item"></div>`,
     },
     {
       id: "servicioBasico",
@@ -146,24 +176,6 @@ export const ubigeo = UBIGEO,
             <div class="legend-item2"><i style="background:#3bc500"></i> Persona natural</div>
             <div class="legend-item2"><i style="background:#005700"></i> Persona jurídica</div>
             <div class="legend-item"></div>`,
-    },
-    {
-      id: "puerta",
-      texto: `<div class="legend-item"><strong>Puerta</strong></div>
-                <div class="legend-item2"><i style="background:#000000"></i> P</div>
-                <div class="legend-item2"><i style="background:#ff0000"></i> S</div>
-                <div class="legend-item2"><i style="background:#ffff00"></i> G</div>
-                <div class="legend-item"></div>`,
-    },
-    {
-      id: "parque",
-      texto:
-        '<div class="legend-item"><i style="background:#00FF3F"></i> Parque</div>',
-    },
-    {
-      id: "ejeVia",
-      texto:
-        '<div class="legend-item"><i style="background:#adadad"></i> Eje de vía</div>',
     },
     {
       id: "predio",
