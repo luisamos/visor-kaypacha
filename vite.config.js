@@ -1,8 +1,6 @@
 // vite.config.js
 import { defineConfig } from "vite";
 
-import { logoLight, logoDark, logoContainer } from "./assets/js/configuracion";
-
 export default defineConfig({
   base: "/visor/",
   build: {
@@ -12,9 +10,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 100000,
     assetsInclude: [
       "./json/datos3857.json",
-      logoLight,
-      logoDark,
-      logoContainer,
+      "./assets/images/logo-mdw.png",
+      "./assets/images/logo-mdw-white.png",
+      "./assets/images/proyecto-catastro-mdw.jpg",
+      "./assets/images/logo-mpc.png",
+      "./assets/images/proyecto-catastro-mpc.png",
     ],
     rollupOptions: {
       input: {
