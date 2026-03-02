@@ -70,7 +70,7 @@ const DEFINICION_GRUPOS_WMS = {
   "Área de circulación": {
     id: "areasCirulacion",
     icono: "minimize",
-    acciones: ["identificar", "descargar", "buscar", "filtro"],
+    acciones: ["identificar", "buscar", "filtro", "descargar"],
   },
   Reporte: {
     id: "reporteCapas",
@@ -116,6 +116,14 @@ function idUiDesdeNombreWms(nombreWms = "") {
     tipo_persona: "tipoPersona",
   };
   return map[nombreWms] || slugify(nombreWms);
+}
+
+function normalizarNombreCapa(nombre = "") {
+  return nombre
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function obtenerCapasDesdeGetCapabilities(xml) {
@@ -565,7 +573,11 @@ function renderizarSidebarDinamico(gruposWms) {
           visible: capa.id === "provincia" || capa.id === "sector",
         });
         const accionesBase = [...(definicion.acciones || [])];
-        const extras = definicion.extrasPorCapa?.[capa.nombreWms] || [];
+        const nombreWmsNormalizado = normalizarNombreCapa(capa.nombreWms);
+        const extras =
+          definicion.extrasPorCapa?.[capa.nombreWms] ||
+          definicion.extrasPorCapa?.[nombreWmsNormalizado] ||
+          [];
         const acciones = [...new Set([...accionesBase, ...extras])];
         const checked = capa.id === "provincia" || capa.id === "sector";
 
