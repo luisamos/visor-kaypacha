@@ -37,7 +37,8 @@ const legendDiv = document.getElementById("legenda"),
   listadoLotePanel = document.getElementById("listado-lote-panel"),
   listadoLoteBody = document.getElementById("listado-lote-body"),
   listadoLoteCerrar = document.getElementById("listado-lote-cerrar"),
-  popupCloser = document.getElementById("popup-closer");
+  popupCloser = document.getElementById("popup-closer"),
+  popupTitle = document.querySelector("#popup .popup-title");
 
 const legendTooltip = legendButton
   ? Tooltip.getOrCreateInstance(legendButton)
@@ -124,6 +125,14 @@ function normalizarNombreCapa(nombre = "") {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
+}
+
+function obtenerTituloCapaPorId(capaId = "") {
+  const etiquetaCapa = document.querySelector(`label[for="${capaId}"]`);
+  const textoEtiqueta = etiquetaCapa?.textContent?.trim();
+  if (textoEtiqueta) return textoEtiqueta;
+
+  return tituloCapaDesdeNombre(capaId);
 }
 
 function obtenerCapasDesdeGetCapabilities(xml) {
@@ -582,15 +591,15 @@ function renderizarSidebarDinamico(gruposWms) {
         const checked = capa.id === "provincia" || capa.id === "sector";
 
         if (!acciones.length) {
-          return `<li class="nav-item"><div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label></div></li>`;
+          return `<li class="nav-item"><div class="form-check form-switch mb-2 layer-toggle-item"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}"><span class="layer-label-text">${capa.titulo}</span></label></div></li>`;
         }
 
         if (definicion.identificarDirecto) {
-          return `<li class="nav-item"><div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label><button id="btn${capa.id}" type="button" class="btn btn-icon btn-xs layer-action-button" data-name="i${capa.id}" aria-label="Identificar ${capa.titulo}" style="float: right; display: ${checked ? "" : "none"}"><i data-feather="info"></i></button></div></li>`;
+          return `<li class="nav-item"><div class="form-check form-switch mb-2 layer-toggle-item"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}"><span class="layer-label-text">${capa.titulo}</span></label><button id="btn${capa.id}" type="button" class="btn btn-icon btn-xs layer-action-button" data-name="i${capa.id}" aria-label="Identificar ${capa.titulo}" style="display: ${checked ? "" : "none"}"><i data-feather="info"></i></button></div></li>`;
         }
 
         const iconoBoton = definicion.filtroSolo ? "filter" : "settings";
-        return `<li class="nav-item"><div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label><button id="btn${capa.id}" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="float: right; display: ${checked ? "" : "none"}"><i data-feather="${iconoBoton}"></i></button><div class="dropdown-menu" aria-labelledby="btn${capa.id}">${acciones.map((accion) => construirAccion({ accion, id: capa.id, nombreWms: capa.nombreWms })).join("")}</div></div></li>`;
+        return `<li class="nav-item"><div class="form-check form-switch mb-2 layer-toggle-item"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}"><span class="layer-label-text">${capa.titulo}</span></label><button id="btn${capa.id}" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="display: ${checked ? "" : "none"}"><i data-feather="${iconoBoton}"></i></button><div class="dropdown-menu" aria-labelledby="btn${capa.id}">${acciones.map((accion) => construirAccion({ accion, id: capa.id, nombreWms: capa.nombreWms })).join("")}</div></div></li>`;
       })
       .join("");
 
@@ -762,6 +771,10 @@ export function obtenerInformacion(e) {
 
   const capaActiva = buscarCapaId(capaActivaId);
   if (!capaActiva || !capaActiva.getVisible()) return;
+
+  if (popupTitle) {
+    popupTitle.textContent = `Información: ${obtenerTituloCapaPorId(capaActivaId)}`;
+  }
 
   const source = capaActiva.getSource();
   if (!(source instanceof ImageWMS)) return;

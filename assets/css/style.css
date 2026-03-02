@@ -357,6 +357,29 @@ body {
   font-weight: 600;
 }
 
+.layer-toggle-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.layer-toggle-item .form-check-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.layer-label-text {
+  display: inline-block;
+  white-space: normal;
+  word-break: break-word;
+  padding-right: 0.25rem;
+}
+
+.layer-toggle-item .btn {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .main-wrapper .page-wrapper .page-content {
   margin-top: 0 !important;
   padding: 0 !important;
