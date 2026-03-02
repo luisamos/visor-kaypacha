@@ -1,5 +1,6 @@
 import {
   colores,
+  direccionServicioWMS,
   direccionServicioWFS,
   direccionApiGIS,
   proyeccion3857,
@@ -13,6 +14,7 @@ import {
   fichaIndividual,
   rutaFotografia,
 } from "./configuracion";
+import { registrarCapaWmsDinamica } from "./capasGeograficas";
 
 import { Modal, Tooltip } from "bootstrap";
 import ImageWMS from "ol/source/ImageWMS";
@@ -24,8 +26,7 @@ import { Style, Stroke } from "ol/style";
 const legendDiv = document.getElementById("legenda"),
   legendButton = document.getElementById("leyenda"),
   legendButtonLabel = legendButton?.querySelector(".legend-label"),
-  dropdownItems = document.querySelectorAll(".dropdown-item"),
-  checkboxes = document.querySelectorAll(".form-check-input"),
+  sidebarNav = document.getElementById("sidebarNav"),
   mensajeBuscarLote = document.getElementById("mensajeBuscarLote"),
   buscarLote = document.getElementById("buscarLote"),
   estilo = new Style({ stroke: new Stroke({ color: "red", width: 2 }) }),
@@ -46,6 +47,110 @@ const busquedaLoteModal = document.getElementById("busquedaLote");
 
 let capaBusquedaLotes = null;
 let lotesBusquedaActual = [];
+
+const CAPAS_BASE = [
+  { id: "ortofoto", titulo: "Ortofoto", checked: false },
+  { id: "googleMapCalle", titulo: "Google calles", checked: false },
+  { id: "googleMapSatelite", titulo: "Google satélite", checked: true },
+  { id: "osm", titulo: "Open Street Map", checked: false },
+  { id: "esriModoNoche", titulo: "Esri modo noche", checked: false },
+];
+
+const DEFINICION_GRUPOS_WMS = {
+  "Límite censal": { id: "limitesCensales", icono: "activity", acciones: [] },
+  "Predio urbano": {
+    id: "prediosUrbanos",
+    icono: "map",
+    acciones: ["identificar", "descargar"],
+    extrasPorCapa: {
+      lote: ["filtro", "buscar"],
+      habilitacion_urbana: ["filtro", "buscar"],
+    },
+  },
+  "Área de circulación": {
+    id: "areasCirulacion",
+    icono: "minimize",
+    acciones: ["identificar", "descargar", "buscar", "filtro"],
+  },
+  Reporte: {
+    id: "reporteCapas",
+    icono: "bar-chart-2",
+    acciones: ["filtro"],
+    filtroSolo: true,
+  },
+  Interoperabilidad: {
+    id: "interoperabilidad",
+    icono: "repeat",
+    acciones: ["identificar"],
+    identificarDirecto: true,
+  },
+};
+
+function slugify(valor = "") {
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .map((token, i) =>
+      i === 0
+        ? token.toLowerCase()
+        : token.charAt(0).toUpperCase() + token.slice(1).toLowerCase(),
+    )
+    .join("");
+}
+
+function tituloCapaDesdeNombre(nombre = "") {
+  return nombre
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letra) => letra.toUpperCase());
+}
+
+function idUiDesdeNombreWms(nombreWms = "") {
+  const map = {
+    habilitacion_urbana: "habilitacionUrbana",
+    eje_via: "ejeVia",
+    servicio_basico: "servicioBasico",
+    clasificacion_predio: "clasificacionPredio",
+    tipo_persona: "tipoPersona",
+  };
+  return map[nombreWms] || slugify(nombreWms);
+}
+
+function obtenerCapasDesdeGetCapabilities(xml) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, "text/xml");
+  const grupos = [];
+  const layerRoot = doc.querySelector("Capability > Layer");
+  if (!layerRoot) return grupos;
+
+  layerRoot.querySelectorAll(":scope > Layer").forEach((grupoNode) => {
+    const nombreGrupo = grupoNode
+      .querySelector(":scope > Title")
+      ?.textContent?.trim();
+    if (!nombreGrupo || !DEFINICION_GRUPOS_WMS[nombreGrupo]) return;
+
+    const capas = [];
+    grupoNode.querySelectorAll(":scope > Layer").forEach((layerNode) => {
+      const nombreWms = layerNode
+        .querySelector(":scope > Name")
+        ?.textContent?.trim();
+      if (!nombreWms) return;
+      capas.push({
+        nombreWms,
+        id: idUiDesdeNombreWms(nombreWms),
+        titulo:
+          layerNode.querySelector(":scope > Title")?.textContent?.trim() ||
+          tituloCapaDesdeNombre(nombreWms),
+      });
+    });
+
+    grupos.push({ nombreGrupo, capas });
+  });
+
+  return grupos;
+}
 
 function obtenerIdLoteDesdePopup() {
   const filas = Array.from(
@@ -401,8 +506,108 @@ function actualizarLeyenda() {
   });
 }
 
+function construirAccion({ accion, id, nombreWms }) {
+  const mapaAccion = {
+    identificar: {
+      icono: "info",
+      texto: "Identificar",
+      dataName: `i${id}`,
+    },
+    descargar: {
+      icono: "download",
+      texto: "Descargar shp.",
+      dataName: `d${nombreWms}`,
+    },
+    filtro: {
+      icono: "filter",
+      texto: "Filtro",
+      dataName: `f${id}`,
+      modal: "#filtroLote",
+    },
+    buscar: {
+      icono: "search",
+      texto: "Buscar",
+      dataName: id === "lote" ? "blote" : `b${id}`,
+      modal: "#busquedaLote",
+    },
+  };
+
+  const meta = mapaAccion[accion];
+  if (!meta) return "";
+  const modalAttrs = meta.modal
+    ? ` data-bs-toggle="modal" data-bs-target="${meta.modal}"`
+    : "";
+
+  return `<a class="dropdown-item" data-name="${meta.dataName}" href=""${modalAttrs}><i data-feather="${meta.icono}" class="icon-md"></i> ${meta.texto}</a>`;
+}
+
+function renderizarSidebarDinamico(gruposWms) {
+  if (!sidebarNav) return;
+
+  const bloques = [
+    `<li class="nav-item nav-category">Cartografía base</li>`,
+    `<li class="nav-item"><a class="nav-link" data-bs-toggle="collapse" href="#capasBase" role="button" aria-expanded="false" aria-controls="capasBase"><i class="link-icon" data-feather="layers"></i><span class="link-title">Capa base</span><i class="link-arrow" data-feather="chevron-down"></i></a><div class="collapse show" id="capasBase"><ul class="nav sub-menu">${CAPAS_BASE.map((capa) => `<li class="nav-item"><div class="mb-2">&nbsp;&nbsp;<input type="radio" class="form-radio-input" name="base" id="${capa.id}" ${capa.checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label></div></li>`).join("")}</ul></div></li>`,
+  ];
+
+  Object.entries(DEFINICION_GRUPOS_WMS).forEach(([nombreGrupo, definicion]) => {
+    const grupo = gruposWms.find((item) => item.nombreGrupo === nombreGrupo);
+    if (!grupo || !grupo.capas.length) return;
+
+    if (["Reporte", "Interoperabilidad"].includes(nombreGrupo)) {
+      bloques.push(`<li class="nav-item nav-category">${nombreGrupo}</li>`);
+    }
+
+    const items = grupo.capas
+      .map((capa) => {
+        registrarCapaWmsDinamica({
+          id: capa.id,
+          nombreWms: capa.nombreWms,
+          visible: capa.id === "provincia" || capa.id === "sector",
+        });
+        const accionesBase = [...(definicion.acciones || [])];
+        const extras = definicion.extrasPorCapa?.[capa.nombreWms] || [];
+        const acciones = [...new Set([...accionesBase, ...extras])];
+        const checked = capa.id === "provincia" || capa.id === "sector";
+
+        if (!acciones.length) {
+          return `<li class="nav-item"><div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label></div></li>`;
+        }
+
+        if (definicion.identificarDirecto) {
+          return `<li class="nav-item"><div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label><button id="btn${capa.id}" type="button" class="btn btn-icon btn-xs layer-action-button" data-name="i${capa.id}" aria-label="Identificar ${capa.titulo}" style="float: right; display: ${checked ? "" : "none"}"><i data-feather="info"></i></button></div></li>`;
+        }
+
+        const iconoBoton = definicion.filtroSolo ? "filter" : "settings";
+        return `<li class="nav-item"><div class="form-check form-switch mb-2"><input type="checkbox" class="form-check-input" id="${capa.id}" data-wms-name="${capa.nombreWms}" ${checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label><button id="btn${capa.id}" type="button" class="btn btn-icon btn-xs" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="float: right; display: ${checked ? "" : "none"}"><i data-feather="${iconoBoton}"></i></button><div class="dropdown-menu" aria-labelledby="btn${capa.id}">${acciones.map((accion) => construirAccion({ accion, id: capa.id, nombreWms: capa.nombreWms })).join("")}</div></div></li>`;
+      })
+      .join("");
+
+    bloques.push(
+      `<li class="nav-item"><a class="nav-link" data-bs-toggle="collapse" href="#${definicion.id}" role="button" aria-expanded="false" aria-controls="${definicion.id}"><i class="link-icon" data-feather="${definicion.icono}"></i><span class="link-title">${nombreGrupo}</span><i class="link-arrow" data-feather="chevron-down"></i></a><div class="collapse ${["prediosUrbanos"].includes(definicion.id) ? "show" : ""}" data-bs-parent="#sidebarNav" id="${definicion.id}"><ul class="nav sub-menu">${items}</ul></div></li>`,
+    );
+  });
+
+  sidebarNav.innerHTML = bloques.join("");
+  if (window.feather?.replace) window.feather.replace();
+}
+
+async function inicializarSidebarCapas() {
+  try {
+    const respuesta = await fetch(
+      `${direccionServicioWMS}service=WMS&request=GetCapabilities`,
+    );
+    const texto = await respuesta.text();
+    const grupos = obtenerCapasDesdeGetCapabilities(texto);
+    renderizarSidebarDinamico(grupos);
+    actualizarLeyenda();
+  } catch (error) {
+    console.error("No se pudo cargar GetCapabilities", error);
+  }
+}
+
 function activarBoton(id, estado) {
   const button = document.getElementById("btn" + id);
+  if (!button) return;
   if (estado) button.style.display = "";
   else button.style.display = "none";
 }
@@ -413,78 +618,97 @@ legendButton?.addEventListener("click", () => {
   legendTooltip?.hide();
 });
 
-document.getElementById("capasBase").addEventListener("click", function (e) {
-  if (e.target && e.target.type === "radio") {
-    const id = e.target.id;
-    if (id === "osm") {
-      global.osm.setVisible(true);
-      global.ortofoto.setVisible(false);
-      global.googleSatelite.setVisible(false);
-      global.googleCalles.setVisible(false);
-    } else if (id === "ortofoto") {
-      global.osm.setVisible(false);
-      global.ortofoto.setVisible(true);
-      global.googleSatelite.setVisible(false);
-      global.googleCalles.setVisible(false);
-    } else if (id === "googleMapSatelite") {
-      global.osm.setVisible(false);
-      global.ortofoto.setVisible(false);
-      global.googleSatelite.setVisible(true);
-      global.googleCalles.setVisible(false);
-    } else if (id === "googleMapCalle") {
-      global.osm.setVisible(false);
-      global.ortofoto.setVisible(false);
-      global.googleSatelite.setVisible(false);
-      global.googleCalles.setVisible(true);
-    }
+function activarCapaBase(id) {
+  if (id === "osm") {
+    global.osm.setVisible(true);
+    global.ortofoto.setVisible(false);
+    global.googleSatelite.setVisible(false);
+    global.googleCalles.setVisible(false);
+    global.esriModoNoche.setVisible(false);
+  } else if (id === "ortofoto") {
+    global.osm.setVisible(false);
+    global.ortofoto.setVisible(true);
+    global.googleSatelite.setVisible(false);
+    global.googleCalles.setVisible(false);
+    global.esriModoNoche.setVisible(false);
+  } else if (id === "googleMapSatelite") {
+    global.osm.setVisible(false);
+    global.ortofoto.setVisible(false);
+    global.googleSatelite.setVisible(true);
+    global.googleCalles.setVisible(false);
+    global.esriModoNoche.setVisible(false);
+  } else if (id === "googleMapCalle") {
+    global.osm.setVisible(false);
+    global.ortofoto.setVisible(false);
+    global.googleSatelite.setVisible(false);
+    global.googleCalles.setVisible(true);
+    global.esriModoNoche.setVisible(false);
+  } else if (id === "esriModoNoche") {
+    global.osm.setVisible(false);
+    global.ortofoto.setVisible(false);
+    global.googleSatelite.setVisible(false);
+    global.googleCalles.setVisible(false);
+    global.esriModoNoche.setVisible(true);
   }
-});
+}
 
-checkboxes.forEach((checkbox) => {
-  checkbox.addEventListener("click", function () {
-    if (this.id !== "conFichaLote" && this.id !== "sinFichaLote") {
-      const capaTematica = buscarCapaId(this.id);
-      if (
-        capaTematica != null &&
-        this.id !== "habilitacionUrbana" &&
-        this.id !== "puerta" &&
-        this.id !== "parque"
-      ) {
-        activarBoton(this.id, this.checked);
-      }
-      capaTematica.setVisible(this.checked);
-      actualizarLeyenda();
-    }
-  });
-});
+function procesarAccionCapa(nombre) {
+  if (!nombre) return;
+  if (nombre.substring(0, 1) === "i") {
+    global.activoInformacion = nombre.substring(1);
+  } else if (nombre === "blote") {
+    document.getElementById("tipoColumna").value = "id_lote";
+    document.getElementById("valorColumna").value = "";
+    mensajeBuscarLote.innerHTML = "";
+  } else if (nombre.substring(0, 1) === "d") {
+    const nombreCapa = nombre.substring(1);
+    const url =
+      direccionServicioWFS +
+      "service=WFS&request=GetFeature&VERSION=1.1.0&outputFormat=SHAPE-ZIP&typeName=" +
+      nombreCapa;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${nombreCapa}_${fechaHoy()}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
 
-dropdownItems.forEach((item) => {
-  item.addEventListener("click", function (event) {
+sidebarNav?.addEventListener("click", (event) => {
+  const radioBase = event.target.closest('input[type="radio"][name="base"]');
+  if (radioBase) {
+    activarCapaBase(radioBase.id);
+    return;
+  }
+
+  const action = event.target.closest(".dropdown-item, .layer-action-button");
+  if (action) {
     event.preventDefault();
-    if (item.getAttribute("data-name") !== null) {
-      const nombre = item.getAttribute("data-name").toString();
-      if (nombre.substring(0, 1) === "i") {
-        global.activoInformacion = nombre.substring(1);
-      } else if (nombre === "blote") {
-        document.getElementById("tipoColumna").value = "id_lote";
-        document.getElementById("valorColumna").value = "";
-        mensajeBuscarLote.innerHTML = "";
-        //buscarLote.setAttribute('data-bs-dismiss', '');
-      } else if (nombre.substring(0, 1) === "d") {
-        const url =
-          direccionServicioWFS +
-          "service=WFS&request=GetFeature&VERSION=1.1.0&outputFormat=SHAPE-ZIP&typeName=" +
-          nombre.substring(1);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${nombre.substring(1)}_${fechaHoy()}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-  });
+    procesarAccionCapa(action.getAttribute("data-name")?.toString());
+    return;
+  }
+
+  const checkbox = event.target.closest(
+    'input[type="checkbox"].form-check-input',
+  );
+  if (!checkbox) return;
+  if (checkbox.id === "conFichaLote" || checkbox.id === "sinFichaLote") return;
+
+  const capaTematica = buscarCapaId(checkbox.id);
+  if (
+    capaTematica != null &&
+    checkbox.id !== "habilitacionUrbana" &&
+    checkbox.id !== "puerta" &&
+    checkbox.id !== "parque"
+  ) {
+    activarBoton(checkbox.id, checkbox.checked);
+  }
+  capaTematica?.setVisible(checkbox.checked);
+  actualizarLeyenda();
 });
+
+inicializarSidebarCapas();
 
 detalleLoteCerrar?.addEventListener("click", () => {
   ocultarDetalleLote();

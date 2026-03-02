@@ -2,7 +2,7 @@ import * as bootstrap from "bootstrap";
 
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
-import imagenVerde from "../images/ubicacionVerde.png";
+import imagenVerde from "./assets/images/ubicacionVerde.png";
 
 const IS_DEV = true,
   UBIGEO = "080108";
@@ -15,12 +15,12 @@ const configuracionPorUbigeo = {
       zoom: 15,
       titulo: "Municipalidad Distrital de Wanchaq",
       siglas: "MDW",
-      logo_light: "./assets/images/logo-mdw.png",
-      logo_dark: "./assets/images/logo-mdw-white.png",
-      logo_container: "./assets/images/proyecto-catastro-mdw.jpg",
-      ficha_individual:
+      logoLight: "./assets/images/logo-mdw.png",
+      logoDark: "./assets/images/logo-mdw-white.png",
+      logoContainer: "./assets/images/proyecto-catastro-mdw.jpg",
+      fichaIndividual:
         "https://catastro.muniwanchaq.gob.pe:9100/pdf/individual/",
-      ruta_fotografia:
+      rutaFotografia:
         "https://catastro.muniwanchaq.gob.pe:9100/storage/img/imageneslotes/",
       ortofotos: "ortofoto",
     },

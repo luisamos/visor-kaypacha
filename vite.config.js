@@ -1,7 +1,7 @@
 // vite.config.js
 import { defineConfig } from "vite";
 
-import {logo_light, logo_dark, logo_container} from ./assets/js/configuracion.js;
+import { logoLight, logoDark, logoContainer } from "./assets/js/configuracion";
 
 export default defineConfig({
   base: "/visor/",
@@ -10,7 +10,12 @@ export default defineConfig({
     sourcemap: true,
     manifest: true,
     chunkSizeWarningLimit: 100000,
-    assetsInclude: ["./json/datos3857.json", logo_light, logo_dark, logo_container],
+    assetsInclude: [
+      "./json/datos3857.json",
+      logoLight,
+      logoDark,
+      logoContainer,
+    ],
     rollupOptions: {
       input: {
         main: "index.html",
