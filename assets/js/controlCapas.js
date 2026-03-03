@@ -713,7 +713,9 @@ function actualizarLeyenda() {
 }
 
 function construirAccion({ accion, id, nombreWms }) {
-  const esBusquedaViaHab = ["habilitacion_urbana", "eje_via"].includes(id);
+  const esBusquedaViaHab = ["habilitacion_urbana", "eje_via"].includes(
+    nombreWms,
+  );
   const mapaAccion = {
     identificar: {
       icono: "info",
