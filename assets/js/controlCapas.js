@@ -58,7 +58,7 @@ const busquedaLoteModal = document.getElementById("busquedaLote"),
   busquedaViaHabEtiqueta = document.getElementById("busquedaViaHabEtiqueta"),
   valorViaHabInput = document.getElementById("valorViaHab");
 
-let capaBusquedaCapas = null,
+let capaBusqueda = null,
   lotesBusquedaActual = [],
   viasBusquedaActual = [];
 
@@ -66,13 +66,13 @@ const CONFIG_BUSQUEDA_VIA_HAB = {
   habilitacion_urbana: {
     titulo: "Buscar habilitación urbana",
     etiqueta: "Ingrese el nombre de una habilitación urbana:",
-    placeholder: "Ingresar nombre de habilitación urbana",
+    placeholder: "Ingresar nombre",
     campo: "nomb_hab_urb",
   },
   eje_via: {
     titulo: "Buscar una dirección",
     etiqueta: "Ingresar el nombre de la calle, avenida, jirón...",
-    placeholder: "Ingresar nombre de calle, avenida, jirón...",
+    placeholder: "Ingresar nombre",
     campo: "nomb_via",
   },
 };
@@ -107,7 +107,7 @@ const DEFINICION_GRUPOS_WMS = {
   "Área de circulación": {
     id: "areasCirulacion",
     icono: "minimize",
-    acciones: ["identificar", "buscar", "filtro", "descargar"],
+    acciones: ["identificar", "buscar", "descargar"],
     titulo: "Áreas de circulación",
     categoria: "Catastro urbano",
   },
@@ -312,9 +312,9 @@ function construirTipoDocumento(propietario = {}) {
 }
 
 function limpiarCapaBusquedaLotes() {
-  if (!capaBusquedaCapas) return;
-  global.mapa.removeLayer(capaBusquedaCapas);
-  capaBusquedaCapas = null;
+  if (!capaBusqueda) return;
+  global.mapa.removeLayer(capaBusqueda);
+  capaBusqueda = null;
 }
 
 function enfocarLoteBusqueda(indice) {
@@ -330,13 +330,13 @@ function enfocarLoteBusqueda(indice) {
     }),
   });
 
-  capaBusquedaCapas = new VectorLayer({
+  capaBusqueda = new VectorLayer({
     source: vectorSource,
     style: estilo,
-    id: `busqueda-capa-${indice}`,
+    id: `busqueda-lote-${indice}`,
   });
 
-  global.mapa.addLayer(capaBusquedaCapas);
+  global.mapa.addLayer(capaBusqueda);
   global.mapa.getView().fit(vectorSource.getExtent(), {
     duration: 1000,
     maxZoom: 19,
@@ -442,13 +442,13 @@ function enfocarViaBusqueda(indice) {
     }),
   });
 
-  capaBusquedaCapa = new VectorLayer({
+  capaBusqueda = new VectorLayer({
     source: vectorSource,
     style: estilo,
     id: `busqueda-via-${indice}`,
   });
 
-  global.mapa.addLayer(capaBusquedaCapas);
+  global.mapa.addLayer(capaBusqueda);
   global.mapa.getView().fit(vectorSource.getExtent(), {
     duration: 1000,
     maxZoom: 19,
@@ -505,7 +505,7 @@ function construirParametrosWfsBusqueda(tipoCapa, campo, valorBusqueda) {
     REQUEST: "GetFeature",
     TYPENAME: parametrosBusqueda.tipoCapa,
     SRSNAME: proyeccion3857,
-    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${parametrosBusqueda.campo}</PropertyName><Literal>*${valorFiltro}*</Literal></PropertyIsLike></Filter>`,
+    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false"><PropertyName>${parametrosBusqueda.campo}</PropertyName><Literal>*${valorFiltro}*</Literal></PropertyIsLike></Filter>`,
     OUTPUTFORMAT: formatoGeoJson,
   });
 
@@ -802,11 +802,6 @@ function construirAccion({ accion, id, nombreWms }) {
       texto: "Identificar",
       dataName: `i${id}`,
     },
-    descargar: {
-      icono: "download",
-      texto: "Descargar shp.",
-      dataName: `d${nombreWms}`,
-    },
     filtro: {
       icono: "filter",
       texto: "Filtro",
@@ -823,6 +818,11 @@ function construirAccion({ accion, id, nombreWms }) {
             ? `bViaHab:${nombreWms}`
             : `b${id}`,
       modal: esBusquedaViaHab ? "#busquedaViaHab" : "#busquedaLote",
+    },
+    descargar: {
+      icono: "download",
+      texto: "Descargar shp.",
+      dataName: `d${nombreWms}`,
     },
   };
 
