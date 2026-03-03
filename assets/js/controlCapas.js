@@ -440,27 +440,56 @@ function enfocarViaBusqueda(indice) {
   });
 }
 
-function buscarEnCapaWfs(tipoCapa, campo, valorBusqueda) {
-  const parametros = new URLSearchParams({
+function buscarEnCapaWFS(tipoCapa, campo, valorBusqueda) {
+  return construirParametrosWfsBusqueda({
+    tipoCapa,
+    campo,
+    valorBusqueda,
+  }).then(({ features }) =>
+    features.map((feature) => ({
+      tipo: tipoCapa,
+      nombre: feature?.properties?.[campo] || "",
+      feature,
+    })),
+  );
+}
+
+function escaparValorFiltroWfs(valor = "") {
+  return valor
+    .replace(/!/g, "!!")
+    .replace(/\*/g, "!*")
+    .replace(/\./g, "!.")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function construirParametrosWfsBusqueda(tipoCapa, campo, valorBusqueda) {
+  const valorFiltro = escaparValorFiltroWfs(valorBusqueda.trim());
+
+  return new URLSearchParams({
     SERVICE: "WFS",
     VERSION: "2.0.0",
     REQUEST: "GetFeature",
     TYPENAME: tipoCapa,
     SRSNAME: proyeccion3857,
-    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${campo}</PropertyName><Literal>*${valorBusqueda}*</Literal></PropertyIsLike></Filter>`,
+    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${campo}</PropertyName><Literal>*${valorFiltro}*</Literal></PropertyIsLike></Filter>`,
     OUTPUTFORMAT: formatoGeoJson,
   });
 
-  return fetch(`${direccionServicioWFS}${parametros.toString()}`)
+  /*return fetch(`${direccionServicioWFS}${parametros.toString()}`)
     .then((response) => response.json())
     .then((data) => {
-      const features = Array.isArray(data?.features) ? data.features : [];
-      return features.map((feature) => ({
-        tipo: tipoCapa,
-        nombre: feature?.properties?.[campo] || "",
-        feature,
-      }));
-    });
+      const totalRegistros = Number(data?.numberMatched) || features.length;
+
+      return {
+        data,
+        features,
+        totalRegistros,
+      };
+    });*/
 }
 
 function renderizarDetalleLote(respuesta) {
@@ -1111,22 +1140,12 @@ buscarLote.addEventListener("click", function () {
     return;
   }
 
-  const parametros = new URLSearchParams({
-    SERVICE: "WFS",
-    VERSION: "2.0.0",
-    REQUEST: "GetFeature",
-    TYPENAME: "lote",
-    SRSNAME: proyeccion3857,
-    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${tipoColumna}</PropertyName><Literal>*${valorBusqueda}*</Literal></PropertyIsLike></Filter>`,
-    OUTPUTFORMAT: formatoGeoJson,
-  });
-
-  const urlWFS = `${direccionServicioWFS}${parametros.toString()}`;
-
-  fetch(urlWFS)
-    .then((response) => response.json())
-    .then((data) => {
-      const totalRegistros = data.numberMatched || data.features?.length || 0;
+  buscarEnCapaWFS({
+    tipoCapa: "lote",
+    campo: tipoColumna,
+    valorBusqueda,
+  })
+    .then(({ data, totalRegistros }) => {
       if (totalRegistros > 0) {
         ocultarDetalleLote();
         mensajeBuscarLote.innerHTML = "";
@@ -1160,7 +1179,7 @@ buscarViaHab?.addEventListener("click", function () {
     return;
   }
 
-  buscarEnCapaWfs(tipoBusquedaViaHabActual, configuracion.campo, valorBusqueda)
+  buscarEnCapaWFS(tipoBusquedaViaHabActual, configuracion.campo, valorBusqueda)
     .then((resultados) => {
       if (resultados.length > 0) {
         ocultarDetalleLote();
