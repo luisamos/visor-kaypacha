@@ -314,6 +314,33 @@
             </div>
           </section>
 
+          <section id="listado-vias-panel" class="detalle-lote-panel d-none">
+            <div class="detalle-lote-head">
+              <h6 class="mb-0">
+                Resultados de búsqueda de habilitación urbana y eje de vía
+              </h6>
+              <button
+                type="button"
+                id="listado-vias-cerrar"
+                class="btn btn-sm btn-outline-light"
+              >
+                Cerrar
+              </button>
+            </div>
+            <div class="table-responsive detalle-lote-table-wrapper">
+              <table class="table table-sm mb-0 detalle-lote-table">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Nombre</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="listado-vias-body"></tbody>
+              </table>
+            </div>
+          </section>
+
           <div id="button-group" class="button-group">
             <button
               id="controlVistaGeneral"
@@ -521,6 +548,61 @@
                   Cerrar
                 </button>
                 <button type="button" class="btn btn-primary" id="buscarLote">
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="busquedaViaHab"
+          tabindex="-1"
+          aria-labelledby="busquedaViaHab"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+          >
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i data-feather="search"></i> Buscar habilitación urbana / eje
+                  de vía
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <p class="form-label mb-0">
+                    <strong>Nombre de habilitación urbana o vía:</strong>
+                  </p>
+                </div>
+                <div class="mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="valorViaHab"
+                    placeholder="Ingresar nombre"
+                  />
+                </div>
+                <div class="mb-3" id="mensajeBuscarViaHab"></div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" id="buscarViaHab">
                   Buscar
                 </button>
               </div>
