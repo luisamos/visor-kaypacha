@@ -717,12 +717,7 @@ sidebarNav?.addEventListener("click", (event) => {
   if (checkbox.id === "conFichaLote" || checkbox.id === "sinFichaLote") return;
 
   const capaTematica = buscarCapaId(checkbox.id);
-  if (
-    capaTematica != null &&
-    checkbox.id !== "habilitacionUrbana" &&
-    checkbox.id !== "puerta" &&
-    checkbox.id !== "parque"
-  ) {
+  if (capaTematica != null) {
     activarBoton(checkbox.id, checkbox.checked);
   }
   capaTematica?.setVisible(checkbox.checked);
