@@ -58,7 +58,7 @@ const busquedaLoteModal = document.getElementById("busquedaLote"),
   busquedaViaHabEtiqueta = document.getElementById("busquedaViaHabEtiqueta"),
   valorViaHabInput = document.getElementById("valorViaHab");
 
-let capaBusquedaLotes = null,
+let capaBusquedaCapas = null,
   lotesBusquedaActual = [],
   viasBusquedaActual = [];
 
@@ -312,9 +312,9 @@ function construirTipoDocumento(propietario = {}) {
 }
 
 function limpiarCapaBusquedaLotes() {
-  if (!capaBusquedaLotes) return;
-  global.mapa.removeLayer(capaBusquedaLotes);
-  capaBusquedaLotes = null;
+  if (!capaBusquedaCapas) return;
+  global.mapa.removeLayer(capaBusquedaCapas);
+  capaBusquedaCapas = null;
 }
 
 function enfocarLoteBusqueda(indice) {
@@ -330,18 +330,34 @@ function enfocarLoteBusqueda(indice) {
     }),
   });
 
-  capaBusquedaLotes = new VectorLayer({
+  capaBusquedaCapas = new VectorLayer({
     source: vectorSource,
     style: estilo,
-    id: `busqueda-lote-${indice}`,
+    id: `busqueda-capa-${indice}`,
   });
 
-  global.mapa.addLayer(capaBusquedaLotes);
+  global.mapa.addLayer(capaBusquedaCapas);
   global.mapa.getView().fit(vectorSource.getExtent(), {
     duration: 1000,
     maxZoom: 19,
     padding: [20, 20, 20, 20],
   });
+}
+
+function normalizarBusquedaWFS(tipoCapa, campo, valorBusqueda) {
+  if (typeof tipoCapa === "object" && tipoCapa !== null) {
+    return {
+      tipoCapa: tipoCapa.tipoCapa || "",
+      campo: tipoCapa.campo || "",
+      valorBusqueda: tipoCapa.valorBusqueda || "",
+    };
+  }
+
+  return {
+    tipoCapa: tipoCapa || "",
+    campo: campo || "",
+    valorBusqueda: valorBusqueda || "",
+  };
 }
 
 function renderizarListadoLotes(data) {
@@ -426,13 +442,13 @@ function enfocarViaBusqueda(indice) {
     }),
   });
 
-  capaBusquedaLotes = new VectorLayer({
+  capaBusquedaCapa = new VectorLayer({
     source: vectorSource,
     style: estilo,
     id: `busqueda-via-${indice}`,
   });
 
-  global.mapa.addLayer(capaBusquedaLotes);
+  global.mapa.addLayer(capaBusquedaCapas);
   global.mapa.getView().fit(vectorSource.getExtent(), {
     duration: 1000,
     maxZoom: 19,
@@ -441,16 +457,23 @@ function enfocarViaBusqueda(indice) {
 }
 
 function buscarEnCapaWFS(tipoCapa, campo, valorBusqueda) {
-  return construirParametrosWfsBusqueda({
+  const parametrosBusqueda = normalizarBusquedaWFS(
     tipoCapa,
     campo,
     valorBusqueda,
-  }).then(({ features }) =>
-    features.map((feature) => ({
-      tipo: tipoCapa,
-      nombre: feature?.properties?.[campo] || "",
-      feature,
-    })),
+  );
+
+  return construirParametrosWfsBusqueda(parametrosBusqueda).then(
+    ({ data, features, totalRegistros }) => ({
+      data,
+      features,
+      totalRegistros,
+      resultados: features.map((feature) => ({
+        tipo: parametrosBusqueda.tipoCapa,
+        nombre: feature?.properties?.[parametrosBusqueda.campo] || "",
+        feature,
+      })),
+    }),
   );
 }
 
@@ -467,21 +490,29 @@ function escaparValorFiltroWfs(valor = "") {
 }
 
 function construirParametrosWfsBusqueda(tipoCapa, campo, valorBusqueda) {
-  const valorFiltro = escaparValorFiltroWfs(valorBusqueda.trim());
+  const parametrosBusqueda = normalizarBusquedaWFS(
+    tipoCapa,
+    campo,
+    valorBusqueda,
+  );
+  const valorFiltro = escaparValorFiltroWfs(
+    parametrosBusqueda.valorBusqueda.trim(),
+  );
 
-  return new URLSearchParams({
+  const parametros = new URLSearchParams({
     SERVICE: "WFS",
     VERSION: "2.0.0",
     REQUEST: "GetFeature",
-    TYPENAME: tipoCapa,
+    TYPENAME: parametrosBusqueda.tipoCapa,
     SRSNAME: proyeccion3857,
-    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${campo}</PropertyName><Literal>*${valorFiltro}*</Literal></PropertyIsLike></Filter>`,
+    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><PropertyName>${parametrosBusqueda.campo}</PropertyName><Literal>*${valorFiltro}*</Literal></PropertyIsLike></Filter>`,
     OUTPUTFORMAT: formatoGeoJson,
   });
 
-  /*return fetch(`${direccionServicioWFS}${parametros.toString()}`)
+  return fetch(`${direccionServicioWFS}${parametros.toString()}`)
     .then((response) => response.json())
     .then((data) => {
+      const features = Array.isArray(data?.features) ? data.features : [];
       const totalRegistros = Number(data?.numberMatched) || features.length;
 
       return {
@@ -489,7 +520,7 @@ function construirParametrosWfsBusqueda(tipoCapa, campo, valorBusqueda) {
         features,
         totalRegistros,
       };
-    });*/
+    });
 }
 
 function renderizarDetalleLote(respuesta) {
@@ -1180,8 +1211,8 @@ buscarViaHab?.addEventListener("click", function () {
   }
 
   buscarEnCapaWFS(tipoBusquedaViaHabActual, configuracion.campo, valorBusqueda)
-    .then((resultados) => {
-      if (resultados.length > 0) {
+    .then(({ resultados, totalRegistros }) => {
+      if (totalRegistros > 0) {
         ocultarDetalleLote();
         mensajeBuscarViaHab.innerHTML = "";
         renderizarListadoVias(resultados);
