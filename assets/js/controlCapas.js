@@ -421,9 +421,43 @@ function formatearContenidoPopup(data) {
     const doc = parser.parseFromString(data, "text/html");
     const tabla = doc.querySelector("table");
 
+    const crearContenedorFilas = () => {
+      const contenedor = document.createElement("div");
+      contenedor.classList.add("popup-lote-vertical");
+      return contenedor;
+    };
+
+    const agregarFilaNormalizada = (contenedor, etiquetaHtml, valorHtml) => {
+      const filaDato = document.createElement("div");
+      filaDato.classList.add("popup-lote-row");
+
+      const etiqueta = document.createElement("span");
+      etiqueta.classList.add("popup-lote-label");
+      etiqueta.textContent =
+        (etiquetaHtml || "")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim() || "-";
+
+      const valor = document.createElement("span");
+      valor.classList.add("popup-lote-value");
+      valor.innerHTML = (valorHtml || "").trim() || "-";
+
+      filaDato.appendChild(etiqueta);
+      filaDato.appendChild(valor);
+      contenedor.appendChild(filaDato);
+    };
+
     if (tabla) {
+      const headers = Array.from(tabla.querySelectorAll("thead th")).map((th) =>
+        th.textContent?.trim(),
+      );
+
       const filas = Array.from(tabla.querySelectorAll("tbody tr, tr")).filter(
-        (fila) => fila.querySelectorAll("td").length,
+        (fila) => {
+          const celdas = fila.querySelectorAll("td");
+          return celdas.length && !fila.closest("thead");
+        },
       );
 
       const esTablaLote = filas.some(
@@ -431,34 +465,23 @@ function formatearContenidoPopup(data) {
       );
 
       if (esTablaLote) {
-        const contenedorVertical = document.createElement("div");
-        contenedorVertical.classList.add("popup-lote-vertical");
+        const contenedorVertical = crearContenedorFilas();
 
         filas.forEach((fila) => {
           const celdas = Array.from(fila.querySelectorAll("td"));
           if (!celdas.length) return;
 
-          const item = document.createElement("article");
-          item.classList.add("popup-lote-item");
-
           celdas.forEach((celda, indice) => {
             if (!labelsLote[indice]) return;
             if (indice === 8 && !autenticado) return;
 
-            const filaDato = document.createElement("div");
-            filaDato.classList.add("popup-lote-row");
-
-            const etiqueta = document.createElement("span");
-            etiqueta.classList.add("popup-lote-label");
-            etiqueta.textContent = labelsLote[indice];
-
-            const valor = document.createElement("span");
-            valor.classList.add("popup-lote-value");
-            valor.innerHTML = celda.innerHTML.trim() || "-";
+            const valorHtml = celda.innerHTML.trim();
+            const valorTmp = document.createElement("span");
+            valorTmp.innerHTML = valorHtml;
 
             const esEnlaceDetalles =
               indice === 8 &&
-              valor
+              valorTmp
                 .querySelector('a[href="#"]')
                 ?.textContent?.trim()
                 .toLowerCase()
@@ -466,14 +489,54 @@ function formatearContenidoPopup(data) {
 
             if (esEnlaceDetalles && !autenticado) return;
 
-            filaDato.appendChild(etiqueta);
-            filaDato.appendChild(valor);
-            item.appendChild(filaDato);
+            agregarFilaNormalizada(
+              contenedorVertical,
+              labelsLote[indice],
+              valorHtml,
+            );
           });
+        });
 
-          if (item.childElementCount > 0) {
-            contenedorVertical.appendChild(item);
-          }
+        if (contenedorVertical.childElementCount > 0) {
+          return contenedorVertical.outerHTML;
+        }
+      }
+
+      const esTablaClaveValor = filas.every(
+        (fila) => fila.querySelectorAll("td").length === 2,
+      );
+      if (esTablaClaveValor) {
+        const contenedorVertical = crearContenedorFilas();
+        filas.forEach((fila) => {
+          const [columna, valor] = Array.from(fila.querySelectorAll("td"));
+          agregarFilaNormalizada(
+            contenedorVertical,
+            columna?.innerHTML,
+            valor?.innerHTML,
+          );
+        });
+        if (contenedorVertical.childElementCount > 0) {
+          return contenedorVertical.outerHTML;
+        }
+      }
+
+      const esTablaConCabeceras =
+        headers.length > 0 &&
+        filas.some(
+          (fila) => fila.querySelectorAll("td").length === headers.length,
+        );
+      if (esTablaConCabeceras) {
+        const contenedorVertical = crearContenedorFilas();
+        filas.forEach((fila) => {
+          const celdas = Array.from(fila.querySelectorAll("td"));
+          celdas.forEach((celda, indice) => {
+            if (!headers[indice]) return;
+            agregarFilaNormalizada(
+              contenedorVertical,
+              headers[indice],
+              celda.innerHTML,
+            );
+          });
         });
 
         if (contenedorVertical.childElementCount > 0) {
