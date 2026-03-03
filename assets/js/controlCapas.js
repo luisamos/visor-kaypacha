@@ -229,7 +229,7 @@ function mostrarFotoLote(urlFoto) {
 
   fotoLoteImg.src = urlFoto;
   fotoLotePanel.classList.remove("d-none");
-
+}
 
 function ocultarListadoLotes() {
   if (listadoLoteBody) {
@@ -839,8 +839,9 @@ contenido?.addEventListener("click", (event) => {
 
   const fila = enlace.closest(".popup-lote-row");
   const etiqueta =
-    fila?.querySelector(".popup-lote-label")?.textContent
-      ?.normalize("NFD")
+    fila
+      ?.querySelector(".popup-lote-label")
+      ?.textContent?.normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .trim()
       .toLowerCase() || "";

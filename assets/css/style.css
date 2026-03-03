@@ -359,8 +359,8 @@ body {
 
 .foto-lote-panel {
   position: absolute;
-  top: 172px;
-  right: 8px;
+  top: 100px;
+  right: 60px;
   width: min(360px, calc(100vw - 20px));
   z-index: 1000;
   background: var(--detalle-panel-bg);
