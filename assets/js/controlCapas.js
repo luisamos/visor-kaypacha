@@ -38,6 +38,9 @@ const legendDiv = document.getElementById("legenda"),
   listadoLoteBody = document.getElementById("listado-lote-body"),
   listadoLoteCerrar = document.getElementById("listado-lote-cerrar"),
   popupCloser = document.getElementById("popup-closer"),
+  fotoLotePanel = document.getElementById("foto-lote-panel"),
+  fotoLoteImg = document.getElementById("foto-lote-img"),
+  fotoLoteCerrar = document.getElementById("foto-lote-cerrar"),
   popupTitle = document.querySelector("#popup .popup-title");
 
 const legendTooltip = legendButton
@@ -213,6 +216,20 @@ function ocultarDetalleLote() {
   }
   detalleLotePanel?.classList.add("d-none");
 }
+
+function ocultarFotoLote() {
+  if (fotoLoteImg) {
+    fotoLoteImg.removeAttribute("src");
+  }
+  fotoLotePanel?.classList.add("d-none");
+}
+
+function mostrarFotoLote(urlFoto) {
+  if (!fotoLotePanel || !fotoLoteImg || !urlFoto) return;
+
+  fotoLoteImg.src = urlFoto;
+  fotoLotePanel.classList.remove("d-none");
+
 
 function ocultarListadoLotes() {
   if (listadoLoteBody) {
@@ -812,26 +829,47 @@ listadoLoteCerrar?.addEventListener("click", () => {
   ocultarListadoLotes();
 });
 
+fotoLoteCerrar?.addEventListener("click", () => {
+  ocultarFotoLote();
+});
+
 contenido?.addEventListener("click", (event) => {
   const enlace = event.target.closest("a");
   if (!enlace) return;
 
+  const fila = enlace.closest(".popup-lote-row");
+  const etiqueta =
+    fila?.querySelector(".popup-lote-label")?.textContent
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase() || "";
+
   const texto = enlace.textContent?.trim().toLowerCase() || "";
+
+  if (etiqueta === "fotografia" || texto === "ir") {
+    event.preventDefault();
+    const urlFoto = enlace.getAttribute("href")?.trim() || "";
+    if (urlFoto && urlFoto !== "#") {
+      mostrarFotoLote(urlFoto);
+    } else {
+      mostrarToast("El lote no cuenta con fotografía.", "warning");
+      ocultarFotoLote();
+    }
+    return;
+  }
+
   if (enlace.getAttribute("href") === "#" || texto === "ver") {
     event.preventDefault();
     cargarDetalleLoteDesdePopup();
   }
 });
 
-popupCloser?.addEventListener("click", () => {
-  ocultarDetalleLote();
-  ocultarListadoLotes();
-});
-
 document.addEventListener("estado-autenticacion", (event) => {
   if (!event.detail?.autenticado) {
     ocultarDetalleLote();
     ocultarListadoLotes();
+    ocultarFotoLote();
   }
 });
 
@@ -867,6 +905,7 @@ export function obtenerInformacion(e) {
     .then((data) => {
       ocultarDetalleLote();
       ocultarListadoLotes();
+      ocultarFotoLote();
       contenido.innerHTML = formatearContenidoPopup(data);
       global.cubrir.setPosition(e.coordinate);
     })
@@ -874,6 +913,7 @@ export function obtenerInformacion(e) {
       console.error("Error al obtener GetFeatureInfo:", error);
       ocultarDetalleLote();
       ocultarListadoLotes();
+      ocultarFotoLote();
       contenido.innerHTML = `<p>No se pudo obtener información de la capa ${capaActivaId} seleccionada.</p>`;
       global.cubrir.setPosition(e.coordinate);
     });

@@ -357,6 +357,41 @@ body {
   font-weight: 600;
 }
 
+.foto-lote-panel {
+  position: absolute;
+  top: 172px;
+  right: 8px;
+  width: min(360px, calc(100vw - 20px));
+  z-index: 1000;
+  background: var(--detalle-panel-bg);
+  color: var(--detalle-panel-text);
+  border: 1px solid var(--detalle-panel-border);
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(6, 12, 40, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.foto-lote-head {
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--detalle-panel-border) 75%, transparent);
+}
+
+.foto-lote-body {
+  padding: 0.7rem;
+}
+
+#foto-lote-img {
+  width: 100%;
+  max-height: min(50vh, 360px);
+  border-radius: 10px;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--detalle-panel-border) 15%, transparent);
+}
+
 .layer-toggle-item {
   display: flex;
   align-items: flex-start;
@@ -900,6 +935,18 @@ hr {
 
   #filtroLote .modal-footer {
     justify-content: space-between;
+  }
+
+  .foto-lote-panel {
+    top: auto;
+    right: 10px;
+    left: 10px;
+    bottom: 88px;
+    width: auto;
+  }
+
+  #foto-lote-img {
+    max-height: 28vh;
   }
 
   body.sidebar-folded .legend,

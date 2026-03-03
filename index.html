@@ -234,6 +234,21 @@
               width="150"
             />
           </div>
+          <section id="foto-lote-panel" class="foto-lote-panel d-none">
+            <div class="foto-lote-head">
+              <h6 class="mb-0">Fotografía del lote</h6>
+              <button
+                type="button"
+                id="foto-lote-cerrar"
+                class="btn btn-sm btn-outline-light"
+              >
+                Cerrar
+              </button>
+            </div>
+            <div class="foto-lote-body">
+              <img id="foto-lote-img" src="" alt="Fotografía del lote" />
+            </div>
+          </section>
           <div id="legenda" class="legend"></div>
           <div id="popup" class="ol-popup">
             <a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -245,7 +260,9 @@
 
           <section id="detalle-lote-panel" class="detalle-lote-panel d-none">
             <div class="detalle-lote-head">
-              <h6 class="mb-0">Detalle de propietarios</h6>
+              <h6 class="mb-0">
+                <i data-feather="info"></i> Detalle de propietarios
+              </h6>
               <button
                 type="button"
                 id="detalle-lote-cerrar"
