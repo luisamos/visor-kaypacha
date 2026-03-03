@@ -58,11 +58,17 @@ const CAPAS_BASE = [
 ];
 
 const DEFINICION_GRUPOS_WMS = {
-  "Límite censal": { id: "limitesCensales", icono: "activity", acciones: [] },
+  "Límite censal": {
+    id: "limitesCensales",
+    icono: "activity",
+    acciones: [],
+    categoria: "Cartografía base",
+  },
   "Predio urbano": {
     id: "prediosUrbanos",
     icono: "map",
     acciones: ["identificar", "descargar"],
+    categoria: "Catastro urbano",
     extrasPorCapa: {
       lote: ["filtro", "buscar"],
       habilitacion_urbana: ["filtro", "buscar"],
@@ -72,18 +78,22 @@ const DEFINICION_GRUPOS_WMS = {
     id: "areasCirulacion",
     icono: "minimize",
     acciones: ["identificar", "buscar", "filtro", "descargar"],
+    titulo: "Áreas de circulación",
+    categoria: "Catastro urbano",
   },
   Reporte: {
     id: "reporteCapas",
     icono: "bar-chart-2",
     acciones: ["filtro"],
     filtroSolo: true,
+    categoria: "Reporte",
   },
   Interoperabilidad: {
     id: "interoperabilidad",
     icono: "repeat",
     acciones: ["identificar"],
     identificarDirecto: true,
+    categoria: "Interoperabilidad",
   },
 };
 
@@ -566,12 +576,17 @@ function renderizarSidebarDinamico(gruposWms) {
     `<li class="nav-item"><a class="nav-link" data-bs-toggle="collapse" href="#capasBase" role="button" aria-expanded="false" aria-controls="capasBase"><i class="link-icon" data-feather="layers"></i><span class="link-title">Capa base</span><i class="link-arrow" data-feather="chevron-down"></i></a><div class="collapse show" id="capasBase"><ul class="nav sub-menu">${CAPAS_BASE.map((capa) => `<li class="nav-item"><div class="mb-2">&nbsp;&nbsp;<input type="radio" class="form-radio-input" name="base" id="${capa.id}" ${capa.checked ? "checked" : ""}/><label class="form-check-label" for="${capa.id}">${capa.titulo}</label></div></li>`).join("")}</ul></div></li>`,
   ];
 
+  let categoriaActual = "Cartografía base";
+
   Object.entries(DEFINICION_GRUPOS_WMS).forEach(([nombreGrupo, definicion]) => {
     const grupo = gruposWms.find((item) => item.nombreGrupo === nombreGrupo);
     if (!grupo || !grupo.capas.length) return;
 
-    if (["Reporte", "Interoperabilidad"].includes(nombreGrupo)) {
-      bloques.push(`<li class="nav-item nav-category">${nombreGrupo}</li>`);
+    if (definicion.categoria && definicion.categoria !== categoriaActual) {
+      bloques.push(
+        `<li class="nav-item nav-category">${definicion.categoria}</li>`,
+      );
+      categoriaActual = definicion.categoria;
     }
 
     const items = grupo.capas
@@ -604,7 +619,7 @@ function renderizarSidebarDinamico(gruposWms) {
       .join("");
 
     bloques.push(
-      `<li class="nav-item"><a class="nav-link" data-bs-toggle="collapse" href="#${definicion.id}" role="button" aria-expanded="false" aria-controls="${definicion.id}"><i class="link-icon" data-feather="${definicion.icono}"></i><span class="link-title">${nombreGrupo}</span><i class="link-arrow" data-feather="chevron-down"></i></a><div class="collapse ${["prediosUrbanos"].includes(definicion.id) ? "show" : ""}" data-bs-parent="#sidebarNav" id="${definicion.id}"><ul class="nav sub-menu">${items}</ul></div></li>`,
+      `<li class="nav-item"><a class="nav-link" data-bs-toggle="collapse" href="#${definicion.id}" role="button" aria-expanded="false" aria-controls="${definicion.id}"><i class="link-icon" data-feather="${definicion.icono}"></i><span class="link-title">${definicion.titulo || nombreGrupo}</span><i class="link-arrow" data-feather="chevron-down"></i></a><div class="collapse ${["prediosUrbanos"].includes(definicion.id) ? "show" : ""}" data-bs-parent="#sidebarNav" id="${definicion.id}"><ul class="nav sub-menu">${items}</ul></div></li>`,
     );
   });
 
