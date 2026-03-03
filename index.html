@@ -567,7 +567,7 @@
           >
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title" id="busquedaViaHabTitulo">
                   <i data-feather="search"></i> Buscar habilitación urbana / eje
                   de vía
                 </h5>
@@ -580,7 +580,7 @@
               </div>
               <div class="modal-body">
                 <div class="mb-3">
-                  <p class="form-label mb-0">
+                  <p class="form-label mb-0" id="busquedaViaHabEtiqueta">
                     <strong>Nombre de habilitación urbana o vía:</strong>
                   </p>
                 </div>
@@ -589,6 +589,7 @@
                     type="text"
                     class="form-control"
                     id="valorViaHab"
+                    maxlength="120"
                     placeholder="Ingresar nombre"
                   />
                 </div>

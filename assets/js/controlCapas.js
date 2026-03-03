@@ -53,11 +53,31 @@ const legendTooltip = legendButton
   : null;
 
 const busquedaLoteModal = document.getElementById("busquedaLote"),
-  busquedaViaHabModal = document.getElementById("busquedaViaHab");
+  busquedaViaHabModal = document.getElementById("busquedaViaHab"),
+  busquedaViaHabTitulo = document.getElementById("busquedaViaHabTitulo"),
+  busquedaViaHabEtiqueta = document.getElementById("busquedaViaHabEtiqueta"),
+  valorViaHabInput = document.getElementById("valorViaHab");
 
 let capaBusquedaLotes = null,
   lotesBusquedaActual = [],
   viasBusquedaActual = [];
+
+const CONFIG_BUSQUEDA_VIA_HAB = {
+  habilitacion_urbana: {
+    titulo: "Buscar habilitación urbana",
+    etiqueta: "Ingrese el nombre de una habilitación urbana:",
+    placeholder: "Ingresar nombre de habilitación urbana",
+    campo: "nomb_hab_urb",
+  },
+  eje_via: {
+    titulo: "Buscar una dirección",
+    etiqueta: "Ingresar el nombre de la calle, avenida, jirón...",
+    placeholder: "Ingresar nombre de calle, avenida, jirón...",
+    campo: "nomb_via",
+  },
+};
+
+let tipoBusquedaViaHabActual = "habilitacion_urbana";
 
 const CAPAS_BASE = [
   { id: "ortofoto", titulo: "Ortofoto", checked: false },
@@ -737,7 +757,11 @@ function construirAccion({ accion, id, nombreWms }) {
       icono: "search",
       texto: "Buscar",
       dataName:
-        id === "lote" ? "blote" : esBusquedaViaHab ? "bViaHab" : `b${id}`,
+        id === "lote"
+          ? "blote"
+          : esBusquedaViaHab
+            ? `bViaHab:${nombreWms}`
+            : `b${id}`,
       modal: esBusquedaViaHab ? "#busquedaViaHab" : "#busquedaLote",
     },
   };
@@ -879,13 +903,33 @@ function procesarAccionCapa(nombre) {
     document.getElementById("tipoColumna").value = "id_lote";
     document.getElementById("valorColumna").value = "";
     mensajeBuscarLote.innerHTML = "";
-  } else if (nombre === "bViaHab") {
-    const valorViaHab = document.getElementById("valorViaHab");
-    if (valorViaHab) {
-      valorViaHab.value = "";
+  } else if (nombre.startsWith("bViaHab")) {
+    const tipoBusqueda = nombre.split(":")[1] || "habilitacion_urbana";
+    tipoBusquedaViaHabActual = CONFIG_BUSQUEDA_VIA_HAB[tipoBusqueda]
+      ? tipoBusqueda
+      : "habilitacion_urbana";
+
+    const configuracion =
+      CONFIG_BUSQUEDA_VIA_HAB[tipoBusquedaViaHabActual] ||
+      CONFIG_BUSQUEDA_VIA_HAB.habilitacion_urbana;
+
+    if (busquedaViaHabTitulo) {
+      busquedaViaHabTitulo.innerHTML = `<i data-feather="search"></i> ${configuracion.titulo}`;
     }
+    if (busquedaViaHabEtiqueta) {
+      busquedaViaHabEtiqueta.innerHTML = `<strong>${configuracion.etiqueta}</strong>`;
+    }
+    if (valorViaHabInput) {
+      valorViaHabInput.value = "";
+      valorViaHabInput.placeholder = configuracion.placeholder;
+    }
+
     if (mensajeBuscarViaHab) {
       mensajeBuscarViaHab.innerHTML = "";
+    }
+
+    if (typeof feather !== "undefined") {
+      feather.replace();
     }
   } else if (nombre.substring(0, 1) === "d") {
     const nombreCapa = nombre.substring(1);
@@ -1105,22 +1149,19 @@ buscarLote.addEventListener("click", function () {
 });
 
 buscarViaHab?.addEventListener("click", function () {
-  const valorViaHab = document.getElementById("valorViaHab");
-  const valorBusqueda = valorViaHab?.value.trim() || "";
+  const valorBusqueda = valorViaHabInput?.value.trim() || "";
+  const configuracion =
+    CONFIG_BUSQUEDA_VIA_HAB[tipoBusquedaViaHabActual] ||
+    CONFIG_BUSQUEDA_VIA_HAB.habilitacion_urbana;
 
   if (!valorBusqueda.length) {
     mensajeBuscarViaHab.innerHTML = `<div class="alert alert-sm alert-warning alert-dismissible fade show" role="alert"><strong>Error!</strong> Ingresar un campo.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
-    valorViaHab?.focus();
+    valorViaHabInput?.focus();
     return;
   }
 
-  Promise.all([
-    buscarEnCapaWfs("habilitacion_urbana", "nomb_hab_urb", valorBusqueda),
-    buscarEnCapaWfs("eje_via", "nomb_via", valorBusqueda),
-  ])
-    .then(([habilitaciones, vias]) => {
-      const resultados = [...habilitaciones, ...vias];
-
+  buscarEnCapaWfs(tipoBusquedaViaHabActual, configuracion.campo, valorBusqueda)
+    .then((resultados) => {
       if (resultados.length > 0) {
         ocultarDetalleLote();
         mensajeBuscarViaHab.innerHTML = "";
@@ -1132,14 +1173,11 @@ buscarViaHab?.addEventListener("click", function () {
         limpiarCapaBusquedaLotes();
         ocultarListadoVias();
         mensajeBuscarViaHab.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se encontró ningun registro.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
-        valorViaHab?.focus();
+        valorViaHabInput?.focus();
       }
     })
     .catch((error) => {
-      console.log(
-        "Error al obtener los datos WFS de vías y habilitaciones:",
-        error,
-      );
+      console.log("Error al obtener los datos WFS de búsqueda:", error);
       mensajeBuscarViaHab.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se pudo realizar la consulta.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
     });
 });
