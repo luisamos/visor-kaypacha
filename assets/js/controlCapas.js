@@ -1102,7 +1102,7 @@ export function obtenerInformacion(e) {
 
   if (!url) return;
 
-  console.log(url);
+  //console.log(url);
   fetch(url)
     .then((response) => response.text())
     .then((data) => {
