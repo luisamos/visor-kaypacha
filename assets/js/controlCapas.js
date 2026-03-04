@@ -456,6 +456,29 @@ function enfocarViaBusqueda(indice) {
   });
 }
 
+function escaparValorFiltroWFS(valor = "") {
+  return valor
+    .replace(/!/g, "!!")
+    .replace(/\*/g, "!*")
+    .replace(/\./g, "!.")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function construirFiltroLikeWFS(campo, valor) {
+  return [
+    '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">',
+    '<ogc:PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false">',
+    `<ogc:PropertyName>${campo}</ogc:PropertyName>`,
+    `<ogc:Literal>*${valor}*</ogc:Literal>`,
+    "</ogc:PropertyIsLike>",
+    "</ogc:Filter>",
+  ].join("");
+}
+
 function buscarEnCapaWFS(tipoCapa, campo, valorBusqueda) {
   const parametrosBusqueda = normalizarBusquedaWFS(
     tipoCapa,
@@ -463,7 +486,7 @@ function buscarEnCapaWFS(tipoCapa, campo, valorBusqueda) {
     valorBusqueda,
   );
 
-  return construirParametrosWfsBusqueda(parametrosBusqueda).then(
+  return construirParametrosWFSBusqueda(parametrosBusqueda).then(
     ({ data, features, totalRegistros }) => ({
       data,
       features,
@@ -477,35 +500,23 @@ function buscarEnCapaWFS(tipoCapa, campo, valorBusqueda) {
   );
 }
 
-function escaparValorFiltroWfs(valor = "") {
-  return valor
-    .replace(/!/g, "!!")
-    .replace(/\*/g, "!*")
-    .replace(/\./g, "!.")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
-function construirParametrosWfsBusqueda(tipoCapa, campo, valorBusqueda) {
+function construirParametrosWFSBusqueda(tipoCapa, campo, valorBusqueda) {
   const parametrosBusqueda = normalizarBusquedaWFS(
     tipoCapa,
     campo,
     valorBusqueda,
   );
-  const valorFiltro = escaparValorFiltroWfs(
+  const valorFiltro = escaparValorFiltroWFS(
     parametrosBusqueda.valorBusqueda.trim(),
   );
 
   const parametros = new URLSearchParams({
     SERVICE: "WFS",
-    VERSION: "2.0.0",
+    VERSION: "1.1.0",
     REQUEST: "GetFeature",
     TYPENAME: parametrosBusqueda.tipoCapa,
     SRSNAME: proyeccion3857,
-    FILTER: `<Filter><PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false"><PropertyName>${parametrosBusqueda.campo}</PropertyName><Literal>*${valorFiltro}*</Literal></PropertyIsLike></Filter>`,
+    FILTER: construirFiltroLikeWFS(parametrosBusqueda.campo, valorFiltro),
     OUTPUTFORMAT: formatoGeoJson,
   });
 
