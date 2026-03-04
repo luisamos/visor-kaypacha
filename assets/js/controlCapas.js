@@ -459,9 +459,9 @@ function enfocarViaBusqueda(indice) {
 
 function escaparValorFiltroWFS(valor = "") {
   return valor
-    .replace(/!/g, "!!")
-    .replace(/\*/g, "!*")
-    .replace(/\?/g, "!?")
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -472,9 +472,9 @@ function escaparValorFiltroWFS(valor = "") {
 function construirFiltroLikeWFS(campo, valor) {
   return [
     '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">',
-    '<ogc:PropertyIsLike wildCard="*" singleChar="?" escapeChar="!" matchCase="false">',
+    '<ogc:PropertyIsLike wildCard="%" singleChar="_" escapeChar="\\" matchCase="false">',
     `<ogc:PropertyName>${campo}</ogc:PropertyName>`,
-    `<ogc:Literal>*${valor}*</ogc:Literal>`,
+    `<ogc:Literal>%${valor}%</ogc:Literal>`,
     "</ogc:PropertyIsLike>",
     "</ogc:Filter>",
   ].join("");
