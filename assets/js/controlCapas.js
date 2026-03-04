@@ -601,21 +601,10 @@ function formatearContenidoPopup(data) {
   if (!data) return "<p>Sin información disponible.</p>";
 
   try {
-    const labelsLote = [
-      "ID lote",
-      "CUC",
-      "Código de sector",
-      "Código de manzana",
-      "Código de lote",
-      "Área gráfica",
-      "Área verificada",
-      "Fotografía",
-      "Ver detalles",
-    ];
-    const autenticado = document.body.classList.contains("usuario-autenticado");
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-    const tabla = doc.querySelector("table");
+    const autenticado = document.body.classList.contains("usuario-autenticado"),
+      parser = new DOMParser(),
+      doc = parser.parseFromString(data, "text/html"),
+      tabla = doc.querySelector("table");
 
     const crearContenedorFilas = () => {
       const contenedor = document.createElement("div");
@@ -624,20 +613,30 @@ function formatearContenidoPopup(data) {
     };
 
     const agregarFilaNormalizada = (contenedor, etiquetaHtml, valorHtml) => {
+      const etiquetaTexto = (etiquetaHtml || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const valorNormalizado = (valorHtml || "").trim();
+      if (!autenticado) {
+        const esEtiquetaDetalles = /ver\s*detalles?/i.test(etiquetaTexto);
+        const valorTmp = document.createElement("span");
+        valorTmp.innerHTML = valorNormalizado;
+        const textoValor = valorTmp.textContent?.trim() || "";
+        const esEnlaceDetalles = /ver\s*detalles?/i.test(textoValor);
+        if (esEtiquetaDetalles || esEnlaceDetalles) return;
+      }
+
       const filaDato = document.createElement("div");
       filaDato.classList.add("popup-lote-row");
 
       const etiqueta = document.createElement("span");
       etiqueta.classList.add("popup-lote-label");
-      etiqueta.textContent =
-        (etiquetaHtml || "")
-          .replace(/<[^>]+>/g, " ")
-          .replace(/\s+/g, " ")
-          .trim() || "-";
+      etiqueta.textContent = etiquetaTexto || "-";
 
       const valor = document.createElement("span");
       valor.classList.add("popup-lote-value");
-      valor.innerHTML = (valorHtml || "").trim() || "-";
+      valor.innerHTML = valorNormalizado || "-";
 
       filaDato.appendChild(etiqueta);
       filaDato.appendChild(valor);
@@ -655,48 +654,6 @@ function formatearContenidoPopup(data) {
           return celdas.length && !fila.closest("thead");
         },
       );
-
-      const esTablaLote = filas.some(
-        (fila) => fila.querySelectorAll("td").length >= labelsLote.length,
-      );
-
-      if (esTablaLote) {
-        const contenedorVertical = crearContenedorFilas();
-
-        filas.forEach((fila) => {
-          const celdas = Array.from(fila.querySelectorAll("td"));
-          if (!celdas.length) return;
-
-          celdas.forEach((celda, indice) => {
-            if (!labelsLote[indice]) return;
-            if (indice === 8 && !autenticado) return;
-
-            const valorHtml = celda.innerHTML.trim();
-            const valorTmp = document.createElement("span");
-            valorTmp.innerHTML = valorHtml;
-
-            const esEnlaceDetalles =
-              indice === 8 &&
-              valorTmp
-                .querySelector('a[href="#"]')
-                ?.textContent?.trim()
-                .toLowerCase()
-                .includes("detalles");
-
-            if (esEnlaceDetalles && !autenticado) return;
-
-            agregarFilaNormalizada(
-              contenedorVertical,
-              labelsLote[indice],
-              valorHtml,
-            );
-          });
-        });
-
-        if (contenedorVertical.childElementCount > 0) {
-          return contenedorVertical.outerHTML;
-        }
-      }
 
       const esTablaClaveValor = filas.every(
         (fila) => fila.querySelectorAll("td").length === 2,
@@ -792,6 +749,21 @@ function actualizarLeyenda() {
   });
 }
 
+const ORDEN_ACCIONES_CAPA = ["identificar", "filtro", "buscar", "descargar"];
+
+function ordenarAccionesCapas(acciones = []) {
+  const prioridad = new Map(
+    ORDEN_ACCIONES_CAPA.map((accion, indice) => [accion, indice]),
+  );
+
+  return [...acciones].sort((accionA, accionB) => {
+    const ordenA = prioridad.get(accionA) ?? Number.MAX_SAFE_INTEGER;
+    const ordenB = prioridad.get(accionB) ?? Number.MAX_SAFE_INTEGER;
+    if (ordenA !== ordenB) return ordenA - ordenB;
+    return accionA.localeCompare(accionB);
+  });
+}
+
 function construirAccion({ accion, id, nombreWms }) {
   const esBusquedaViaHab = ["habilitacion_urbana", "eje_via"].includes(
     nombreWms,
@@ -869,7 +841,9 @@ function renderizarSidebarDinamico(gruposWms) {
           definicion.extrasPorCapa?.[capa.nombreWms] ||
           definicion.extrasPorCapa?.[nombreWmsNormalizado] ||
           [];
-        const acciones = [...new Set([...accionesBase, ...extras])];
+        const acciones = ordenarAccionesCapas([
+          ...new Set([...accionesBase, ...extras]),
+        ]);
         const checked = capa.id === "provincia" || capa.id === "sector";
 
         if (!acciones.length) {
