@@ -214,9 +214,17 @@ function obtenerIdLoteDesdePopup() {
   const filas = Array.from(
     contenido?.querySelectorAll(".popup-lote-row") ?? [],
   );
+  const normalizarEtiqueta = (texto = "") =>
+    texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+
   const filaIdLote = filas.find((fila) => {
     const etiqueta = fila.querySelector(".popup-lote-label")?.textContent ?? "";
-    return etiqueta.trim().toLowerCase() === "id lote";
+    return normalizarEtiqueta(etiqueta) === "id lote";
   });
 
   if (filaIdLote) {
