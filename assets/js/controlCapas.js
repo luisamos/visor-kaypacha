@@ -6,6 +6,7 @@ import {
   proyeccion3857,
   formatoGeoJson,
   formatoTexto,
+  serviciosBasicosConfig,
   fechaHoy,
   buscarCapaId,
   ubigeo,
@@ -79,6 +80,16 @@ const CONFIG_BUSQUEDA_VIA_HAB = {
 };
 
 let tipoBusquedaViaHabActual = "habilitacion_urbana";
+
+const FILTRO_SERVICIO_BASICO = serviciosBasicosConfig.map((item) => ({
+  key: item.key,
+  label: item.label,
+  color: item.color,
+}));
+
+const estadoFiltroServicioBasico = Object.fromEntries(
+  FILTRO_SERVICIO_BASICO.map((item) => [item.key, 1]),
+);
 
 const CAPAS_BASE = [
   { id: "ortofoto", titulo: "Ortofoto", checked: false },
@@ -798,7 +809,7 @@ function construirAccion({ accion, id, nombreWms }) {
       icono: "filter",
       texto: "Filtro",
       dataName: `f${id}`,
-      modal: "#filtroLote",
+      modal: id === "servicioBasico" ? "#filtroServicioBasico" : "#filtroLote",
     },
     buscar: {
       icono: "search",
@@ -948,6 +959,74 @@ function activarCapaBase(id) {
     global.esriModoNoche.setVisible(true);
   }
 }
+
+function sincronizarEstadoFiltroServicioBasicoDesdeUrl(url = "") {
+  const query = (url.split("?")[1] || "").split("#")[0] || "";
+  const params = new URLSearchParams(query);
+
+  FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
+    const valor = params.get(key);
+    if (valor === null) {
+      estadoFiltroServicioBasico[key] = 1;
+      return;
+    }
+    estadoFiltroServicioBasico[key] = valor === "0" ? 0 : 1;
+  });
+}
+
+function construirUrlServicioBasico(baseUrl) {
+  const [urlSinHash, hash] = baseUrl.split("#");
+  const [ruta, query] = urlSinHash.split("?");
+  const params = new URLSearchParams(query || "");
+
+  FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
+    params.set(key, String(estadoFiltroServicioBasico[key] ? 1 : 0));
+  });
+
+  const nuevaUrl = `${ruta}?${params.toString()}`;
+  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
+}
+
+function renderizarOpcionesFiltroServicioBasico() {
+  const contenedor = document.getElementById("filtroServicioBasicoOpciones");
+  if (!contenedor) return;
+
+  const servicioBasico = buscarCapaId("servicioBasico");
+  const urlBase = servicioBasico?.getSource?.()?.getUrl?.();
+  if (urlBase) sincronizarEstadoFiltroServicioBasicoDesdeUrl(urlBase);
+
+  contenedor.innerHTML = FILTRO_SERVICIO_BASICO.map(
+    ({ key, label, color }) =>
+      `<div class="form-check d-flex align-items-center gap-2"><input type="checkbox" id="filtroServicioBasico_${key}" class="form-check-input" ${estadoFiltroServicioBasico[key] ? "checked" : ""} /><label class="form-check-label mb-0" for="filtroServicioBasico_${key}">${label}</label><span class="badge fw-bolder" style="background: ${color}">&nbsp;</span></div>`,
+  ).join("");
+}
+
+function aplicarFiltroServicioBasico() {
+  FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
+    const checkbox = document.getElementById(`filtroServicioBasico_${key}`);
+    if (!checkbox) return;
+    estadoFiltroServicioBasico[key] = checkbox.checked ? 1 : 0;
+  });
+
+  const servicioBasico = buscarCapaId("servicioBasico");
+  if (!servicioBasico) return;
+
+  const source = servicioBasico.getSource();
+  const urlBase = source?.getUrl?.();
+  if (!urlBase) return;
+
+  source.setUrl(construirUrlServicioBasico(urlBase));
+}
+
+renderizarOpcionesFiltroServicioBasico();
+
+document
+  .getElementById("filtrarServicioBasico")
+  ?.addEventListener("click", aplicarFiltroServicioBasico);
+
+document
+  .getElementById("filtroServicioBasico")
+  ?.addEventListener("show.bs.modal", renderizarOpcionesFiltroServicioBasico);
 
 function procesarAccionCapa(nombre) {
   if (!nombre) return;

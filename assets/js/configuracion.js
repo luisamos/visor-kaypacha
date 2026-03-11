@@ -58,6 +58,29 @@ const configuracionPorUbigeo = {
 
 global.activoInformacion;
 
+const SERVICIOS_BASICOS = [
+  { key: "luz", label: "Luz", color: "#00aae4" },
+  { key: "agua", label: "Agua", color: "#6ae1ff" },
+  { key: "telefono", label: "Telefono", color: "#c0c0c4" },
+  { key: "desague", label: "Desague", color: "#593cc5" },
+  { key: "gas", label: "Gas", color: "#eeeec4" },
+  { key: "internet", label: "Internet", color: "#efeeff" },
+  { key: "tvcable", label: "TvCable", color: "#ff9d44" },
+];
+
+function construirLeyendaServicioBasico(servicios = SERVICIOS_BASICOS) {
+  const items = servicios
+    .map(
+      ({ label, color }) =>
+        `<div class="legend-item2"><i style="background:${color}"></i> ${label}</div>`,
+    )
+    .join("\n");
+
+  return `<div class="legend-item"><strong>Servicio básico</strong></div>
+        ${items}
+        <div class="legend-item"></div>`;
+}
+
 export const ubigeo = UBIGEO,
   centroide3857 = xy,
   fichaIndividual = ficha_individual,
@@ -86,6 +109,7 @@ export const ubigeo = UBIGEO,
   formatoJson = "application/json",
   formatoGeoJson = "geojson",
   formatoTexto = "text/html",
+  serviciosBasicosConfig = SERVICIOS_BASICOS.map((item) => ({ ...item })),
   colores = [
     {
       id: "provincia",
@@ -151,14 +175,7 @@ export const ubigeo = UBIGEO,
     },
     {
       id: "servicioBasico",
-      texto: `<div class="legend-item"><strong>Servicio básico</strong></div>
-        <div class="legend-item2"><i style="background:#00aae4"></i> Luz</div>
-        <div class="legend-item2"><i style="background:#6ae1ff"></i> Agua</div>
-        <div class="legend-item2"><i style="background:#593cc5"></i> Desague</div>
-        <div class="legend-item2"><i style="background:#eeeec4"></i> Gas</div>
-        <div class="legend-item2"><i style="background:#efeeff"></i> Internet</div>
-        <div class="legend-item2"><i style="background:#ff9d44"></i> TvCable</div>
-        <div class="legend-item"></div>`,
+      texto: construirLeyendaServicioBasico(serviciosBasicosConfig),
     },
     {
       id: "clasificacionPredio",
