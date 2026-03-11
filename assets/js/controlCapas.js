@@ -1020,13 +1020,29 @@ function aplicarFiltroServicioBasico() {
 
 renderizarOpcionesFiltroServicioBasico();
 
-document
-  .getElementById("filtrarServicioBasico")
-  ?.addEventListener("click", aplicarFiltroServicioBasico);
+function manejarClickFiltrarServicioBasico(event) {
+  event.currentTarget?.blur?.();
+  aplicarFiltroServicioBasico();
+}
 
 document
-  .getElementById("filtroServicioBasico")
-  ?.addEventListener("show.bs.modal", renderizarOpcionesFiltroServicioBasico);
+  .getElementById("filtrarServicioBasico")
+  ?.addEventListener("click", manejarClickFiltrarServicioBasico);
+
+const modalFiltroServicioBasico = document.getElementById(
+  "filtroServicioBasico",
+);
+
+modalFiltroServicioBasico?.addEventListener(
+  "show.bs.modal",
+  renderizarOpcionesFiltroServicioBasico,
+);
+
+modalFiltroServicioBasico?.addEventListener("hide.bs.modal", () => {
+  if (modalFiltroServicioBasico.contains(document.activeElement)) {
+    document.activeElement?.blur?.();
+  }
+});
 
 function procesarAccionCapa(nombre) {
   if (!nombre) return;

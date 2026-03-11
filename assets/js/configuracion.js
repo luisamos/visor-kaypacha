@@ -218,12 +218,10 @@ export function fechaHoy() {
 }
 
 export function buscarCapaId(id) {
-  return (
-    global.mapa
-      .getLayers()
-      .getArray()
-      .find((layer) => layer.get("id") === id) || null
-  );
+  const capas = global?.mapa?.getLayers?.()?.getArray?.();
+  if (!Array.isArray(capas)) return null;
+
+  return capas.find((layer) => layer.get("id") === id) || null;
 }
 
 export function mostrarToast(mensaje, color = "primary") {
