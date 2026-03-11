@@ -44,10 +44,13 @@ const legendDiv = document.getElementById("legenda"),
   listadoViasPanel = document.getElementById("listado-vias-panel"),
   listadoViasBody = document.getElementById("listado-vias-body"),
   listadoViasCerrar = document.getElementById("listado-vias-cerrar"),
-  popupCloser = document.getElementById("popup-closer"),
+  //popupCloser = document.getElementById("popup-closer"),
   fotoLotePanel = document.getElementById("foto-lote-panel"),
   fotoLoteImg = document.getElementById("foto-lote-img"),
   fotoLoteCerrar = document.getElementById("foto-lote-cerrar"),
+  reporteServiciosPanel = document.getElementById("reporte-servicios-panel"),
+  reporteServiciosBody = document.getElementById("reporte-servicios-body"),
+  reporteServiciosCerrar = document.getElementById("reporte-servicios-cerrar"),
   popupTitle = document.querySelector("#popup .popup-title");
 
 const legendTooltip = legendButton
@@ -89,6 +92,15 @@ const FILTRO_SERVICIO_BASICO = serviciosBasicosConfig.map((item) => ({
 
 const estadoFiltroServicioBasico = Object.fromEntries(
   FILTRO_SERVICIO_BASICO.map((item) => [item.key, 1]),
+);
+
+const CAMPOS_SERVICIO_BASICO = FILTRO_SERVICIO_BASICO.map(
+  ({ key, label, color }) => ({
+    label,
+    color,
+    campoCon: `predios_con_${key}`,
+    campoSin: `predios_sin_${key}`,
+  }),
 );
 
 const CAPAS_BASE = [
@@ -269,6 +281,88 @@ function ocultarFotoLote() {
     fotoLoteImg.removeAttribute("src");
   }
   fotoLotePanel?.classList.add("d-none");
+}
+
+function ocultarReporteServiciosBasicos() {
+  if (reporteServiciosBody) {
+    reporteServiciosBody.innerHTML = "";
+  }
+  reporteServiciosPanel?.classList.add("d-none");
+}
+
+function toNumero(valor) {
+  const numero = Number.parseInt(valor, 10);
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function construirTablaReporteServicio(feature = {}) {
+  const propiedades = feature.properties || {};
+  const codSector = propiedades.cod_sector || "-";
+
+  const filas = CAMPOS_SERVICIO_BASICO.map(
+    ({ label, color, campoCon, campoSin }) => `<tr>
+      <td><span class="reporte-servicios-color" style="background:${color}"></span>${label}</td>
+      <td class="text-end">${toNumero(propiedades.total_predios)}</td>
+      <td class="text-end">${toNumero(propiedades[campoCon])}</td>
+      <td class="text-end">${toNumero(propiedades[campoSin])}</td>
+    </tr>`,
+  ).join("");
+
+  return `<div class="reporte-servicios-sector">
+    <div class="reporte-servicios-sector-title">Sector ${codSector}</div>
+    <div class="table-responsive reporte-servicios-table-wrapper">
+      <table class="table table-sm mb-0 reporte-servicios-table">
+        <thead>
+          <tr>
+            <th>Servicio</th>
+            <th class="text-end">Total predios</th>
+            <th class="text-end">Con servicio</th>
+            <th class="text-end">Sin servicio</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function mostrarReporteServiciosBasicos(data = {}) {
+  if (!reporteServiciosPanel || !reporteServiciosBody) return;
+
+  const features = Array.isArray(data.features) ? data.features : [];
+  if (!features.length) {
+    reporteServiciosBody.innerHTML =
+      '<p class="mb-0 small">No se encontraron estadísticas para servicio básico.</p>';
+    reporteServiciosPanel.classList.remove("d-none");
+    return;
+  }
+
+  reporteServiciosBody.innerHTML = features
+    .map(construirTablaReporteServicio)
+    .join("");
+  reporteServiciosPanel.classList.remove("d-none");
+}
+
+async function cargarReporteServiciosBasicos() {
+  try {
+    const url =
+      `${direccionServicioWFS}` +
+      "version=1.1.0&SERVICE=WFS&REQUEST=GetFeature&TYPENAME=servicio_basico&outputFormat=geojson";
+    const respuesta = await fetch(url);
+
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP ${respuesta.status}`);
+    }
+
+    const data = await respuesta.json();
+    mostrarReporteServiciosBasicos(data);
+  } catch (error) {
+    ocultarReporteServiciosBasicos();
+    mostrarToast(
+      "No se pudo obtener el reporte de servicio básico.",
+      "warning",
+    );
+  }
 }
 
 function mostrarFotoLote(urlFoto) {
@@ -1120,6 +1214,15 @@ sidebarNav?.addEventListener("click", (event) => {
     activarBoton(checkbox.id, checkbox.checked);
   }
   capaTematica?.setVisible(checkbox.checked);
+
+  if (checkbox.id === "servicioBasico") {
+    if (checkbox.checked) {
+      cargarReporteServiciosBasicos();
+    } else {
+      ocultarReporteServiciosBasicos();
+    }
+  }
+
   actualizarLeyenda();
 });
 
@@ -1135,6 +1238,10 @@ listadoLoteCerrar?.addEventListener("click", () => {
 
 fotoLoteCerrar?.addEventListener("click", () => {
   ocultarFotoLote();
+});
+
+reporteServiciosCerrar?.addEventListener("click", () => {
+  ocultarReporteServiciosBasicos();
 });
 
 contenido?.addEventListener("click", (event) => {
