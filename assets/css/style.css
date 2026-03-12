@@ -156,11 +156,16 @@ body {
   background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: calc(var(--bs-modal-inner-border-radius) - 1px) calc(var(--bs-modal-inner-border-radius) - 1px) 0 0;
+  padding: 0.5rem 1rem;
+  min-height: auto;
 }
 
 .modal-header-gradient .modal-title {
   color: #ffffff;
-  font-size: 15px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
 }
 
 /* X close button on gradient panel headers */
@@ -203,7 +208,8 @@ body {
   color: #ffffff;
   background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
   border: none;
-  border-radius: 0;
+  /* Round only the top corners to match the popup border-radius */
+  border-radius: 13px 13px 0 0;
   padding: 0.5rem 2.2rem 0.5rem 0.85rem;
   margin-bottom: 0;
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
@@ -247,7 +253,8 @@ body {
   min-width: 350px;
   font-size: 12px;
   backdrop-filter: blur(4px);
-  overflow: hidden;
+  /* overflow must stay visible so the triangle arrow pseudo-elements show */
+  overflow: visible;
 }
 
 [data-bs-theme="dark"] .ol-popup {
@@ -274,7 +281,7 @@ body {
 .ol-popup::after {
   margin-top: -1px;
   border-width: 10px 10px 0 10px;
-  border-color: var(--popup-bg) transparent transparent transparent;
+  border-color: var(--bs-card-bg, #ffffff) transparent transparent transparent;
 }
 
 .ol-popup-closer {
