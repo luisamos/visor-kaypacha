@@ -78,7 +78,7 @@ body {
 }
 
 #popup-content {
-  max-height: 320px;
+  max-height: 390px;
   overflow-y: auto;
   color: var(--popup-text);
   scrollbar-width: thin;
