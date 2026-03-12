@@ -150,6 +150,38 @@ body {
   margin-top: 0;
 }
 
+/* Gradient modal header — matches panel headers */
+.modal-header-gradient {
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: calc(var(--bs-modal-inner-border-radius) - 1px) calc(var(--bs-modal-inner-border-radius) - 1px) 0 0;
+}
+
+.modal-header-gradient .modal-title {
+  color: #ffffff;
+  font-size: 15px;
+}
+
+/* X close button on gradient panel headers */
+.btn-close-panel {
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.btn-close-panel:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+/* Remove old Cerrar button overrides that are no longer needed */
+.reporte-servicios-head .btn-outline-light,
+.foto-lote-head .btn-outline-light,
+.detalle-lote-head .btn-outline-light {
+  display: none;
+}
+
 #popup-content table tr {
   border-bottom: 1px dashed
     color-mix(in srgb, var(--popup-border) 70%, transparent);
@@ -519,17 +551,33 @@ body {
   border-top: 1px solid color-mix(in srgb, var(--detalle-panel-border) 55%, transparent);
 }
 
+.reporte-servicios-sector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
 .reporte-servicios-sector-title {
   font-weight: 700;
   font-size: 0.85rem;
-  margin-bottom: 0.5rem;
   color: var(--brand-accent);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
+.btn-xs {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .reporte-servicios-chart {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .reporte-servicios-table {

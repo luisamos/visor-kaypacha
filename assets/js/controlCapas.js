@@ -304,6 +304,31 @@ function obtenerServiciosFiltrados() {
   );
 }
 
+function exportarCsvSector(codSector, propiedades, serviciosFiltrados) {
+  const encabezado = "Sector,Servicio,Total Predios,Con Servicio,Sin Servicio";
+  const filas = serviciosFiltrados.map(
+    ({ label, campoCon, campoSin }) =>
+      [
+        codSector,
+        label,
+        toNumero(propiedades.total_predios),
+        toNumero(propiedades[campoCon]),
+        toNumero(propiedades[campoSin]),
+      ].join(","),
+  );
+
+  const csv = [encabezado, ...filas].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `reporte_servicios_sector_${codSector}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function construirHtmlSector(feature = {}) {
   const propiedades = feature.properties || {};
   const codSector = propiedades.cod_sector || "-";
@@ -311,41 +336,26 @@ function construirHtmlSector(feature = {}) {
 
   const serviciosFiltrados = obtenerServiciosFiltrados();
 
-  const filas = serviciosFiltrados
-    .map(
-      ({ label, color, campoCon, campoSin }) => `<tr>
-      <td><span class="reporte-servicios-color" style="background:${color}"></span>${label}</td>
-      <td class="text-end">${toNumero(propiedades.total_predios)}</td>
-      <td class="text-end">${toNumero(propiedades[campoCon])}</td>
-      <td class="text-end">${toNumero(propiedades[campoSin])}</td>
-    </tr>`,
-    )
-    .join("");
-
   return {
     sectorId,
     codSector,
     propiedades,
     serviciosFiltrados,
     html: `<div class="reporte-servicios-sector">
-    <div class="reporte-servicios-sector-title">Sector ${codSector}</div>
-    <div id="${sectorId}" class="reporte-servicios-chart"></div>
-    <div class="table-responsive reporte-servicios-table-wrapper">
-      <table class="table table-sm mb-0 reporte-servicios-table">
-        <thead>
-          <tr>
-            <th>Servicio</th>
-            <th class="text-end">Total predios</th>
-            <th class="text-end">Con servicio</th>
-            <th class="text-end">Sin servicio</th>
-          </tr>
-        </thead>
-        <tbody>${filas}</tbody>
-      </table>
+    <div class="reporte-servicios-sector-header">
+      <div class="reporte-servicios-sector-title">Sector ${codSector}</div>
+      <button class="btn btn-outline-secondary btn-xs reporte-csv-btn" data-sector="${codSector}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
     </div>
+    <div id="${sectorId}" class="reporte-servicios-chart"></div>
   </div>`,
   };
 }
+
+// Neutral color for "Sin servicio" bars
+const COLOR_SIN_SERVICIO = "#64748b";
 
 function inicializarGraficasSectores(sectores) {
   graficasReporte.forEach((chart) => {
@@ -364,18 +374,26 @@ function inicializarGraficasSectores(sectores) {
     const el = document.getElementById(sectorId);
     if (!el || !serviciosFiltrados.length) return;
 
-    const categorias = serviciosFiltrados.map((s) => s.label);
-    const conServicio = serviciosFiltrados.map((s) =>
-      toNumero(propiedades[s.campoCon]),
-    );
-    const sinServicio = serviciosFiltrados.map((s) =>
-      toNumero(propiedades[s.campoSin]),
-    );
+    // "Con servicio" — each data point uses the service's own legend color
+    const dataCon = serviciosFiltrados.map((s) => ({
+      x: s.label,
+      y: toNumero(propiedades[s.campoCon]),
+      fillColor: s.color,
+      strokeColor: s.color,
+    }));
+
+    // "Sin servicio" — neutral gray for all bars
+    const dataSin = serviciosFiltrados.map((s) => ({
+      x: s.label,
+      y: toNumero(propiedades[s.campoSin]),
+      fillColor: COLOR_SIN_SERVICIO,
+      strokeColor: COLOR_SIN_SERVICIO,
+    }));
 
     const chart = new ApexCharts(el, {
       chart: {
         type: "bar",
-        height: 180,
+        height: 190,
         toolbar: { show: false },
         background: "transparent",
         foreColor: textColor,
@@ -383,19 +401,24 @@ function inicializarGraficasSectores(sectores) {
       },
       theme: { mode: isDark ? "dark" : "light" },
       series: [
-        { name: "Con servicio", data: conServicio },
-        { name: "Sin servicio", data: sinServicio },
+        { name: "Con servicio", data: dataCon },
+        { name: "Sin servicio", data: dataSin },
       ],
       xaxis: {
-        categories: categorias,
+        type: "category",
         labels: { style: { fontSize: "10px", colors: textColor } },
         axisBorder: { color: gridColor },
         axisTicks: { color: gridColor },
       },
       yaxis: { labels: { style: { fontSize: "10px", colors: textColor } } },
-      colors: ["#2a58c7", "#ff4d4f"],
+      // colors array is overridden per-point via fillColor, but still required
+      colors: serviciosFiltrados.map((s) => s.color).concat([COLOR_SIN_SERVICIO]),
       plotOptions: {
-        bar: { borderRadius: 3, columnWidth: "55%", dataLabels: { position: "top" } },
+        bar: {
+          borderRadius: 3,
+          columnWidth: "55%",
+          dataLabels: { position: "top" },
+        },
       },
       dataLabels: {
         enabled: true,
@@ -407,6 +430,10 @@ function inicializarGraficasSectores(sectores) {
         position: "top",
         fontSize: "11px",
         labels: { colors: textColor },
+        markers: {
+          // Show first marker as gradient (representative), second as gray
+          fillColors: ["#4d6bff", COLOR_SIN_SERVICIO],
+        },
       },
       tooltip: { theme: isDark ? "dark" : "light" },
       grid: { borderColor: gridColor, strokeDashArray: 3 },
@@ -433,6 +460,17 @@ function mostrarReporteServiciosBasicos(data = {}) {
 
   // Render charts after DOM update
   requestAnimationFrame(() => inicializarGraficasSectores(sectores));
+
+  // Wire CSV export buttons
+  reporteServiciosBody.querySelectorAll(".reporte-csv-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const codSector = btn.dataset.sector;
+      const sector = sectores.find((s) => String(s.codSector) === codSector);
+      if (sector) {
+        exportarCsvSector(sector.codSector, sector.propiedades, sector.serviciosFiltrados);
+      }
+    });
+  });
 }
 
 async function cargarReporteServiciosBasicos() {
