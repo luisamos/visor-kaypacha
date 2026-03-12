@@ -440,10 +440,11 @@ function inicializarGraficasSectores(sectores) {
         position: "top",
         fontSize: "11px",
         labels: { colors: textColor },
-        markers: {
-          // Show first marker as gradient (representative), second as gray
-          fillColors: ["#4d6bff", COLOR_SIN_SERVICIO],
-        },
+        // Hide "Con servicio" — bar colors already identify each service.
+        // Only keep "Sin servicio" so the gray bars are labelled.
+        showForSingleSeries: false,
+        customLegendItems: ["Sin servicio"],
+        markers: { fillColors: [COLOR_SIN_SERVICIO] },
       },
       tooltip: { theme: isDark ? "dark" : "light" },
       grid: { borderColor: gridColor, strokeDashArray: 3 },
