@@ -17,6 +17,7 @@ import {
   proyeccion4326,
 } from "./configuracion";
 import { registrarCapaWmsDinamica } from "./capasGeograficas";
+import ApexCharts from "apexcharts";
 
 import { Modal, Tooltip } from "bootstrap";
 import ImageWMS from "ol/source/ImageWMS";
@@ -65,7 +66,9 @@ const busquedaLoteModal = document.getElementById("busquedaLote"),
 
 let capaBusqueda = null,
   lotesBusquedaActual = [],
-  viasBusquedaActual = [];
+  viasBusquedaActual = [],
+  ultimosDatosReporteServicio = null,
+  graficasReporte = [];
 
 const CONFIG_BUSQUEDA_VIA_HAB = {
   habilitacion_urbana: {
@@ -295,21 +298,38 @@ function toNumero(valor) {
   return Number.isFinite(numero) ? numero : 0;
 }
 
-function construirTablaReporteServicio(feature = {}) {
+function obtenerServiciosFiltrados() {
+  return CAMPOS_SERVICIO_BASICO.filter(
+    ({ key }) => estadoFiltroServicioBasico[key] !== 0,
+  );
+}
+
+function construirHtmlSector(feature = {}) {
   const propiedades = feature.properties || {};
   const codSector = propiedades.cod_sector || "-";
+  const sectorId = `sector-chart-${String(codSector).replace(/\s+/g, "-")}`;
 
-  const filas = CAMPOS_SERVICIO_BASICO.map(
-    ({ label, color, campoCon, campoSin }) => `<tr>
+  const serviciosFiltrados = obtenerServiciosFiltrados();
+
+  const filas = serviciosFiltrados
+    .map(
+      ({ label, color, campoCon, campoSin }) => `<tr>
       <td><span class="reporte-servicios-color" style="background:${color}"></span>${label}</td>
       <td class="text-end">${toNumero(propiedades.total_predios)}</td>
       <td class="text-end">${toNumero(propiedades[campoCon])}</td>
       <td class="text-end">${toNumero(propiedades[campoSin])}</td>
     </tr>`,
-  ).join("");
+    )
+    .join("");
 
-  return `<div class="reporte-servicios-sector">
+  return {
+    sectorId,
+    codSector,
+    propiedades,
+    serviciosFiltrados,
+    html: `<div class="reporte-servicios-sector">
     <div class="reporte-servicios-sector-title">Sector ${codSector}</div>
+    <div id="${sectorId}" class="reporte-servicios-chart"></div>
     <div class="table-responsive reporte-servicios-table-wrapper">
       <table class="table table-sm mb-0 reporte-servicios-table">
         <thead>
@@ -323,7 +343,77 @@ function construirTablaReporteServicio(feature = {}) {
         <tbody>${filas}</tbody>
       </table>
     </div>
-  </div>`;
+  </div>`,
+  };
+}
+
+function inicializarGraficasSectores(sectores) {
+  graficasReporte.forEach((chart) => {
+    try {
+      chart.destroy();
+    } catch (_) {}
+  });
+  graficasReporte = [];
+
+  const isDark =
+    document.documentElement.getAttribute("data-bs-theme") === "dark";
+  const textColor = isDark ? "#e6ebff" : "#1f2a44";
+  const gridColor = isDark ? "rgba(124,160,255,0.15)" : "rgba(31,42,68,0.1)";
+
+  sectores.forEach(({ sectorId, propiedades, serviciosFiltrados }) => {
+    const el = document.getElementById(sectorId);
+    if (!el || !serviciosFiltrados.length) return;
+
+    const categorias = serviciosFiltrados.map((s) => s.label);
+    const conServicio = serviciosFiltrados.map((s) =>
+      toNumero(propiedades[s.campoCon]),
+    );
+    const sinServicio = serviciosFiltrados.map((s) =>
+      toNumero(propiedades[s.campoSin]),
+    );
+
+    const chart = new ApexCharts(el, {
+      chart: {
+        type: "bar",
+        height: 180,
+        toolbar: { show: false },
+        background: "transparent",
+        foreColor: textColor,
+        animations: { enabled: true, speed: 400 },
+      },
+      theme: { mode: isDark ? "dark" : "light" },
+      series: [
+        { name: "Con servicio", data: conServicio },
+        { name: "Sin servicio", data: sinServicio },
+      ],
+      xaxis: {
+        categories: categorias,
+        labels: { style: { fontSize: "10px", colors: textColor } },
+        axisBorder: { color: gridColor },
+        axisTicks: { color: gridColor },
+      },
+      yaxis: { labels: { style: { fontSize: "10px", colors: textColor } } },
+      colors: ["#2a58c7", "#ff4d4f"],
+      plotOptions: {
+        bar: { borderRadius: 3, columnWidth: "55%", dataLabels: { position: "top" } },
+      },
+      dataLabels: {
+        enabled: true,
+        offsetY: -16,
+        style: { fontSize: "9px", colors: [textColor] },
+        formatter: (val) => (val > 0 ? val : ""),
+      },
+      legend: {
+        position: "top",
+        fontSize: "11px",
+        labels: { colors: textColor },
+      },
+      tooltip: { theme: isDark ? "dark" : "light" },
+      grid: { borderColor: gridColor, strokeDashArray: 3 },
+    });
+    chart.render();
+    graficasReporte.push(chart);
+  });
 }
 
 function mostrarReporteServiciosBasicos(data = {}) {
@@ -337,10 +427,12 @@ function mostrarReporteServiciosBasicos(data = {}) {
     return;
   }
 
-  reporteServiciosBody.innerHTML = features
-    .map(construirTablaReporteServicio)
-    .join("");
+  const sectores = features.map(construirHtmlSector);
+  reporteServiciosBody.innerHTML = sectores.map((s) => s.html).join("");
   reporteServiciosPanel.classList.remove("d-none");
+
+  // Render charts after DOM update
+  requestAnimationFrame(() => inicializarGraficasSectores(sectores));
 }
 
 async function cargarReporteServiciosBasicos() {
@@ -355,6 +447,7 @@ async function cargarReporteServiciosBasicos() {
     }
 
     const data = await respuesta.json();
+    ultimosDatosReporteServicio = data;
     mostrarReporteServiciosBasicos(data);
   } catch (error) {
     ocultarReporteServiciosBasicos();
@@ -1110,6 +1203,11 @@ function aplicarFiltroServicioBasico() {
   if (!urlBase) return;
 
   source.setUrl(construirUrlServicioBasico(urlBase));
+
+  // Refresh report charts respecting new filter state
+  if (ultimosDatosReporteServicio && !reporteServiciosPanel?.classList.contains("d-none")) {
+    mostrarReporteServiciosBasicos(ultimosDatosReporteServicio);
+  }
 }
 
 renderizarOpcionesFiltroServicioBasico();

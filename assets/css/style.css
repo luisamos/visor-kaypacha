@@ -307,21 +307,47 @@ body {
   transform: translateX(-50%);
   width: min(900px, calc(100% - 40px));
   z-index: 1000;
-  background: var(--detalle-panel-bg);
+  background-color: var(--bs-card-bg, #ffffff);
   color: var(--detalle-panel-text);
-  border: 1px solid var(--detalle-panel-border);
+  border: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
   border-radius: 14px;
-  box-shadow: 0 14px 30px rgba(6, 12, 40, 0.45);
+  box-shadow: 0 12px 32px rgba(13, 27, 111, 0.2);
   backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+[data-bs-theme="dark"] .detalle-lote-panel {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
 }
 
 .detalle-lote-head {
-  padding: 0.65rem 0.85rem;
+  padding: 0.5rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--detalle-panel-border) 75%, transparent);
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
+  color: #ffffff;
+  border-radius: 14px 14px 0 0;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  cursor: grab;
+}
+
+.detalle-lote-head h6 {
+  color: #ffffff;
+}
+
+.detalle-lote-head .btn-outline-light {
+  filter: brightness(0) invert(1);
+  border: none;
+  background: transparent;
+  opacity: 0.9;
+  font-size: 12px;
+  padding: 0.2rem 0.5rem;
+}
+
+.detalle-lote-head .btn-outline-light:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .detalle-lote-table-wrapper {
@@ -363,21 +389,47 @@ body {
   right: 60px;
   width: min(360px, calc(100vw - 20px));
   z-index: 1000;
-  background: var(--detalle-panel-bg);
+  background-color: var(--bs-card-bg, #ffffff);
   color: var(--detalle-panel-text);
-  border: 1px solid var(--detalle-panel-border);
+  border: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
   border-radius: 14px;
-  box-shadow: 0 14px 30px rgba(6, 12, 40, 0.45);
+  box-shadow: 0 12px 32px rgba(13, 27, 111, 0.2);
   backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+[data-bs-theme="dark"] .foto-lote-panel {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
 }
 
 .foto-lote-head {
-  padding: 0.65rem 0.85rem;
+  padding: 0.5rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--detalle-panel-border) 75%, transparent);
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
+  color: #ffffff;
+  border-radius: 14px 14px 0 0;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  cursor: grab;
+}
+
+.foto-lote-head h6 {
+  color: #ffffff;
+}
+
+.foto-lote-head .btn-outline-light {
+  filter: brightness(0) invert(1);
+  border: none;
+  background: transparent;
+  opacity: 0.9;
+  font-size: 12px;
+  padding: 0.2rem 0.5rem;
+}
+
+.foto-lote-head .btn-outline-light:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .foto-lote-body {
@@ -397,39 +449,87 @@ body {
   top: 100px;
   right: 440px;
   width: min(520px, calc(100vw - 30px));
-  max-height: min(70vh, 620px);
+  max-height: min(75vh, 640px);
   z-index: 1000;
-  background: var(--detalle-panel-bg);
+  background-color: var(--bs-card-bg, #ffffff);
   color: var(--detalle-panel-text);
-  border: 1px solid var(--detalle-panel-border);
+  border: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
   border-radius: 14px;
-  box-shadow: 0 14px 30px rgba(6, 12, 40, 0.45);
+  box-shadow: 0 12px 32px rgba(13, 27, 111, 0.2);
   backdrop-filter: blur(4px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .reporte-servicios-panel {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
 }
 
 .reporte-servicios-head {
-  padding: 0.65rem 0.85rem;
+  padding: 0.5rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--detalle-panel-border) 75%, transparent);
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
+  color: #ffffff;
+  border: 1px solid var(--bs-border-color, #d6dae2);
+  border-bottom: 1px solid var(--bs-border-color, #c7ccd6);
+  border-radius: 14px 14px 0 0;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  cursor: grab;
+}
+
+[data-bs-theme="dark"] .reporte-servicios-head {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.reporte-servicios-head h6 {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.reporte-servicios-head .btn-outline-light {
+  filter: brightness(0) invert(1);
+  border: none;
+  background: transparent;
+  opacity: 0.9;
+  font-size: 12px;
+  padding: 0.2rem 0.5rem;
+}
+
+.reporte-servicios-head .btn-outline-light:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .reporte-servicios-body {
-  padding: 0.7rem;
+  padding: 0.75rem;
   overflow: auto;
+  flex: 1 1 auto;
 }
 
 .reporte-servicios-sector + .reporte-servicios-sector {
-  margin-top: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--detalle-panel-border) 55%, transparent);
 }
 
 .reporte-servicios-sector-title {
   font-weight: 700;
-  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--brand-accent);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.reporte-servicios-chart {
+  margin-bottom: 0.5rem;
 }
 
 .reporte-servicios-table {
@@ -873,6 +973,11 @@ body.sidebar-open .legend {
   border-bottom: 1px solid var(--bs-border-color, #c7ccd6);
   border-radius: 14px 14px 12px 12px;
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  cursor: grab;
+}
+
+.panel-header:active {
+  cursor: grabbing;
 }
 
 [data-bs-theme="dark"] .panel-header {

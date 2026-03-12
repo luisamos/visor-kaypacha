@@ -127,6 +127,10 @@ import "./assets/js/controlUbicarCoordenadas";
 // 8. Control de  Obtener ubicación
 registrarOverlayCoordenadas();
 
+// 10. Paneles arrastrables
+import { initDraggablePanels } from "./assets/js/draggable";
+initDraggablePanels();
+
 // 9. Control de carga inicial
 const loadingScreen = document.getElementById("loading-screen");
 global.mapa.once("rendercomplete", function () {
