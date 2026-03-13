@@ -129,7 +129,7 @@ const DEFINICION_GRUPOS_WMS = {
     categoria: "Catastro urbano",
     extrasPorCapa: {
       lote: ["filtro", "buscar"],
-      habilitacion_urbana: ["filtro", "buscar"],
+      habilitacion_urbana: ["buscar"],
     },
   },
   "Área de circulación": {
@@ -307,15 +307,14 @@ function obtenerServiciosFiltrados() {
 
 function exportarCsvSector(codSector, propiedades, serviciosFiltrados) {
   const encabezado = "Sector,Servicio,Total Predios,Con Servicio,Sin Servicio";
-  const filas = serviciosFiltrados.map(
-    ({ label, campoCon, campoSin }) =>
-      [
-        codSector,
-        label,
-        toNumero(propiedades.total_predios),
-        toNumero(propiedades[campoCon]),
-        toNumero(propiedades[campoSin]),
-      ].join(","),
+  const filas = serviciosFiltrados.map(({ label, campoCon, campoSin }) =>
+    [
+      codSector,
+      label,
+      toNumero(propiedades.total_predios),
+      toNumero(propiedades[campoCon]),
+      toNumero(propiedades[campoSin]),
+    ].join(","),
   );
 
   const csv = [encabezado, ...filas].join("\n");
@@ -344,7 +343,8 @@ function construirHtmlSector(feature = {}) {
       ? toNumero(propiedades[CAMPOS_SERVICIO_BASICO[0].campoCon]) +
         toNumero(propiedades[CAMPOS_SERVICIO_BASICO[0].campoSin])
       : 0);
-  const totalLabel = totalPredios > 0 ? ` — ${totalPredios.toLocaleString("es-PE")} lotes` : "";
+  const totalLabel =
+    totalPredios > 0 ? ` — ${totalPredios.toLocaleString("es-PE")} lotes` : "";
 
   return {
     sectorId,
@@ -422,7 +422,9 @@ function inicializarGraficasSectores(sectores) {
       },
       yaxis: { labels: { style: { fontSize: "10px", colors: textColor } } },
       // colors array is overridden per-point via fillColor, but still required
-      colors: serviciosFiltrados.map((s) => s.color).concat([COLOR_SIN_SERVICIO]),
+      colors: serviciosFiltrados
+        .map((s) => s.color)
+        .concat([COLOR_SIN_SERVICIO]),
       plotOptions: {
         bar: {
           borderRadius: 3,
@@ -478,7 +480,11 @@ function mostrarReporteServiciosBasicos(data = {}) {
       const codSector = btn.dataset.sector;
       const sector = sectores.find((s) => String(s.codSector) === codSector);
       if (sector) {
-        exportarCsvSector(sector.codSector, sector.propiedades, sector.serviciosFiltrados);
+        exportarCsvSector(
+          sector.codSector,
+          sector.propiedades,
+          sector.serviciosFiltrados,
+        );
       }
     });
   });
@@ -633,7 +639,7 @@ function renderizarListadoLotes(data) {
       const propiedades = feature.properties || {};
       const fotoLote = propiedades.foto_lote || "";
       const foto = fotoLote
-        ? `<a href="${rutaFotografia}/${fotoLote}" target="_blank" rel="noopener noreferrer">Ver</a>`
+        ? `<button type="button" class="btn btn-link btn-sm p-0" data-foto-lote="${rutaFotografia}/${fotoLote}">Ver</button>`
         : "-";
 
       return `<tr>
@@ -653,7 +659,33 @@ function renderizarListadoLotes(data) {
   listadoLotePanel.classList.remove("d-none");
 }
 
-function renderizarListadoVias(resultados) {
+function configurarCabeceraListadoVias(tipoBusqueda = "habilitacion_urbana") {
+  const head = document.getElementById("listado-vias-head");
+  if (!head) return;
+
+  if (tipoBusqueda === "eje_via") {
+    head.innerHTML = `<tr>
+      <th>Código</th>
+      <th>Nombre</th>
+      <th>Perímetro (m2)</th>
+      <th>Acción</th>
+    </tr>`;
+    return;
+  }
+
+  head.innerHTML = `<tr>
+    <th>Tipo</th>
+    <th>Nombre</th>
+    <th>Superficie (m2)</th>
+    <th>Perímetro (m2)</th>
+    <th>Acción</th>
+  </tr>`;
+}
+
+function renderizarListadoVias(
+  resultados,
+  tipoBusqueda = "habilitacion_urbana",
+) {
   ocultarListadoLotes();
   if (!listadoViasBody || !listadoViasPanel) return;
 
@@ -662,16 +694,29 @@ function renderizarListadoVias(resultados) {
     return;
   }
 
+  configurarCabeceraListadoVias(tipoBusqueda);
   viasBusquedaActual = resultados;
 
   listadoViasBody.innerHTML = resultados
-    .map(({ tipo, nombre, feature }, index) => {
-      const etiqueta =
-        tipo === "habilitacion_urbana" ? "Habilitación urbana" : "Eje de vía";
+    .map(({ nombre, feature }, index) => {
+      const propiedades = feature?.properties || {};
       const nombreResultado = nombre || feature?.id || "-";
 
+      if (tipoBusqueda === "eje_via") {
+        return `<tr>
+          <td>${propiedades.cod_via || "-"}</td>
+          <td>${nombreResultado}</td>
+          <td>${propiedades.peri_grafi || "-"}</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-primary" data-indice-via="${index}" title="Acercarse" aria-label="Acercarse">
+              <i class="icon feather icon-search"></i>
+            </button>
+          </td>
+        </tr>`;
+      }
+
       return `<tr>
-        <td>${etiqueta}</td>
+         <td>${propiedades.tipo_hab_urb || "Habilitación urbana"}</td>
         <td>${nombreResultado}</td>
         <td>
           <button type="button" class="btn btn-sm btn-primary" data-indice-via="${index}" title="Acercarse" aria-label="Acercarse">
@@ -1254,7 +1299,10 @@ function aplicarFiltroServicioBasico() {
   source.setUrl(construirUrlServicioBasico(urlBase));
 
   // Refresh report charts respecting new filter state
-  if (ultimosDatosReporteServicio && !reporteServiciosPanel?.classList.contains("d-none")) {
+  if (
+    ultimosDatosReporteServicio &&
+    !reporteServiciosPanel?.classList.contains("d-none")
+  ) {
     mostrarReporteServiciosBasicos(ultimosDatosReporteServicio);
   }
 }
@@ -1558,7 +1606,7 @@ buscarViaHab?.addEventListener("click", function () {
       if (totalRegistros > 0) {
         ocultarDetalleLote();
         mensajeBuscarViaHab.innerHTML = "";
-        renderizarListadoVias(resultados);
+        renderizarListadoVias(resultados, tipoBusquedaViaHabActual);
         if (busquedaViaHabModal) {
           Modal.getOrCreateInstance(busquedaViaHabModal).hide();
         }
@@ -1576,6 +1624,19 @@ buscarViaHab?.addEventListener("click", function () {
 });
 
 listadoLoteBody?.addEventListener("click", (event) => {
+  const botonFoto = event.target.closest("button[data-foto-lote]");
+  if (botonFoto) {
+    event.preventDefault();
+    const urlFoto = botonFoto.dataset.fotoLote || "";
+    if (urlFoto) {
+      mostrarFotoLote(urlFoto);
+    } else {
+      mostrarToast("El lote no cuenta con fotografía.", "warning");
+      ocultarFotoLote();
+    }
+    return;
+  }
+
   const botonAcercarse = event.target.closest("button[data-indice-lote]");
   if (!botonAcercarse) return;
 
