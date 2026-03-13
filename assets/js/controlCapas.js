@@ -716,8 +716,10 @@ function renderizarListadoVias(
       }
 
       return `<tr>
-         <td>${propiedades.tipo_hab_urb || "Habilitación urbana"}</td>
+        <td>${propiedades.tipo_hab_urb || "Habilitación urbana"}</td>
         <td>${nombreResultado}</td>
+        <td>${propiedades.area_grafi || "-"}</td>
+        <td>${propiedades.peri_grafi || "-"}</td>
         <td>
           <button type="button" class="btn btn-sm btn-primary" data-indice-via="${index}" title="Acercarse" aria-label="Acercarse">
             <i class="icon feather icon-search"></i>
