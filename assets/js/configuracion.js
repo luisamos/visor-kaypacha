@@ -68,6 +68,30 @@ const SERVICIOS_BASICOS = [
   { key: "tvcable", label: "TvCable", color: "#ff9d44" },
 ];
 
+const CAMPOS_CLASIFICACION_PREDIO = [
+  { key: "casa_habitacion",         label: "Casa - Habitación",           color: "#073763", codigo: "01", estadoInicial: 1 },
+  { key: "tienda_deposito_almacen", label: "Tienda - Depósito - Almacén", color: "#0b5394", codigo: "02", estadoInicial: 1 },
+  { key: "predio_en_edificio",      label: "Predio en edificación",       color: "#3d85c6", codigo: "03", estadoInicial: 1 },
+  { key: "terreno_sin_construir",   label: "Terreno sin construcción",    color: "#9fc5e8", codigo: "05", estadoInicial: 1 },
+  { key: "otros",                   label: "Otros",                       color: "#6fa8dc", codigo: "04", estadoInicial: 1 },
+  { key: "sin_clasificacion",       label: "No identificado",             color: "#ff0000", codigo: null, estadoInicial: 1 },
+];
+
+const CAMPOS_TIPO_PERSONA = [
+  { key: "persona_natural",  label: "Persona natural",  color: "#3bc500", codigo: "1", estadoInicial: 1 },
+  { key: "persona_juridica", label: "Persona jurídica", color: "#005700", codigo: "2", estadoInicial: 1 },
+  { key: "sin_tipo_persona", label: "No identificado",  color: "#ff0000", codigo: "0", estadoInicial: 0 },
+];
+
+function construirLeyendaDesdeReporte(titulo, campos) {
+  const items = campos
+    .map(({ label, color }) => `<div class="legend-item2"><i style="background:${color}"></i> ${label}</div>`)
+    .join("\n        ");
+  return `<div class="legend-item"><strong>${titulo}</strong></div>
+        ${items}
+        <div class="legend-item"></div>`;
+}
+
 function construirLeyendaServicioBasico(servicios = SERVICIOS_BASICOS) {
   const items = servicios
     .map(
@@ -179,22 +203,11 @@ export const ubigeo = UBIGEO,
     },
     {
       id: "clasificacionPredio",
-      texto: `<div class="legend-item"><strong>Clasificación de Predio</strong></div>
-        <div class="legend-item2"><i style="background:#073763"></i> Casa - Habitación</div>
-        <div class="legend-item2"><i style="background:#0b5394"></i> Tienda - Depósito - Almacen</div>
-        <div class="legend-item2"><i style="background:#3d85c6"></i> Predio en edificación</div>
-        <div class="legend-item2"><i style="background:#9fc5e8"></i> Terreno sin construcción</div>
-        <div class="legend-item2"><i style="background:#6fa8dc"></i> Otros</div>
-        <div class="legend-item2"><i style="background:#ff0000"></i> No identificado</div>
-        <div class="legend-item"></div>`,
+      texto: construirLeyendaDesdeReporte("Clasificación de Predio", CAMPOS_CLASIFICACION_PREDIO),
     },
     {
       id: "tipoPersona",
-      texto: `<div class="legend-item"><strong>Tipo de persona</strong></div>
-            <div class="legend-item2"><i style="background:#3bc500"></i> Persona natural</div>
-            <div class="legend-item2"><i style="background:#005700"></i> Persona jurídica</div>
-            <div class="legend-item2"><i style="background:#ff0000"></i> No identificado</div>
-            <div class="legend-item"></div>`,
+      texto: construirLeyendaDesdeReporte("Tipo de persona", CAMPOS_TIPO_PERSONA),
     },
     {
       id: "predio",
@@ -252,14 +265,7 @@ export const reportesConfig = [
     chartType: "distribuido",
     wmsFiltroParam: "codigo",
     sincronizarDesdeUrl: false,
-    campos: [
-      { key: "casa_habitacion",         label: "Casa habitación",          color: "#073763", codigo: "01", estadoInicial: 1 },
-      { key: "tienda_deposito_almacen", label: "Tienda/depósito/almacén",  color: "#0b5394", codigo: "02", estadoInicial: 1 },
-      { key: "predio_en_edificio",      label: "Predio en edificio",       color: "#3d85c6", codigo: "03", estadoInicial: 1 },
-      { key: "otros",                   label: "Otros",                    color: "#6fa8dc", codigo: "04", estadoInicial: 1 },
-      { key: "terreno_sin_construir",   label: "Terreno sin construir",    color: "#9fc5e8", codigo: "05", estadoInicial: 1 },
-      { key: "sin_clasificacion",       label: "Sin clasificación",        color: "#ff0000", codigo: null, estadoInicial: 1 },
-    ],
+    campos: CAMPOS_CLASIFICACION_PREDIO,
   },
   {
     id: "tipoPersona",
@@ -275,10 +281,7 @@ export const reportesConfig = [
     chartType: "distribuido",
     wmsFiltroParam: "codigo",
     sincronizarDesdeUrl: false,
-    campos: [
-      { key: "persona_natural",  label: "Persona natural",  color: "#3bc500", codigo: "1", estadoInicial: 1 },
-      { key: "persona_juridica", label: "Persona jurídica", color: "#005700", codigo: "2", estadoInicial: 1 },
-      { key: "sin_tipo_persona", label: "Sin tipo persona", color: "#ff0000", codigo: "0", estadoInicial: 0 },
+    campos: CAMPOS_TIPO_PERSONA,
     ],
   },
 ];
