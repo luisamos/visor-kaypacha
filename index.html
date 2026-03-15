@@ -689,24 +689,26 @@
               </div>
               <div class="modal-body">
                 <div class="mb-3">
-                  <p class="form-label mb-0"><strong>Buscar por:</strong></p>
+                  <label class="form-label mb-1"
+                    ><strong>Por ID Lote:</strong></label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="buscarPorIdLoteInput"
+                      placeholder="Ej: 12345"
+                    />
+                    <button
+                      class="btn btn-outline-primary"
+                      type="button"
+                      id="btnBuscarPorIdLote"
+                    >
+                      <i class="icon feather icon-search"></i>
+                    </button>
+                  </div>
+                  <div class="mt-1" id="mensajeBuscarLote"></div>
                 </div>
-                <div class="mb-3">
-                  <select id="tipoColumna" class="form-select mb-3">
-                    <!--<option value="dni">D.N.I.</option>
-                    <option value="ruc">R.U.C.</option>-->
-                    <option value="id_lote" selected="">ID. Lote</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="valorColumna"
-                    placeholder="Ingresar dato"
-                  />
-                </div>
-                <div class="mb-3" id="mensajeBuscarLote"></div>
 
                 <!-- Secciones visibles solo cuando está autenticado -->
                 <div id="busquedaLoteAuth" class="d-none">
@@ -755,18 +757,6 @@
                     <div class="mt-1" id="msgBuscarPorTitular"></div>
                   </div>
                 </div>
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  Cerrar
-                </button>
-                <button type="button" class="btn btn-primary" id="buscarLote">
-                  Buscar
-                </button>
               </div>
             </div>
           </div>

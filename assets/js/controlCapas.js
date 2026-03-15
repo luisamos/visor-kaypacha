@@ -56,7 +56,7 @@ const legendDiv = document.getElementById("legenda"),
   legendButtonLabel = legendButton?.querySelector(".legend-label"),
   sidebarNav = document.getElementById("sidebarNav"),
   mensajeBuscarLote = document.getElementById("mensajeBuscarLote"),
-  buscarLote = document.getElementById("buscarLote"),
+  btnBuscarPorIdLote = document.getElementById("btnBuscarPorIdLote"),
   mensajeBuscarViaHab = document.getElementById("mensajeBuscarViaHab"),
   buscarViaHab = document.getElementById("buscarViaHab"),
   estilo = crearEstiloAchurado(),
@@ -1389,8 +1389,7 @@ function procesarAccionCapa(nombre) {
   if (nombre.substring(0, 1) === "i") {
     global.activoInformacion = nombre.substring(1);
   } else if (nombre === "blote") {
-    document.getElementById("tipoColumna").value = "id_lote";
-    document.getElementById("valorColumna").value = "";
+    document.getElementById("buscarPorIdLoteInput").value = "";
     mensajeBuscarLote.innerHTML = "";
   } else if (nombre.startsWith("bViaHab")) {
     const tipoBusqueda = nombre.split(":")[1] || "habilitacion_urbana";
@@ -1600,20 +1599,19 @@ document.getElementById("filtrarLote").addEventListener("click", function () {
   }
 });
 
-buscarLote.addEventListener("click", function () {
-  const tipoColumna = document.getElementById("tipoColumna").value;
-  const valorColumna = document.getElementById("valorColumna");
-  const valorBusqueda = valorColumna.value.trim();
+const ejecutarBusquedaPorIdLote = () => {
+  const buscarPorIdLoteInput = document.getElementById("buscarPorIdLoteInput");
+  const valorBusqueda = buscarPorIdLoteInput.value.trim();
 
   if (!valorBusqueda.length) {
     mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-warning alert-dismissible fade show" role="alert"><strong>Error!</strong> Ingresar un campo.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
-    valorColumna.focus();
+    buscarPorIdLoteInput.focus();
     return;
   }
 
   buscarEnCapaWFS({
     tipoCapa: "lote",
-    campo: tipoColumna,
+    campo: "id_lote",
     valorBusqueda,
   })
     .then(({ data, totalRegistros }) => {
@@ -1629,13 +1627,19 @@ buscarLote.addEventListener("click", function () {
         ocultarListadoLotes();
         ocultarListadoVias();
         mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se encontró ningun registro.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
-        valorColumna.focus();
+        buscarPorIdLoteInput.focus();
       }
     })
     .catch((error) => {
       console.log("Error al obtener los datos WFS:", error);
       mensajeBuscarLote.innerHTML = `<div class="alert alert-sm alert-danger alert-dismissible fade show" role="alert"><strong>Error!</strong> No se pudo realizar la consulta.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
     });
+};
+
+btnBuscarPorIdLote.addEventListener("click", ejecutarBusquedaPorIdLote);
+
+document.getElementById("buscarPorIdLoteInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") ejecutarBusquedaPorIdLote();
 });
 
 buscarViaHab?.addEventListener("click", function () {
