@@ -69,23 +69,80 @@ const SERVICIOS_BASICOS = [
 ];
 
 const CAMPOS_CLASIFICACION_PREDIO = [
-  { key: "casa_habitacion",         label: "Casa - Habitación",           color: "#073763", codigo: "01", estadoInicial: 1 },
-  { key: "tienda_deposito_almacen", label: "Tienda - Depósito - Almacén", color: "#0b5394", codigo: "02", estadoInicial: 1 },
-  { key: "predio_en_edificio",      label: "Predio en edificación",       color: "#3d85c6", codigo: "03", estadoInicial: 1 },
-  { key: "terreno_sin_construir",   label: "Terreno sin construcción",    color: "#9fc5e8", codigo: "05", estadoInicial: 1 },
-  { key: "otros",                   label: "Otros",                       color: "#6fa8dc", codigo: "04", estadoInicial: 1 },
-  { key: "sin_clasificacion",       label: "No identificado",             color: "#ff0000", codigo: null, estadoInicial: 1 },
+  {
+    key: "casa_habitacion",
+    label: "Casa - Habitación",
+    color: "#073763",
+    codigo: "01",
+    estadoInicial: 1,
+  },
+  {
+    key: "tienda_deposito_almacen",
+    label: "Tienda - Depósito - Almacén",
+    color: "#0b5394",
+    codigo: "02",
+    estadoInicial: 1,
+  },
+  {
+    key: "predio_en_edificio",
+    label: "Predio en edificación",
+    color: "#3d85c6",
+    codigo: "03",
+    estadoInicial: 1,
+  },
+  {
+    key: "terreno_sin_construir",
+    label: "Terreno sin construcción",
+    color: "#9fc5e8",
+    codigo: "05",
+    estadoInicial: 1,
+  },
+  {
+    key: "otros",
+    label: "Otros",
+    color: "#6fa8dc",
+    codigo: "04",
+    estadoInicial: 1,
+  },
+  {
+    key: "sin_clasificacion",
+    label: "Sin clasificación",
+    color: "#ff0000",
+    codigo: "99",
+    estadoInicial: 1,
+  },
 ];
 
 const CAMPOS_TIPO_PERSONA = [
-  { key: "persona_natural",  label: "Persona natural",  color: "#3bc500", codigo: "1", estadoInicial: 1 },
-  { key: "persona_juridica", label: "Persona jurídica", color: "#005700", codigo: "2", estadoInicial: 1 },
-  { key: "sin_tipo_persona", label: "No identificado",  color: "#ff0000", codigo: "0", estadoInicial: 0 },
+  {
+    key: "persona_natural",
+    label: "Persona natural",
+    color: "#3bc500",
+    codigo: "1",
+    estadoInicial: 1,
+  },
+  {
+    key: "persona_juridica",
+    label: "Persona jurídica",
+    color: "#005700",
+    codigo: "2",
+    estadoInicial: 1,
+  },
+  {
+    key: "sin_tipo_persona",
+    label: "Sin clasificación",
+    color: "#ff0000",
+    codigo: "0",
+    estadoInicial: 0,
+  },
 ];
 
 function construirLeyendaDesdeReporte(titulo, campos) {
   const items = campos
-    .map(({ label, color }) => `<div class="legend-item2"><i style="background:${color}"></i> ${label}</div>`)
+    .map(
+      ({ label, color }) =>
+        `<div class="legend-item2"><i style="background:${color}"></i> ${label}</div>`,
+    )
     .join("\n        ");
   return `<div class="legend-item"><strong>${titulo}</strong></div>
         ${items}
@@ -203,11 +260,17 @@ export const ubigeo = UBIGEO,
     },
     {
       id: "clasificacionPredio",
-      texto: construirLeyendaDesdeReporte("Clasificación de Predio", CAMPOS_CLASIFICACION_PREDIO),
+      texto: construirLeyendaDesdeReporte(
+        "Clasificación de Predio",
+        CAMPOS_CLASIFICACION_PREDIO,
+      ),
     },
     {
       id: "tipoPersona",
-      texto: construirLeyendaDesdeReporte("Tipo de persona", CAMPOS_TIPO_PERSONA),
+      texto: construirLeyendaDesdeReporte(
+        "Tipo de persona",
+        CAMPOS_TIPO_PERSONA,
+      ),
     },
     {
       id: "predio",
@@ -282,18 +345,17 @@ export const reportesConfig = [
     wmsFiltroParam: "codigo",
     sincronizarDesdeUrl: false,
     campos: CAMPOS_TIPO_PERSONA,
-    ],
   },
 ];
 
 export const COLOR_SIN_SERVICIO = "#64748b";
 
 export const CAPAS_BASE = [
-  { id: "ortofoto",          titulo: "Ortofoto",          checked: false },
-  { id: "googleMapCalle",    titulo: "Google calles",     checked: false },
-  { id: "googleMapSatelite", titulo: "Google satélite",   checked: true  },
-  { id: "osm",               titulo: "Open Street Map",   checked: false },
-  { id: "esriModoNoche",     titulo: "Esri modo noche",   checked: false },
+  { id: "ortofoto", titulo: "Ortofoto", checked: false },
+  { id: "googleMapCalle", titulo: "Google calles", checked: false },
+  { id: "googleMapSatelite", titulo: "Google satélite", checked: true },
+  { id: "osm", titulo: "Open Street Map", checked: false },
+  { id: "esriModoNoche", titulo: "Esri modo noche", checked: false },
 ];
 
 export const DEFINICION_GRUPOS_WMS = {
