@@ -6,7 +6,6 @@ import {
   proyeccion3857,
   formatoGeoJson,
   formatoTexto,
-  serviciosBasicosConfig,
   fechaHoy,
   buscarCapaId,
   ubigeo,
@@ -15,6 +14,11 @@ import {
   fichaIndividual,
   rutaFotografia,
   proyeccion4326,
+  reportesConfig,
+  COLOR_SIN_SERVICIO,
+  CAPAS_BASE,
+  DEFINICION_GRUPOS_WMS,
+  CONFIG_BUSQUEDA_VIA_HAB,
 } from "./configuracion";
 import { registrarCapaWmsDinamica } from "./capasGeograficas";
 import ApexCharts from "apexcharts";
@@ -67,142 +71,21 @@ const busquedaLoteModal = document.getElementById("busquedaLote"),
 let capaBusqueda = null,
   lotesBusquedaActual = [],
   viasBusquedaActual = [],
-  ultimosDatosReporteServicio = null,
-  ultimosDatosReporteClasificacion = null,
-  ultimosDatosReporteTipoPersona = null,
   graficasReporte = [];
 
-const CONFIG_BUSQUEDA_VIA_HAB = {
-  habilitacion_urbana: {
-    titulo: "Buscar habilitación urbana",
-    etiqueta: "Ingrese el nombre de una habilitación urbana:",
-    placeholder: "Ingresar nombre",
-    campo: "nomb_hab_urb",
-  },
-  eje_via: {
-    titulo: "Buscar una dirección",
-    etiqueta: "Ingresar el nombre de la calle, avenida, jirón...",
-    placeholder: "Ingresar nombre",
-    campo: "nomb_via",
-  },
-};
+// Estado de filtros por reporte — derivado de reportesConfig
+const estadosFiltroReporte = Object.fromEntries(
+  reportesConfig.map((cfg) => [
+    cfg.id,
+    Object.fromEntries(cfg.campos.map((c) => [c.key, c.estadoInicial ?? 1])),
+  ]),
+);
+
+// Caché de datos WFS por reporte
+const cacheReporteData = {};
 
 let tipoBusquedaViaHabActual = "habilitacion_urbana";
 
-const FILTRO_SERVICIO_BASICO = serviciosBasicosConfig.map((item) => ({
-  key: item.key,
-  label: item.label,
-  color: item.color,
-}));
-
-const estadoFiltroServicioBasico = Object.fromEntries(
-  FILTRO_SERVICIO_BASICO.map((item) => [item.key, 1]),
-);
-
-const CAMPOS_SERVICIO_BASICO = FILTRO_SERVICIO_BASICO.map(
-  ({ key, label, color }) => ({
-    key,
-    label,
-    color,
-    campoCon: `predios_con_${key}`,
-    campoSin: `predios_sin_${key}`,
-  }),
-);
-
-const CAMPOS_CLASIFICACION_PREDIO = [
-  { key: "casa_habitacion", label: "Casa habitación", color: "#073763" },
-  {
-    key: "tienda_deposito_almacen",
-    label: "Tienda/depósito/almacén",
-    color: "#0b5394",
-  },
-  { key: "predio_en_edificio", label: "Predio en edificio", color: "#3d85c6" },
-  {
-    key: "terreno_sin_construir",
-    label: "Terreno sin construir",
-    color: "#9fc5e8",
-  },
-  { key: "otros", label: "Otros", color: "#6fa8dc" },
-  { key: "sin_clasificacion", label: "Sin clasificación", color: "#ff0000" },
-];
-
-const estadoFiltroClasificacionPredio = Object.fromEntries(
-  CAMPOS_CLASIFICACION_PREDIO.map((c) => [c.key, 1]),
-);
-
-const CODIGOS_CLASIFICACION_PREDIO = {
-  casa_habitacion: "01",
-  tienda_deposito_almacen: "02",
-  predio_en_edificio: "03",
-  otros: "04",
-  terreno_sin_construir: "05",
-  // sin_clasificacion no tiene código WMS; solo afecta el gráfico
-};
-
-const CAMPOS_TIPO_PERSONA = [
-  { key: "persona_natural", label: "Persona natural", color: "#3bc500" },
-  { key: "persona_juridica", label: "Persona jurídica", color: "#005700" },
-  { key: "sin_tipo_persona", label: "Sin tipo persona", color: "#ff0000" },
-];
-
-const estadoFiltroTipoPersona = {
-  persona_natural: 1,
-  persona_juridica: 1,
-  sin_tipo_persona: 0, // oculto por defecto (default_codigo = "1,2")
-};
-
-const CODIGOS_TIPO_PERSONA = {
-  sin_tipo_persona: "0",
-  persona_natural: "1",
-  persona_juridica: "2",
-};
-
-const CAPAS_BASE = [
-  { id: "ortofoto", titulo: "Ortofoto", checked: false },
-  { id: "googleMapCalle", titulo: "Google calles", checked: false },
-  { id: "googleMapSatelite", titulo: "Google satélite", checked: true },
-  { id: "osm", titulo: "Open Street Map", checked: false },
-  { id: "esriModoNoche", titulo: "Esri modo noche", checked: false },
-];
-
-const DEFINICION_GRUPOS_WMS = {
-  "Límite censal": {
-    id: "limitesCensales",
-    icono: "activity",
-    acciones: [],
-    categoria: "Cartografía base",
-  },
-  "Predio urbano": {
-    id: "prediosUrbanos",
-    icono: "map",
-    acciones: ["identificar", "descargar"],
-    categoria: "Catastro urbano",
-    extrasPorCapa: {
-      lote: ["filtro", "buscar"],
-      habilitacion_urbana: ["buscar"],
-    },
-  },
-  "Área de circulación": {
-    id: "areasCirulacion",
-    icono: "minimize",
-    acciones: ["identificar", "buscar", "descargar"],
-    titulo: "Áreas de circulación",
-    categoria: "Catastro urbano",
-  },
-  Reporte: {
-    id: "reporteCapas",
-    icono: "bar-chart-2",
-    acciones: ["descargar", "filtro"],
-    categoria: "Reporte",
-  },
-  Interoperabilidad: {
-    id: "interoperabilidad",
-    icono: "repeat",
-    acciones: ["identificar"],
-    identificarDirecto: true,
-    categoria: "Interoperabilidad",
-  },
-};
 
 function slugify(valor = "") {
   return valor
@@ -336,61 +219,55 @@ function ocultarFotoLote() {
   fotoLotePanel?.classList.add("d-none");
 }
 
-function ocultarReporteServiciosBasicos() {
-  if (reporteServiciosBody) {
-    reporteServiciosBody.innerHTML = "";
-  }
-  reporteServiciosPanel?.classList.add("d-none");
-}
-
 function toNumero(valor) {
   const numero = Number.parseInt(valor, 10);
   return Number.isFinite(numero) ? numero : 0;
 }
 
-function obtenerServiciosFiltrados() {
-  return CAMPOS_SERVICIO_BASICO.filter(
-    ({ key }) => estadoFiltroServicioBasico[key] !== 0,
+// ── Funciones genéricas de reporte ───────────────────────────────────────────
+
+function obtenerCamposFiltrados(cfg) {
+  return cfg.campos.filter(
+    ({ key }) => estadosFiltroReporte[cfg.id][key] !== 0,
   );
 }
 
-function exportarCsvSector(codSector, propiedades, serviciosFiltrados) {
-  const encabezado = "Sector,Servicio,Total Predios,Con Servicio,Sin Servicio";
-  const filas = serviciosFiltrados.map(({ label, campoCon, campoSin }) =>
-    [
-      codSector,
-      label,
-      toNumero(propiedades.total_predios),
-      toNumero(propiedades[campoCon]),
-      toNumero(propiedades[campoSin]),
-    ].join(","),
-  );
-
-  const csv = [encabezado, ...filas].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+function descargarCsv(contenido, nombreArchivo) {
+  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+  const urlBlob = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = url;
-  link.download = `reporte_servicios_sector_${codSector}.csv`;
+  link.href = urlBlob;
+  link.download = nombreArchivo;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(urlBlob);
 }
 
-function construirHtmlSector(feature = {}) {
+function exportarCsvSectorReporte(cfg, codSector, propiedades, camposFiltrados) {
+  const totalPredios = toNumero(propiedades.total_predios);
+  const filas =
+    cfg.chartType === "stacked"
+      ? camposFiltrados.map(({ label, campoCon, campoSin }) =>
+          [codSector, label, totalPredios, toNumero(propiedades[campoCon]), toNumero(propiedades[campoSin])].join(","),
+        )
+      : camposFiltrados.map(({ label, key }) =>
+          [codSector, label, totalPredios, toNumero(propiedades[key])].join(","),
+        );
+  descargarCsv([cfg.csvEncabezado, ...filas].join("\n"), cfg.csvNombre(codSector));
+}
+
+function construirHtmlSectorReporte(cfg, feature = {}) {
   const propiedades = feature.properties || {};
   const codSector = propiedades.cod_sector || "-";
-  const sectorId = `sector-chart-${String(codSector).replace(/\s+/g, "-")}`;
+  const sectorId = `${cfg.sectorIdPrefix}-${String(codSector).replace(/\s+/g, "-")}`;
+  const camposFiltrados = obtenerCamposFiltrados(cfg);
 
-  const serviciosFiltrados = obtenerServiciosFiltrados();
-
-  // Compute total predios: prefer total_predios field, fallback to first service con+sin
+  const primerocampo = cfg.campos[0];
   const totalPredios =
     toNumero(propiedades.total_predios) ||
-    (CAMPOS_SERVICIO_BASICO[0]
-      ? toNumero(propiedades[CAMPOS_SERVICIO_BASICO[0].campoCon]) +
-        toNumero(propiedades[CAMPOS_SERVICIO_BASICO[0].campoSin])
+    (cfg.chartType === "stacked" && primerocampo
+      ? toNumero(propiedades[primerocampo.campoCon]) + toNumero(propiedades[primerocampo.campoSin])
       : 0);
   const totalLabel =
     totalPredios > 0 ? ` — ${totalPredios.toLocaleString("es-PE")} lotes` : "";
@@ -399,7 +276,7 @@ function construirHtmlSector(feature = {}) {
     sectorId,
     codSector,
     propiedades,
-    serviciosFiltrados,
+    camposFiltrados,
     html: `<div class="reporte-servicios-sector">
     <div class="reporte-servicios-sector-header">
       <div class="reporte-servicios-sector-title">Sector ${codSector}${totalLabel}</div>
@@ -413,229 +290,74 @@ function construirHtmlSector(feature = {}) {
   };
 }
 
-// Neutral color for "Sin servicio" bars
-const COLOR_SIN_SERVICIO = "#64748b";
-
-function inicializarGraficasSectores(sectores) {
+function inicializarGraficasReporte(cfg, sectores) {
   graficasReporte.forEach((chart) => {
-    try {
-      chart.destroy();
-    } catch (_) {}
+    try { chart.destroy(); } catch (_) {}
   });
   graficasReporte = [];
 
-  const isDark =
-    document.documentElement.getAttribute("data-bs-theme") === "dark";
+  const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
   const textColor = isDark ? "#e6ebff" : "#1f2a44";
   const gridColor = isDark ? "rgba(124,160,255,0.15)" : "rgba(31,42,68,0.1)";
 
-  sectores.forEach(({ sectorId, propiedades, serviciosFiltrados }) => {
+  sectores.forEach(({ sectorId, propiedades, camposFiltrados }) => {
     const el = document.getElementById(sectorId);
-    if (!el || !serviciosFiltrados.length) return;
+    if (!el || !camposFiltrados.length) return;
 
-    // "Con servicio" — each data point uses the service's own legend color
-    const dataCon = serviciosFiltrados.map((s) => ({
-      x: s.label,
-      y: toNumero(propiedades[s.campoCon]),
-      fillColor: s.color,
-      strokeColor: s.color,
-    }));
+    let series, legend;
 
-    // "Sin servicio" — neutral gray for all bars
-    const dataSin = serviciosFiltrados.map((s) => ({
-      x: s.label,
-      y: toNumero(propiedades[s.campoSin]),
-      fillColor: COLOR_SIN_SERVICIO,
-      strokeColor: COLOR_SIN_SERVICIO,
-    }));
-
-    const chart = new ApexCharts(el, {
-      chart: {
-        type: "bar",
-        height: 190,
-        toolbar: { show: false },
-        background: "transparent",
-        foreColor: textColor,
-        animations: { enabled: true, speed: 400 },
-      },
-      theme: { mode: isDark ? "dark" : "light" },
-      series: [
-        { name: "Con servicio", data: dataCon },
-        { name: "Sin servicio", data: dataSin },
-      ],
-      xaxis: {
-        type: "category",
-        labels: { style: { fontSize: "10px", colors: textColor } },
-        axisBorder: { color: gridColor },
-        axisTicks: { color: gridColor },
-      },
-      yaxis: { labels: { style: { fontSize: "10px", colors: textColor } } },
-      // colors array is overridden per-point via fillColor, but still required
-      colors: serviciosFiltrados
-        .map((s) => s.color)
-        .concat([COLOR_SIN_SERVICIO]),
-      plotOptions: {
-        bar: {
-          borderRadius: 3,
-          columnWidth: "55%",
-          dataLabels: { position: "top" },
+    if (cfg.chartType === "stacked") {
+      series = [
+        {
+          name: "Con servicio",
+          data: camposFiltrados.map((s) => ({
+            x: s.label,
+            y: toNumero(propiedades[s.campoCon]),
+            fillColor: s.color,
+            strokeColor: s.color,
+          })),
         },
-      },
-      dataLabels: {
-        enabled: true,
-        offsetY: -16,
-        style: { fontSize: "9px", colors: [textColor] },
-        formatter: (val) => (val > 0 ? val : ""),
-      },
-      legend: {
+        {
+          name: "Sin servicio",
+          data: camposFiltrados.map((s) => ({
+            x: s.label,
+            y: toNumero(propiedades[s.campoSin]),
+            fillColor: COLOR_SIN_SERVICIO,
+            strokeColor: COLOR_SIN_SERVICIO,
+          })),
+        },
+      ];
+      legend = {
         position: "top",
         fontSize: "11px",
         labels: { colors: textColor },
-        // Hide "Con servicio" — bar colors already identify each service.
-        // Only keep "Sin servicio" so the gray bars are labelled.
         showForSingleSeries: false,
         customLegendItems: ["Sin servicio"],
         markers: { fillColors: [COLOR_SIN_SERVICIO] },
-      },
-      tooltip: { theme: isDark ? "dark" : "light" },
-      grid: { borderColor: gridColor, strokeDashArray: 3 },
-    });
-    chart.render();
-    graficasReporte.push(chart);
-  });
-}
-
-function mostrarReporteServiciosBasicos(data = {}) {
-  if (!reporteServiciosPanel || !reporteServiciosBody) return;
-  const titulo = document.getElementById("reporte-servicios-titulo");
-  if (titulo) titulo.textContent = "Estadísticas de servicios básicos";
-
-  const features = Array.isArray(data.features) ? data.features : [];
-  if (!features.length) {
-    reporteServiciosBody.innerHTML =
-      '<p class="mb-0 small">No se encontraron estadísticas para servicio básico.</p>';
-    reporteServiciosPanel.classList.remove("d-none");
-    return;
-  }
-
-  const sectores = features.map(construirHtmlSector);
-  reporteServiciosBody.innerHTML = sectores.map((s) => s.html).join("");
-  reporteServiciosPanel.classList.remove("d-none");
-
-  // Render charts after DOM update
-  requestAnimationFrame(() => inicializarGraficasSectores(sectores));
-
-  // Wire CSV export buttons
-  reporteServiciosBody.querySelectorAll(".reporte-csv-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const codSector = btn.dataset.sector;
-      const sector = sectores.find((s) => String(s.codSector) === codSector);
-      if (sector) {
-        exportarCsvSector(
-          sector.codSector,
-          sector.propiedades,
-          sector.serviciosFiltrados,
-        );
-      }
-    });
-  });
-}
-
-async function cargarReporteServiciosBasicos() {
-  try {
-    const url =
-      `${direccionServicioWFS}` +
-      "version=1.1.0&SERVICE=WFS&REQUEST=GetFeature&TYPENAME=reporte_servicio_basico&outputFormat=geojson";
-    const respuesta = await fetch(url);
-
-    if (!respuesta.ok) {
-      throw new Error(`Error HTTP ${respuesta.status}`);
+      };
+    } else {
+      series = [
+        {
+          name: "Predios",
+          data: camposFiltrados.map((c) => ({
+            x: c.label,
+            y: toNumero(propiedades[c.key]),
+            fillColor: c.color,
+            strokeColor: c.color,
+          })),
+        },
+      ];
+      legend = { show: false };
     }
 
-    const data = await respuesta.json();
-    ultimosDatosReporteServicio = data;
-    mostrarReporteServiciosBasicos(data);
-  } catch (error) {
-    ocultarReporteServiciosBasicos();
-    mostrarToast(
-      "No se pudo obtener el reporte de servicio básico.",
-      "warning",
-    );
-  }
-}
-
-// ── Clasificación del predio ────────────────────────────────────────────────
-
-function obtenerCamposFiltradosClasificacion() {
-  return CAMPOS_CLASIFICACION_PREDIO.filter(
-    ({ key }) => estadoFiltroClasificacionPredio[key] !== 0,
-  );
-}
-
-function exportarCsvSectorClasificacion(codSector, propiedades, camposFiltrados) {
-  const encabezado = "Sector,Clasificación,Total Predios,Cantidad";
-  const totalPredios = toNumero(propiedades.total_predios);
-  const filas = camposFiltrados.map(({ label, key }) =>
-    [codSector, label, totalPredios, toNumero(propiedades[key])].join(","),
-  );
-  const csv = [encabezado, ...filas].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `reporte_clasificacion_sector_${codSector}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-function construirHtmlSectorClasificacion(feature = {}) {
-  const propiedades = feature.properties || {};
-  const codSector = propiedades.cod_sector || "-";
-  const sectorId = `sector-clasif-${String(codSector).replace(/\s+/g, "-")}`;
-  const camposFiltrados = obtenerCamposFiltradosClasificacion();
-  const totalPredios = toNumero(propiedades.total_predios);
-  const totalLabel =
-    totalPredios > 0 ? ` — ${totalPredios.toLocaleString("es-PE")} lotes` : "";
-  return {
-    sectorId,
-    codSector,
-    propiedades,
-    camposFiltrados,
-    html: `<div class="reporte-servicios-sector">
-    <div class="reporte-servicios-sector-header">
-      <div class="reporte-servicios-sector-title">Sector ${codSector}${totalLabel}</div>
-      <button class="btn btn-outline-secondary btn-xs reporte-csv-btn" data-sector="${codSector}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        CSV
-      </button>
-    </div>
-    <div id="${sectorId}" class="reporte-servicios-chart"></div>
-  </div>`,
-  };
-}
-
-function inicializarGraficasClasificacion(sectores) {
-  graficasReporte.forEach((chart) => {
-    try { chart.destroy(); } catch (_) {}
-  });
-  graficasReporte = [];
-
-  const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
-  const textColor = isDark ? "#e6ebff" : "#1f2a44";
-  const gridColor = isDark ? "rgba(124,160,255,0.15)" : "rgba(31,42,68,0.1)";
-
-  sectores.forEach(({ sectorId, propiedades, camposFiltrados }) => {
-    const el = document.getElementById(sectorId);
-    if (!el || !camposFiltrados.length) return;
-
-    const data = camposFiltrados.map((c) => ({
-      x: c.label,
-      y: toNumero(propiedades[c.key]),
-      fillColor: c.color,
-      strokeColor: c.color,
-    }));
+    const plotOptions = {
+      bar: {
+        borderRadius: 3,
+        columnWidth: "55%",
+        dataLabels: { position: "top" },
+        ...(cfg.chartType === "distribuido" ? { distributed: true } : {}),
+      },
+    };
 
     const chart = new ApexCharts(el, {
       chart: {
@@ -647,7 +369,7 @@ function inicializarGraficasClasificacion(sectores) {
         animations: { enabled: true, speed: 400 },
       },
       theme: { mode: isDark ? "dark" : "light" },
-      series: [{ name: "Predios", data }],
+      series,
       xaxis: {
         type: "category",
         labels: { style: { fontSize: "10px", colors: textColor } },
@@ -655,22 +377,17 @@ function inicializarGraficasClasificacion(sectores) {
         axisTicks: { color: gridColor },
       },
       yaxis: { labels: { style: { fontSize: "10px", colors: textColor } } },
-      colors: camposFiltrados.map((c) => c.color),
-      plotOptions: {
-        bar: {
-          borderRadius: 3,
-          columnWidth: "55%",
-          dataLabels: { position: "top" },
-          distributed: true,
-        },
-      },
+      colors: camposFiltrados.map((s) => s.color).concat(
+        cfg.chartType === "stacked" ? [COLOR_SIN_SERVICIO] : [],
+      ),
+      plotOptions,
       dataLabels: {
         enabled: true,
         offsetY: -16,
         style: { fontSize: "9px", colors: [textColor] },
         formatter: (val) => (val > 0 ? val : ""),
       },
-      legend: { show: false },
+      legend,
       tooltip: { theme: isDark ? "dark" : "light" },
       grid: { borderColor: gridColor, strokeDashArray: 3 },
     });
@@ -679,290 +396,132 @@ function inicializarGraficasClasificacion(sectores) {
   });
 }
 
-function mostrarReporteClasificacionPredio(data = {}) {
+function ocultarReportePanel() {
+  if (reporteServiciosBody) reporteServiciosBody.innerHTML = "";
+  reporteServiciosPanel?.classList.add("d-none");
+}
+
+function mostrarReportePanel(cfg, data = {}) {
   if (!reporteServiciosPanel || !reporteServiciosBody) return;
   const titulo = document.getElementById("reporte-servicios-titulo");
-  if (titulo) titulo.textContent = "Estadísticas de clasificación del predio";
+  if (titulo) titulo.textContent = cfg.titulo;
 
   const features = Array.isArray(data.features) ? data.features : [];
   if (!features.length) {
     reporteServiciosBody.innerHTML =
-      '<p class="mb-0 small">No se encontraron estadísticas para clasificación del predio.</p>';
+      '<p class="mb-0 small">No se encontraron estadísticas.</p>';
     reporteServiciosPanel.classList.remove("d-none");
     return;
   }
 
-  const sectores = features.map(construirHtmlSectorClasificacion);
+  const sectores = features.map((f) => construirHtmlSectorReporte(cfg, f));
   reporteServiciosBody.innerHTML = sectores.map((s) => s.html).join("");
   reporteServiciosPanel.classList.remove("d-none");
 
-  requestAnimationFrame(() => inicializarGraficasClasificacion(sectores));
+  requestAnimationFrame(() => inicializarGraficasReporte(cfg, sectores));
 
   reporteServiciosBody.querySelectorAll(".reporte-csv-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const codSector = btn.dataset.sector;
-      const sector = sectores.find((s) => String(s.codSector) === codSector);
+      const sector = sectores.find((s) => String(s.codSector) === btn.dataset.sector);
       if (sector) {
-        exportarCsvSectorClasificacion(
-          sector.codSector,
-          sector.propiedades,
-          sector.camposFiltrados,
-        );
+        exportarCsvSectorReporte(cfg, sector.codSector, sector.propiedades, sector.camposFiltrados);
       }
     });
   });
 }
 
-function ocultarReporteClasificacionPredio() {
-  if (reporteServiciosBody) reporteServiciosBody.innerHTML = "";
-  reporteServiciosPanel?.classList.add("d-none");
-}
-
-async function cargarReporteClasificacionPredio() {
+async function cargarReporte(cfg) {
   try {
     const url =
       `${direccionServicioWFS}` +
-      "version=1.1.0&SERVICE=WFS&REQUEST=GetFeature&TYPENAME=reporte_clasificacion_predio&outputFormat=geojson";
+      `version=1.1.0&SERVICE=WFS&REQUEST=GetFeature&TYPENAME=${cfg.wfsTypename}&outputFormat=geojson`;
     const respuesta = await fetch(url);
     if (!respuesta.ok) throw new Error(`Error HTTP ${respuesta.status}`);
     const data = await respuesta.json();
-    ultimosDatosReporteClasificacion = data;
-    mostrarReporteClasificacionPredio(data);
+    cacheReporteData[cfg.id] = data;
+    mostrarReportePanel(cfg, data);
   } catch (error) {
-    ocultarReporteClasificacionPredio();
-    mostrarToast("No se pudo obtener el reporte de clasificación del predio.", "warning");
+    ocultarReportePanel();
+    mostrarToast("No se pudo obtener el reporte.", "warning");
   }
 }
 
-function renderizarOpcionesFiltroClasificacionPredio() {
-  const contenedor = document.getElementById("filtroClasificacionPredioOpciones");
-  if (!contenedor) return;
-  contenedor.innerHTML = CAMPOS_CLASIFICACION_PREDIO.map(
-    ({ key, label, color }) =>
-      `<div class="form-check d-flex align-items-center gap-2"><input type="checkbox" id="filtroClasifPredio_${key}" class="form-check-input" ${estadoFiltroClasificacionPredio[key] ? "checked" : ""} /><label class="form-check-label mb-0" for="filtroClasifPredio_${key}">${label}</label><span class="badge fw-bolder" style="background: ${color}">&nbsp;</span></div>`,
-  ).join("");
+function sincronizarEstadoDesdeUrl(cfg, urlBase = "") {
+  const query = (urlBase.split("?")[1] || "").split("#")[0] || "";
+  const params = new URLSearchParams(query);
+  const estado = estadosFiltroReporte[cfg.id];
+
+  if (cfg.wmsFiltroParam) {
+    // modo codigo=01,02,03
+    const codigosActivos = (params.get(cfg.wmsFiltroParam) || "").split(",").filter(Boolean);
+    cfg.campos.forEach(({ key, codigo }) => {
+      estado[key] = codigo ? (codigosActivos.includes(codigo) ? 1 : 0) : 1;
+    });
+  } else {
+    // modo individual: luz=1, agua=0
+    cfg.campos.forEach(({ key }) => {
+      const valor = params.get(key);
+      estado[key] = valor === null ? 1 : valor === "0" ? 0 : 1;
+    });
+  }
 }
 
-function aplicarFiltroClasificacionPredio() {
-  CAMPOS_CLASIFICACION_PREDIO.forEach(({ key }) => {
-    const checkbox = document.getElementById(`filtroClasifPredio_${key}`);
-    if (!checkbox) return;
-    estadoFiltroClasificacionPredio[key] = checkbox.checked ? 1 : 0;
+function construirUrlReporte(cfg, baseUrl) {
+  const [urlSinHash, hash] = baseUrl.split("#");
+  const [ruta, query] = urlSinHash.split("?");
+  const params = new URLSearchParams(query || "");
+
+  if (cfg.wmsFiltroParam) {
+    const codigosActivos = cfg.campos
+      .filter((c) => c.codigo && estadosFiltroReporte[cfg.id][c.key] !== 0)
+      .map((c) => c.codigo);
+    params.set(cfg.wmsFiltroParam, codigosActivos.length ? codigosActivos.join(",") : "99");
+  } else {
+    cfg.campos.forEach(({ key }) => {
+      params.set(key, String(estadosFiltroReporte[cfg.id][key] ? 1 : 0));
+    });
+  }
+
+  const nuevaUrl = `${ruta}?${params.toString()}`;
+  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
+}
+
+function renderizarOpcionesFiltroReporte(cfg) {
+  const contenedor = document.getElementById(cfg.filtroContenedorId);
+  if (!contenedor) return;
+
+  if (cfg.sincronizarDesdeUrl) {
+    const capa = buscarCapaId(cfg.id);
+    const urlBase = capa?.getSource?.()?.getUrl?.();
+    if (urlBase) sincronizarEstadoDesdeUrl(cfg, urlBase);
+  }
+
+  const estado = estadosFiltroReporte[cfg.id];
+  contenedor.innerHTML = cfg.campos
+    .map(
+      ({ key, label, color }) =>
+        `<div class="form-check d-flex align-items-center gap-2"><input type="checkbox" id="${cfg.checkboxPrefix}_${key}" class="form-check-input" ${estado[key] ? "checked" : ""} /><label class="form-check-label mb-0" for="${cfg.checkboxPrefix}_${key}">${label}</label><span class="badge fw-bolder" style="background: ${color}">&nbsp;</span></div>`,
+    )
+    .join("");
+}
+
+function aplicarFiltroReporte(cfg) {
+  const estado = estadosFiltroReporte[cfg.id];
+  cfg.campos.forEach(({ key }) => {
+    const checkbox = document.getElementById(`${cfg.checkboxPrefix}_${key}`);
+    if (checkbox) estado[key] = checkbox.checked ? 1 : 0;
   });
 
-  const capa = buscarCapaId("clasificacionPredio");
+  const capa = buscarCapaId(cfg.id);
   if (capa) {
     const source = capa.getSource();
     const urlBase = source?.getUrl?.();
-    if (urlBase) source.setUrl(construirUrlClasificacionPredio(urlBase));
+    if (urlBase) source.setUrl(construirUrlReporte(cfg, urlBase));
   }
 
-  if (
-    ultimosDatosReporteClasificacion &&
-    !reporteServiciosPanel?.classList.contains("d-none")
-  ) {
-    mostrarReporteClasificacionPredio(ultimosDatosReporteClasificacion);
-  }
-}
-
-// ── Tipo de persona ─────────────────────────────────────────────────────────
-
-function obtenerCamposFiltradosTipoPersona() {
-  return CAMPOS_TIPO_PERSONA.filter(
-    ({ key }) => estadoFiltroTipoPersona[key] !== 0,
-  );
-}
-
-function exportarCsvSectorTipoPersona(codSector, propiedades, camposFiltrados) {
-  const encabezado = "Sector,Tipo Persona,Total Predios,Cantidad";
-  const totalPredios = toNumero(propiedades.total_predios);
-  const filas = camposFiltrados.map(({ label, key }) =>
-    [codSector, label, totalPredios, toNumero(propiedades[key])].join(","),
-  );
-  const csv = [encabezado, ...filas].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `reporte_tipo_persona_sector_${codSector}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-function construirHtmlSectorTipoPersona(feature = {}) {
-  const propiedades = feature.properties || {};
-  const codSector = propiedades.cod_sector || "-";
-  const sectorId = `sector-persona-${String(codSector).replace(/\s+/g, "-")}`;
-  const camposFiltrados = obtenerCamposFiltradosTipoPersona();
-  const totalPredios = toNumero(propiedades.total_predios);
-  const totalLabel =
-    totalPredios > 0 ? ` — ${totalPredios.toLocaleString("es-PE")} lotes` : "";
-  return {
-    sectorId,
-    codSector,
-    propiedades,
-    camposFiltrados,
-    html: `<div class="reporte-servicios-sector">
-    <div class="reporte-servicios-sector-header">
-      <div class="reporte-servicios-sector-title">Sector ${codSector}${totalLabel}</div>
-      <button class="btn btn-outline-secondary btn-xs reporte-csv-btn" data-sector="${codSector}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        CSV
-      </button>
-    </div>
-    <div id="${sectorId}" class="reporte-servicios-chart"></div>
-  </div>`,
-  };
-}
-
-function inicializarGraficasTipoPersona(sectores) {
-  graficasReporte.forEach((chart) => {
-    try { chart.destroy(); } catch (_) {}
-  });
-  graficasReporte = [];
-
-  const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
-  const textColor = isDark ? "#e6ebff" : "#1f2a44";
-  const gridColor = isDark ? "rgba(124,160,255,0.15)" : "rgba(31,42,68,0.1)";
-
-  sectores.forEach(({ sectorId, propiedades, camposFiltrados }) => {
-    const el = document.getElementById(sectorId);
-    if (!el || !camposFiltrados.length) return;
-
-    const data = camposFiltrados.map((c) => ({
-      x: c.label,
-      y: toNumero(propiedades[c.key]),
-      fillColor: c.color,
-      strokeColor: c.color,
-    }));
-
-    const chart = new ApexCharts(el, {
-      chart: {
-        type: "bar",
-        height: 190,
-        toolbar: { show: false },
-        background: "transparent",
-        foreColor: textColor,
-        animations: { enabled: true, speed: 400 },
-      },
-      theme: { mode: isDark ? "dark" : "light" },
-      series: [{ name: "Predios", data }],
-      xaxis: {
-        type: "category",
-        labels: { style: { fontSize: "10px", colors: textColor } },
-        axisBorder: { color: gridColor },
-        axisTicks: { color: gridColor },
-      },
-      yaxis: { labels: { style: { fontSize: "10px", colors: textColor } } },
-      colors: camposFiltrados.map((c) => c.color),
-      plotOptions: {
-        bar: {
-          borderRadius: 3,
-          columnWidth: "55%",
-          dataLabels: { position: "top" },
-          distributed: true,
-        },
-      },
-      dataLabels: {
-        enabled: true,
-        offsetY: -16,
-        style: { fontSize: "9px", colors: [textColor] },
-        formatter: (val) => (val > 0 ? val : ""),
-      },
-      legend: { show: false },
-      tooltip: { theme: isDark ? "dark" : "light" },
-      grid: { borderColor: gridColor, strokeDashArray: 3 },
-    });
-    chart.render();
-    graficasReporte.push(chart);
-  });
-}
-
-function mostrarReporteTipoPersona(data = {}) {
-  if (!reporteServiciosPanel || !reporteServiciosBody) return;
-  const titulo = document.getElementById("reporte-servicios-titulo");
-  if (titulo) titulo.textContent = "Estadísticas de tipo de persona";
-
-  const features = Array.isArray(data.features) ? data.features : [];
-  if (!features.length) {
-    reporteServiciosBody.innerHTML =
-      '<p class="mb-0 small">No se encontraron estadísticas para tipo de persona.</p>';
-    reporteServiciosPanel.classList.remove("d-none");
-    return;
-  }
-
-  const sectores = features.map(construirHtmlSectorTipoPersona);
-  reporteServiciosBody.innerHTML = sectores.map((s) => s.html).join("");
-  reporteServiciosPanel.classList.remove("d-none");
-
-  requestAnimationFrame(() => inicializarGraficasTipoPersona(sectores));
-
-  reporteServiciosBody.querySelectorAll(".reporte-csv-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const codSector = btn.dataset.sector;
-      const sector = sectores.find((s) => String(s.codSector) === codSector);
-      if (sector) {
-        exportarCsvSectorTipoPersona(
-          sector.codSector,
-          sector.propiedades,
-          sector.camposFiltrados,
-        );
-      }
-    });
-  });
-}
-
-function ocultarReporteTipoPersona() {
-  if (reporteServiciosBody) reporteServiciosBody.innerHTML = "";
-  reporteServiciosPanel?.classList.add("d-none");
-}
-
-async function cargarReporteTipoPersona() {
-  try {
-    const url =
-      `${direccionServicioWFS}` +
-      "version=1.1.0&SERVICE=WFS&REQUEST=GetFeature&TYPENAME=reporte_tipo_persona&outputFormat=geojson";
-    const respuesta = await fetch(url);
-    if (!respuesta.ok) throw new Error(`Error HTTP ${respuesta.status}`);
-    const data = await respuesta.json();
-    ultimosDatosReporteTipoPersona = data;
-    mostrarReporteTipoPersona(data);
-  } catch (error) {
-    ocultarReporteTipoPersona();
-    mostrarToast("No se pudo obtener el reporte de tipo de persona.", "warning");
-  }
-}
-
-function renderizarOpcionesFiltroTipoPersona() {
-  const contenedor = document.getElementById("filtroTipoPersonaOpciones");
-  if (!contenedor) return;
-  contenedor.innerHTML = CAMPOS_TIPO_PERSONA.map(
-    ({ key, label, color }) =>
-      `<div class="form-check d-flex align-items-center gap-2"><input type="checkbox" id="filtroTipoPersona_${key}" class="form-check-input" ${estadoFiltroTipoPersona[key] ? "checked" : ""} /><label class="form-check-label mb-0" for="filtroTipoPersona_${key}">${label}</label><span class="badge fw-bolder" style="background: ${color}">&nbsp;</span></div>`,
-  ).join("");
-}
-
-function aplicarFiltroTipoPersona() {
-  CAMPOS_TIPO_PERSONA.forEach(({ key }) => {
-    const checkbox = document.getElementById(`filtroTipoPersona_${key}`);
-    if (!checkbox) return;
-    estadoFiltroTipoPersona[key] = checkbox.checked ? 1 : 0;
-  });
-
-  const capa = buscarCapaId("tipoPersona");
-  if (capa) {
-    const source = capa.getSource();
-    const urlBase = source?.getUrl?.();
-    if (urlBase) source.setUrl(construirUrlTipoPersona(urlBase));
-  }
-
-  if (
-    ultimosDatosReporteTipoPersona &&
-    !reporteServiciosPanel?.classList.contains("d-none")
-  ) {
-    mostrarReporteTipoPersona(ultimosDatosReporteTipoPersona);
+  const cachedData = cacheReporteData[cfg.id];
+  if (cachedData && !reporteServiciosPanel?.classList.contains("d-none")) {
+    mostrarReportePanel(cfg, cachedData);
   }
 }
 
@@ -1703,169 +1262,17 @@ function activarCapaBase(id) {
   }
 }
 
-function sincronizarEstadoFiltroServicioBasicoDesdeUrl(url = "") {
-  const query = (url.split("?")[1] || "").split("#")[0] || "";
-  const params = new URLSearchParams(query);
-
-  FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
-    const valor = params.get(key);
-    if (valor === null) {
-      estadoFiltroServicioBasico[key] = 1;
-      return;
-    }
-    estadoFiltroServicioBasico[key] = valor === "0" ? 0 : 1;
+reportesConfig.forEach((cfg) => {
+  const modal = document.getElementById(cfg.modalId);
+  modal?.addEventListener("show.bs.modal", () => renderizarOpcionesFiltroReporte(cfg));
+  modal?.addEventListener("hide.bs.modal", () => {
+    if (modal.contains(document.activeElement)) document.activeElement?.blur?.();
   });
-}
-
-function construirUrlServicioBasico(baseUrl) {
-  const [urlSinHash, hash] = baseUrl.split("#");
-  const [ruta, query] = urlSinHash.split("?");
-  const params = new URLSearchParams(query || "");
-
-  FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
-    params.set(key, String(estadoFiltroServicioBasico[key] ? 1 : 0));
-  });
-
-  const nuevaUrl = `${ruta}?${params.toString()}`;
-  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
-}
-
-function construirUrlClasificacionPredio(baseUrl) {
-  const [urlSinHash, hash] = baseUrl.split("#");
-  const [ruta, query] = urlSinHash.split("?");
-  const params = new URLSearchParams(query || "");
-
-  const codigosActivos = Object.entries(CODIGOS_CLASIFICACION_PREDIO)
-    .filter(([key]) => estadoFiltroClasificacionPredio[key] !== 0)
-    .map(([, code]) => code);
-
-  params.set("codigo", codigosActivos.length ? codigosActivos.join(",") : "99");
-
-  const nuevaUrl = `${ruta}?${params.toString()}`;
-  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
-}
-
-function construirUrlTipoPersona(baseUrl) {
-  const [urlSinHash, hash] = baseUrl.split("#");
-  const [ruta, query] = urlSinHash.split("?");
-  const params = new URLSearchParams(query || "");
-
-  const codigosActivos = Object.entries(CODIGOS_TIPO_PERSONA)
-    .filter(([key]) => estadoFiltroTipoPersona[key] !== 0)
-    .map(([, code]) => code);
-
-  params.set("codigo", codigosActivos.length ? codigosActivos.join(",") : "9");
-
-  const nuevaUrl = `${ruta}?${params.toString()}`;
-  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
-}
-
-function renderizarOpcionesFiltroServicioBasico() {
-  const contenedor = document.getElementById("filtroServicioBasicoOpciones");
-  if (!contenedor) return;
-
-  const servicioBasico = buscarCapaId("servicioBasico");
-  const urlBase = servicioBasico?.getSource?.()?.getUrl?.();
-  if (urlBase) sincronizarEstadoFiltroServicioBasicoDesdeUrl(urlBase);
-
-  contenedor.innerHTML = FILTRO_SERVICIO_BASICO.map(
-    ({ key, label, color }) =>
-      `<div class="form-check d-flex align-items-center gap-2"><input type="checkbox" id="filtroServicioBasico_${key}" class="form-check-input" ${estadoFiltroServicioBasico[key] ? "checked" : ""} /><label class="form-check-label mb-0" for="filtroServicioBasico_${key}">${label}</label><span class="badge fw-bolder" style="background: ${color}">&nbsp;</span></div>`,
-  ).join("");
-}
-
-function aplicarFiltroServicioBasico() {
-  FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
-    const checkbox = document.getElementById(`filtroServicioBasico_${key}`);
-    if (!checkbox) return;
-    estadoFiltroServicioBasico[key] = checkbox.checked ? 1 : 0;
-  });
-
-  const servicioBasico = buscarCapaId("servicioBasico");
-  if (!servicioBasico) return;
-
-  const source = servicioBasico.getSource();
-  const urlBase = source?.getUrl?.();
-  if (!urlBase) return;
-
-  source.setUrl(construirUrlServicioBasico(urlBase));
-
-  // Refresh report charts respecting new filter state
-  if (
-    ultimosDatosReporteServicio &&
-    !reporteServiciosPanel?.classList.contains("d-none")
-  ) {
-    mostrarReporteServiciosBasicos(ultimosDatosReporteServicio);
-  }
-}
-
-renderizarOpcionesFiltroServicioBasico();
-
-function manejarClickFiltrarServicioBasico(event) {
-  event.currentTarget?.blur?.();
-  aplicarFiltroServicioBasico();
-}
-
-document
-  .getElementById("filtrarServicioBasico")
-  ?.addEventListener("click", manejarClickFiltrarServicioBasico);
-
-const modalFiltroServicioBasico = document.getElementById(
-  "filtroServicioBasico",
-);
-
-modalFiltroServicioBasico?.addEventListener(
-  "show.bs.modal",
-  renderizarOpcionesFiltroServicioBasico,
-);
-
-modalFiltroServicioBasico?.addEventListener("hide.bs.modal", () => {
-  if (modalFiltroServicioBasico.contains(document.activeElement)) {
-    document.activeElement?.blur?.();
-  }
-});
-
-const modalFiltroClasificacionPredio = document.getElementById(
-  "filtroClasificacionPredio",
-);
-
-modalFiltroClasificacionPredio?.addEventListener(
-  "show.bs.modal",
-  renderizarOpcionesFiltroClasificacionPredio,
-);
-
-modalFiltroClasificacionPredio?.addEventListener("hide.bs.modal", () => {
-  if (modalFiltroClasificacionPredio.contains(document.activeElement)) {
-    document.activeElement?.blur?.();
-  }
-});
-
-document
-  .getElementById("filtrarClasificacionPredio")
-  ?.addEventListener("click", (event) => {
+  document.getElementById(cfg.filtrarBtnId)?.addEventListener("click", (event) => {
     event.currentTarget?.blur?.();
-    aplicarFiltroClasificacionPredio();
+    aplicarFiltroReporte(cfg);
   });
-
-const modalFiltroTipoPersona = document.getElementById("filtroTipoPersona");
-
-modalFiltroTipoPersona?.addEventListener(
-  "show.bs.modal",
-  renderizarOpcionesFiltroTipoPersona,
-);
-
-modalFiltroTipoPersona?.addEventListener("hide.bs.modal", () => {
-  if (modalFiltroTipoPersona.contains(document.activeElement)) {
-    document.activeElement?.blur?.();
-  }
 });
-
-document
-  .getElementById("filtrarTipoPersona")
-  ?.addEventListener("click", (event) => {
-    event.currentTarget?.blur?.();
-    aplicarFiltroTipoPersona();
-  });
 
 function procesarAccionCapa(nombre) {
   if (!nombre) return;
@@ -1944,28 +1351,10 @@ sidebarNav?.addEventListener("click", (event) => {
   }
   capaTematica?.setVisible(checkbox.checked);
 
-  if (checkbox.id === "servicioBasico") {
-    if (checkbox.checked) {
-      cargarReporteServiciosBasicos();
-    } else {
-      ocultarReporteServiciosBasicos();
-    }
-  }
-
-  if (checkbox.id === "clasificacionPredio") {
-    if (checkbox.checked) {
-      cargarReporteClasificacionPredio();
-    } else {
-      ocultarReporteClasificacionPredio();
-    }
-  }
-
-  if (checkbox.id === "tipoPersona") {
-    if (checkbox.checked) {
-      cargarReporteTipoPersona();
-    } else {
-      ocultarReporteTipoPersona();
-    }
+  const cfgReporte = reportesConfig.find((cfg) => cfg.id === checkbox.id);
+  if (cfgReporte) {
+    if (checkbox.checked) cargarReporte(cfgReporte);
+    else ocultarReportePanel();
   }
 
   actualizarLeyenda();
@@ -1986,7 +1375,7 @@ fotoLoteCerrar?.addEventListener("click", () => {
 });
 
 reporteServiciosCerrar?.addEventListener("click", () => {
-  ocultarReporteServiciosBasicos();
+  ocultarReportePanel();
 });
 
 contenido?.addEventListener("click", (event) => {

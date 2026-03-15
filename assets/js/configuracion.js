@@ -211,6 +211,142 @@ export const ubigeo = UBIGEO,
     }),
   });
 
+// ── Configuración centralizada de reportes ──────────────────────────────────
+// Agregar un nuevo reporte: solo agregar un objeto a este array.
+export const reportesConfig = [
+  {
+    id: "servicioBasico",
+    wfsTypename: "reporte_servicio_basico",
+    titulo: "Estadísticas de servicios básicos",
+    checkboxPrefix: "filtroServicioBasico",
+    modalId: "filtroServicioBasico",
+    filtroContenedorId: "filtroServicioBasicoOpciones",
+    filtrarBtnId: "filtrarServicioBasico",
+    csvNombre: (cod) => `reporte_servicios_sector_${cod}.csv`,
+    csvEncabezado: "Sector,Servicio,Total Predios,Con Servicio,Sin Servicio",
+    sectorIdPrefix: "sector-chart",
+    chartType: "stacked", // gráfico apilado con/sin
+    wmsFiltroParam: null, // usa params individuales: luz=1, agua=0...
+    sincronizarDesdeUrl: true,
+    campos: SERVICIOS_BASICOS.map(({ key, label, color }) => ({
+      key,
+      label,
+      color,
+      campoCon: `predios_con_${key}`,
+      campoSin: `predios_sin_${key}`,
+      codigo: null,
+      estadoInicial: 1,
+    })),
+  },
+  {
+    id: "clasificacionPredio",
+    wfsTypename: "reporte_clasificacion_predio",
+    titulo: "Estadísticas de clasificación del predio",
+    checkboxPrefix: "filtroClasifPredio",
+    modalId: "filtroClasificacionPredio",
+    filtroContenedorId: "filtroClasificacionPredioOpciones",
+    filtrarBtnId: "filtrarClasificacionPredio",
+    csvNombre: (cod) => `reporte_clasificacion_sector_${cod}.csv`,
+    csvEncabezado: "Sector,Clasificación,Total Predios,Cantidad",
+    sectorIdPrefix: "sector-clasif",
+    chartType: "distribuido",
+    wmsFiltroParam: "codigo",
+    sincronizarDesdeUrl: false,
+    campos: [
+      { key: "casa_habitacion",         label: "Casa habitación",          color: "#073763", codigo: "01", estadoInicial: 1 },
+      { key: "tienda_deposito_almacen", label: "Tienda/depósito/almacén",  color: "#0b5394", codigo: "02", estadoInicial: 1 },
+      { key: "predio_en_edificio",      label: "Predio en edificio",       color: "#3d85c6", codigo: "03", estadoInicial: 1 },
+      { key: "otros",                   label: "Otros",                    color: "#6fa8dc", codigo: "04", estadoInicial: 1 },
+      { key: "terreno_sin_construir",   label: "Terreno sin construir",    color: "#9fc5e8", codigo: "05", estadoInicial: 1 },
+      { key: "sin_clasificacion",       label: "Sin clasificación",        color: "#ff0000", codigo: null, estadoInicial: 1 },
+    ],
+  },
+  {
+    id: "tipoPersona",
+    wfsTypename: "reporte_tipo_persona",
+    titulo: "Estadísticas de tipo de persona",
+    checkboxPrefix: "filtroTipoPersona",
+    modalId: "filtroTipoPersona",
+    filtroContenedorId: "filtroTipoPersonaOpciones",
+    filtrarBtnId: "filtrarTipoPersona",
+    csvNombre: (cod) => `reporte_tipo_persona_sector_${cod}.csv`,
+    csvEncabezado: "Sector,Tipo Persona,Total Predios,Cantidad",
+    sectorIdPrefix: "sector-persona",
+    chartType: "distribuido",
+    wmsFiltroParam: "codigo",
+    sincronizarDesdeUrl: false,
+    campos: [
+      { key: "persona_natural",  label: "Persona natural",  color: "#3bc500", codigo: "1", estadoInicial: 1 },
+      { key: "persona_juridica", label: "Persona jurídica", color: "#005700", codigo: "2", estadoInicial: 1 },
+      { key: "sin_tipo_persona", label: "Sin tipo persona", color: "#ff0000", codigo: "0", estadoInicial: 0 },
+    ],
+  },
+];
+
+export const COLOR_SIN_SERVICIO = "#64748b";
+
+export const CAPAS_BASE = [
+  { id: "ortofoto",          titulo: "Ortofoto",          checked: false },
+  { id: "googleMapCalle",    titulo: "Google calles",     checked: false },
+  { id: "googleMapSatelite", titulo: "Google satélite",   checked: true  },
+  { id: "osm",               titulo: "Open Street Map",   checked: false },
+  { id: "esriModoNoche",     titulo: "Esri modo noche",   checked: false },
+];
+
+export const DEFINICION_GRUPOS_WMS = {
+  "Límite censal": {
+    id: "limitesCensales",
+    icono: "activity",
+    acciones: [],
+    categoria: "Cartografía base",
+  },
+  "Predio urbano": {
+    id: "prediosUrbanos",
+    icono: "map",
+    acciones: ["identificar", "descargar"],
+    categoria: "Catastro urbano",
+    extrasPorCapa: {
+      lote: ["filtro", "buscar"],
+      habilitacion_urbana: ["buscar"],
+    },
+  },
+  "Área de circulación": {
+    id: "areasCirulacion",
+    icono: "minimize",
+    acciones: ["identificar", "buscar", "descargar"],
+    titulo: "Áreas de circulación",
+    categoria: "Catastro urbano",
+  },
+  Reporte: {
+    id: "reporteCapas",
+    icono: "bar-chart-2",
+    acciones: ["descargar", "filtro"],
+    categoria: "Reporte",
+  },
+  Interoperabilidad: {
+    id: "interoperabilidad",
+    icono: "repeat",
+    acciones: ["identificar"],
+    identificarDirecto: true,
+    categoria: "Interoperabilidad",
+  },
+};
+
+export const CONFIG_BUSQUEDA_VIA_HAB = {
+  habilitacion_urbana: {
+    titulo: "Buscar habilitación urbana",
+    etiqueta: "Ingrese el nombre de una habilitación urbana:",
+    placeholder: "Ingresar nombre",
+    campo: "nomb_hab_urb",
+  },
+  eje_via: {
+    titulo: "Buscar una dirección",
+    etiqueta: "Ingresar el nombre de la calle, avenida, jirón...",
+    placeholder: "Ingresar nombre",
+    campo: "nomb_via",
+  },
+};
+
 export function fechaHoy() {
   const fecha = new Date(),
     dia = String(fecha.getDate()).padStart(2, "0"),
