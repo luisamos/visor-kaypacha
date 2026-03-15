@@ -28,7 +28,28 @@ import ImageWMS from "ol/source/ImageWMS";
 import GeoJSON from "ol/format/GeoJSON";
 import { Vector as VectorSource } from "ol/source";
 import { Vector as VectorLayer } from "ol/layer";
-import { Style, Stroke } from "ol/style";
+import { Style, Stroke, Fill } from "ol/style";
+
+function crearEstiloAchurado() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 8;
+  canvas.height = 8;
+  const ctx = canvas.getContext("2d");
+  ctx.strokeStyle = "rgba(255,0,0,0.55)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 8);
+  ctx.lineTo(8, 0);
+  ctx.moveTo(-2, 2);
+  ctx.lineTo(2, -2);
+  ctx.moveTo(6, 10);
+  ctx.lineTo(10, 6);
+  ctx.stroke();
+  return new Style({
+    stroke: new Stroke({ color: "red", width: 2 }),
+    fill: new Fill({ color: ctx.createPattern(canvas, "repeat") }),
+  });
+}
 
 const legendDiv = document.getElementById("legenda"),
   legendButton = document.getElementById("leyenda"),
@@ -38,7 +59,7 @@ const legendDiv = document.getElementById("legenda"),
   buscarLote = document.getElementById("buscarLote"),
   mensajeBuscarViaHab = document.getElementById("mensajeBuscarViaHab"),
   buscarViaHab = document.getElementById("buscarViaHab"),
-  estilo = new Style({ stroke: new Stroke({ color: "red", width: 2 }) }),
+  estilo = crearEstiloAchurado(),
   contenido = document.getElementById("popup-content"),
   detalleLotePanel = document.getElementById("detalle-lote-panel"),
   detalleLoteBody = document.getElementById("detalle-lote-body"),
