@@ -134,9 +134,9 @@ export const ubigeo = UBIGEO,
     {
       id: "lote",
       texto: `<div class="legend-item"><strong>Lote</strong></div>
-                        <div class="legend-item2"><i style="background:#000000;"></i> Con Ficha</div>
-                        <div class="legend-item2"><i style="background:#ff6600;"></i> Sin Ficha</div>
-                        <div class="legend-item"></div>`,
+              <div class="legend-item2"><i style="background:#000000;"></i> Con Ficha</div>
+              <div class="legend-item2"><i style="background:#ff6600;"></i> Sin Ficha</div>
+              <div class="legend-item"></div>`,
     },
     {
       id: "ejeVia",
@@ -185,6 +185,7 @@ export const ubigeo = UBIGEO,
         <div class="legend-item2"><i style="background:#3d85c6"></i> Predio en edificación</div>
         <div class="legend-item2"><i style="background:#9fc5e8"></i> Terreno sin construcción</div>
         <div class="legend-item2"><i style="background:#6fa8dc"></i> Otros</div>
+        <div class="legend-item2"><i style="background:#ff0000"></i> No identificado</div>
         <div class="legend-item"></div>`,
     },
     {
@@ -192,6 +193,7 @@ export const ubigeo = UBIGEO,
       texto: `<div class="legend-item"><strong>Tipo de persona</strong></div>
             <div class="legend-item2"><i style="background:#3bc500"></i> Persona natural</div>
             <div class="legend-item2"><i style="background:#005700"></i> Persona jurídica</div>
+            <div class="legend-item2"><i style="background:#ff0000"></i> No identificado</div>
             <div class="legend-item"></div>`,
     },
     {
