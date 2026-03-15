@@ -130,15 +130,32 @@ const estadoFiltroClasificacionPredio = Object.fromEntries(
   CAMPOS_CLASIFICACION_PREDIO.map((c) => [c.key, 1]),
 );
 
+const CODIGOS_CLASIFICACION_PREDIO = {
+  casa_habitacion: "01",
+  tienda_deposito_almacen: "02",
+  predio_en_edificio: "03",
+  otros: "04",
+  terreno_sin_construir: "05",
+  // sin_clasificacion no tiene código WMS; solo afecta el gráfico
+};
+
 const CAMPOS_TIPO_PERSONA = [
   { key: "persona_natural", label: "Persona natural", color: "#3bc500" },
   { key: "persona_juridica", label: "Persona jurídica", color: "#005700" },
   { key: "sin_tipo_persona", label: "Sin tipo persona", color: "#ff0000" },
 ];
 
-const estadoFiltroTipoPersona = Object.fromEntries(
-  CAMPOS_TIPO_PERSONA.map((c) => [c.key, 1]),
-);
+const estadoFiltroTipoPersona = {
+  persona_natural: 1,
+  persona_juridica: 1,
+  sin_tipo_persona: 0, // oculto por defecto (default_codigo = "1,2")
+};
+
+const CODIGOS_TIPO_PERSONA = {
+  sin_tipo_persona: "0",
+  persona_natural: "1",
+  persona_juridica: "2",
+};
 
 const CAPAS_BASE = [
   { id: "ortofoto", titulo: "Ortofoto", checked: false },
@@ -732,6 +749,14 @@ function aplicarFiltroClasificacionPredio() {
     if (!checkbox) return;
     estadoFiltroClasificacionPredio[key] = checkbox.checked ? 1 : 0;
   });
+
+  const capa = buscarCapaId("clasificacionPredio");
+  if (capa) {
+    const source = capa.getSource();
+    const urlBase = source?.getUrl?.();
+    if (urlBase) source.setUrl(construirUrlClasificacionPredio(urlBase));
+  }
+
   if (
     ultimosDatosReporteClasificacion &&
     !reporteServiciosPanel?.classList.contains("d-none")
@@ -925,6 +950,14 @@ function aplicarFiltroTipoPersona() {
     if (!checkbox) return;
     estadoFiltroTipoPersona[key] = checkbox.checked ? 1 : 0;
   });
+
+  const capa = buscarCapaId("tipoPersona");
+  if (capa) {
+    const source = capa.getSource();
+    const urlBase = source?.getUrl?.();
+    if (urlBase) source.setUrl(construirUrlTipoPersona(urlBase));
+  }
+
   if (
     ultimosDatosReporteTipoPersona &&
     !reporteServiciosPanel?.classList.contains("d-none")
@@ -1692,6 +1725,36 @@ function construirUrlServicioBasico(baseUrl) {
   FILTRO_SERVICIO_BASICO.forEach(({ key }) => {
     params.set(key, String(estadoFiltroServicioBasico[key] ? 1 : 0));
   });
+
+  const nuevaUrl = `${ruta}?${params.toString()}`;
+  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
+}
+
+function construirUrlClasificacionPredio(baseUrl) {
+  const [urlSinHash, hash] = baseUrl.split("#");
+  const [ruta, query] = urlSinHash.split("?");
+  const params = new URLSearchParams(query || "");
+
+  const codigosActivos = Object.entries(CODIGOS_CLASIFICACION_PREDIO)
+    .filter(([key]) => estadoFiltroClasificacionPredio[key] !== 0)
+    .map(([, code]) => code);
+
+  params.set("codigo", codigosActivos.length ? codigosActivos.join(",") : "99");
+
+  const nuevaUrl = `${ruta}?${params.toString()}`;
+  return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
+}
+
+function construirUrlTipoPersona(baseUrl) {
+  const [urlSinHash, hash] = baseUrl.split("#");
+  const [ruta, query] = urlSinHash.split("?");
+  const params = new URLSearchParams(query || "");
+
+  const codigosActivos = Object.entries(CODIGOS_TIPO_PERSONA)
+    .filter(([key]) => estadoFiltroTipoPersona[key] !== 0)
+    .map(([, code]) => code);
+
+  params.set("codigo", codigosActivos.length ? codigosActivos.join(",") : "9");
 
   const nuevaUrl = `${ruta}?${params.toString()}`;
   return hash ? `${nuevaUrl}#${hash}` : nuevaUrl;
