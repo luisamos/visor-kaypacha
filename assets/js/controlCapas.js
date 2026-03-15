@@ -66,7 +66,15 @@ const busquedaLoteModal = document.getElementById("busquedaLote"),
   busquedaViaHabModal = document.getElementById("busquedaViaHab"),
   busquedaViaHabTitulo = document.getElementById("busquedaViaHabTitulo"),
   busquedaViaHabEtiqueta = document.getElementById("busquedaViaHabEtiqueta"),
-  valorViaHabInput = document.getElementById("valorViaHab");
+  valorViaHabInput = document.getElementById("valorViaHab"),
+  busquedaLoteAuth = document.getElementById("busquedaLoteAuth"),
+  listadoLoteHead = document.getElementById("listado-lote-head"),
+  buscarPorDocInput = document.getElementById("buscarPorDocInput"),
+  btnBuscarPorDoc = document.getElementById("btnBuscarPorDoc"),
+  msgBuscarPorDoc = document.getElementById("msgBuscarPorDoc"),
+  buscarPorTitularInput = document.getElementById("buscarPorTitularInput"),
+  btnBuscarPorTitular = document.getElementById("btnBuscarPorTitular"),
+  msgBuscarPorTitular = document.getElementById("msgBuscarPorTitular");
 
 let capaBusqueda = null,
   lotesBusquedaActual = [],
@@ -668,7 +676,88 @@ function renderizarListadoLotes(data) {
     })
     .join("");
 
+  if (listadoLoteHead) {
+    listadoLoteHead.innerHTML = `<tr>
+      <th>ID lote</th>
+      <th>Área gráfica</th>
+      <th>Área verificada</th>
+      <th>Foto</th>
+      <th>Acción</th>
+    </tr>`;
+  }
   listadoLotePanel.classList.remove("d-none");
+}
+
+function renderizarResultadosPropietarios(resultados) {
+  ocultarListadoVias();
+  if (!listadoLoteBody || !listadoLotePanel) return;
+
+  if (!resultados.length) {
+    ocultarListadoLotes();
+    return;
+  }
+
+  if (listadoLoteHead) {
+    listadoLoteHead.innerHTML = `<tr>
+      <th>#</th>
+      <th>Propietario</th>
+      <th>Documento</th>
+      <th>Ficha</th>
+      <th>ID Lote</th>
+      <th>Acción</th>
+    </tr>`;
+  }
+
+  listadoLoteBody.innerHTML = resultados
+    .map((r, i) => {
+      const nombre = r.razon_social
+        ? r.razon_social
+        : [r.ape_paterno, r.ape_materno, r.nombres].filter(Boolean).join(" ");
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>${nombre || "-"}</td>
+        <td>${r.nume_doc || "-"}</td>
+        <td>${r.numero_ficha || "-"}</td>
+        <td>${r.idlote || "-"}</td>
+        <td>
+          <button type="button" class="btn btn-sm btn-primary" data-idlote="${r.idlote}" title="Acercarse" aria-label="Acercarse">
+            <i class="icon feather icon-search"></i>
+          </button>
+        </td>
+      </tr>`;
+    })
+    .join("");
+
+  listadoLotePanel.classList.remove("d-none");
+}
+
+async function buscarPropietariosPorEndpoint(endpoint, cuerpo, msgEl) {
+  if (msgEl) msgEl.innerHTML = "";
+  try {
+    const respuesta = await fetch(`${direccionApiGIS}${endpoint}`, {
+      method: "POST",
+      headers: construirHeadersConCsrf({ "Content-Type": "application/json" }),
+      credentials: "include",
+      body: JSON.stringify(cuerpo),
+    });
+    const data = await respuesta.json();
+    if (!respuesta.ok || !data?.estado) {
+      throw new Error(data?.msj || "No se pudo realizar la consulta.");
+    }
+    if (!data.resultados?.length) {
+      if (msgEl)
+        msgEl.innerHTML = `<div class="alert alert-sm alert-warning py-1 mb-0">No se encontraron registros.</div>`;
+      return;
+    }
+    ocultarDetalleLote();
+    renderizarResultadosPropietarios(data.resultados);
+    if (busquedaLoteModal) {
+      Modal.getOrCreateInstance(busquedaLoteModal).hide();
+    }
+  } catch (error) {
+    if (msgEl)
+      msgEl.innerHTML = `<div class="alert alert-sm alert-danger py-1 mb-0">${error.message}</div>`;
+  }
 }
 
 function configurarCabeceraListadoVias(tipoBusqueda = "habilitacion_urbana") {
@@ -1577,10 +1666,28 @@ listadoLoteBody?.addEventListener("click", (event) => {
   }
 
   const botonAcercarse = event.target.closest("button[data-indice-lote]");
-  if (!botonAcercarse) return;
+  if (botonAcercarse) {
+    const indice = Number(botonAcercarse.dataset.indiceLote);
+    enfocarLoteBusqueda(indice);
+    return;
+  }
 
-  const indice = Number(botonAcercarse.dataset.indiceLote);
-  enfocarLoteBusqueda(indice);
+  const botonIdlote = event.target.closest("button[data-idlote]");
+  if (!botonIdlote) return;
+
+  const idlote = botonIdlote.dataset.idlote;
+  if (!idlote) return;
+
+  buscarEnCapaWFS({ tipoCapa: "lote", campo: "id_lote", valorBusqueda: idlote })
+    .then(({ data, totalRegistros }) => {
+      if (totalRegistros > 0) {
+        lotesBusquedaActual = data.features || [];
+        enfocarLoteBusqueda(0);
+      } else {
+        mostrarToast("No se encontró el lote en el mapa.", "warning");
+      }
+    })
+    .catch(() => mostrarToast("Error al buscar el lote.", "danger"));
 });
 
 listadoViasCerrar?.addEventListener("click", () => {
@@ -1593,4 +1700,41 @@ listadoViasBody?.addEventListener("click", (event) => {
 
   const indice = Number(botonAcercarse.dataset.indiceVia);
   enfocarViaBusqueda(indice);
+});
+
+// ── Búsqueda por documento / titular (requiere autenticación) ────────────────
+
+document.addEventListener("estado-autenticacion", ({ detail }) => {
+  if (busquedaLoteAuth)
+    busquedaLoteAuth.classList.toggle("d-none", !detail.autenticado);
+});
+
+btnBuscarPorDoc?.addEventListener("click", () => {
+  const valor = buscarPorDocInput?.value.trim();
+  if (!valor) {
+    if (msgBuscarPorDoc)
+      msgBuscarPorDoc.innerHTML = `<div class="alert alert-sm alert-warning py-1 mb-0">Ingresa un número de documento.</div>`;
+    buscarPorDocInput?.focus();
+    return;
+  }
+  buscarPropietariosPorEndpoint("lotes/documento", { num_doc: valor }, msgBuscarPorDoc);
+});
+
+buscarPorDocInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") btnBuscarPorDoc?.click();
+});
+
+btnBuscarPorTitular?.addEventListener("click", () => {
+  const valor = buscarPorTitularInput?.value.trim();
+  if (!valor) {
+    if (msgBuscarPorTitular)
+      msgBuscarPorTitular.innerHTML = `<div class="alert alert-sm alert-warning py-1 mb-0">Ingresa un texto para buscar.</div>`;
+    buscarPorTitularInput?.focus();
+    return;
+  }
+  buscarPropietariosPorEndpoint("lotes/titulares", { texto: valor }, msgBuscarPorTitular);
+});
+
+buscarPorTitularInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") btnBuscarPorTitular?.click();
 });
