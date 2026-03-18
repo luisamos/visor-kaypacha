@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="description" content="Visor de mapas - Geo kayPacha" />
+    <meta name="author" content="Geo KayPacha" />
+    <meta
+      name="keywords"
+      content="nobleui, bootstrap, bootstrap 5, visor, nodejs, openlayers, catastro"
+    />
+
+    <title>Geo KayPacha | Visor Catastral</title>
+
+    <!-- color-modes:js -->
+    <script type="module" src="./assets/js/color-modes.js"></script>
+    <!-- endinject -->
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- End fonts -->
+
+    <!-- core:css -->
+    <link rel="stylesheet" href="./assets/vendors/core/core.css" />
+    <!-- endinject -->
+
+    <!-- Plugin css for this page -->
+    <!-- End plugin css for this page -->
+
+    <!-- inject:css -->
+    <link
+      rel="stylesheet"
+      href="./assets/fonts/feather-font/css/iconfont.css"
+    />
+    <!-- endinject -->
+
+    <!-- Layout styles -->
+    <link rel="stylesheet" href="./assets/css/demo1/style.css" />
+    <!-- End layout styles -->
+
+    <link rel="shortcut icon" href="./assets/images/favicon64.ico" />
+  </head>
+  <!--<body class="sidebar-dark">-->
+
+  <body>
+    <div
+      id="loading-screen"
+      class="loading-overlay"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="loading-icon" aria-hidden="true">
+        <span class="loading-ring"></span>
+        <i data-feather="map-pin" class="loading-pin"></i>
+      </div>
+      <p class="loading-title mb-0">
+        <span class="loading-kay">Geo</span
+        ><span class="loading-pacha">KayPacha</span>
+      </p>
+      <p class="loading-subtitle">Cargando visor catastral Geo Kay Pacha.</p>
+    </div>
+    <div class="main-wrapper">
+      <!-- partial:../../partials/_sidebar.html -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <a href="#" class="sidebar-brand"
+            ><i data-feather="map-pin"></i> Kay<span>Pacha</span>
+          </a>
+          <div class="sidebar-toggler">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+        <div class="sidebar-body">
+          <ul class="nav" id="sidebarNav">
+            <li class="nav-item nav-category">Capas WMS</li>
+            <li
+              class="nav-item px-3 py-2 text-muted small"
+              id="sidebarNavLoading"
+            >
+              Cargando capas del servicio...
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!-- partial -->
+
+      <div class="page-wrapper">
+        <!-- partial:../../partials/_navbar.html -->
+        <nav class="navbar">
+          <div class="navbar-content">
+            <div class="logo-mini-wrapper">
+              <img
+                src="./assets/images/logo-mpc.png"
+                class="logo-mini logo-mini-light"
+                alt="logo"
+              />
+              <img
+                src="./assets/images/logo-mpc-white.png"
+                class="logo-mini logo-mini-dark"
+                alt="logo"
+              />
+            </div>
+
+            <ul class="navbar-nav">
+              <li class="theme-switcher-wrapper nav-item">
+                <input type="checkbox" value="" id="theme-switcher" />
+                <label for="theme-switcher">
+                  <div class="box">
+                    <div class="ball"></div>
+                    <div class="icons">
+                      <i class="feather icon-moon"></i>
+                      <i class="feather icon-sun"></i>
+                    </div>
+                  </div>
+                </label>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  id="profileDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <img
+                    class="w-30px h-30px ms-1 rounded-circle"
+                    src="./assets/images/usuario.png"
+                    alt="profile"
+                  />
+                </a>
+                <div
+                  class="dropdown-menu p-0"
+                  aria-labelledby="profileDropdown"
+                >
+                  <div
+                    class="d-flex flex-column align-items-center border-bottom px-5 py-3"
+                  >
+                    <div class="mb-3">
+                      <img
+                        class="w-80px h-80px rounded-circle"
+                        src="./assets/images/usuario.png"
+                        alt=""
+                      />
+                    </div>
+                    <div class="text-center">
+                      <p class="fs-16px fw-bolder" id="nombres_apellidos">
+                        Visor catastral
+                      </p>
+                      <p class="fs-12px text-secondary" id="correo_electronico">
+                        acceso al módulo
+                      </p>
+                    </div>
+                  </div>
+                  <form id="loginForm" class="px-4 py-3 border-bottom">
+                    <div class="mb-2">
+                      <label for="loginUsuario" class="form-label mb-1"
+                        >Usuario</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="loginUsuario"
+                        placeholder="Ingresa tu usuario"
+                        autocomplete="username"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label for="loginContrasena" class="form-label mb-1"
+                        >Contraseña</label
+                      >
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="loginContrasena"
+                        placeholder="Ingresa tu contraseña"
+                        autocomplete="current-password"
+                      />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                      Ingresar
+                    </button>
+                  </form>
+                  <ul class="list-unstyled p-1">
+                    <!--<li class="dropdown-item py-2">
+                      <a
+                        href="../../pages/general/profile.html"
+                        class="text-body ms-0"
+                      >
+                        <i class="me-2 icon-md" data-feather="user"></i>
+                        <span>Perfil</span>
+                      </a>
+                    </li>
+                    <li class="dropdown-item py-2">
+                      <a href="javascript:;" class="text-body ms-0">
+                        <i class="me-2 icon-md" data-feather="edit"></i>
+                        <span>Editar perfil</span>
+                      </a>
+                    </li>-->
+                    <li class="dropdown-item py-2" id="logoutItem">
+                      <a href="javascript:;" class="text-body ms-0">
+                        <i class="me-2 icon-md" data-feather="log-out"></i>
+                        <span>Salir</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+
+            <a href="#" class="sidebar-toggler">
+              <i data-feather="menu"></i>
+            </a>
+          </div>
+        </nav>
+        <!-- partial -->
+
+        <div class="page-content">
+          <div id="map"></div>
+          <div id="logo-container">
+            <img src="" alt="Logo" id="logo" width="150" />
+          </div>
+          <section id="foto-lote-panel" class="foto-lote-panel d-none">
+            <div class="foto-lote-head">
+              <h6 class="mb-0">Fotografía del lote</h6>
+              <button
+                type="button"
+                id="foto-lote-cerrar"
+                class="btn-close btn-close-panel"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="foto-lote-body">
+              <img id="foto-lote-img" src="" alt="Fotografía del lote" />
+            </div>
+          </section>
+          <section
+            id="reporte-servicios-panel"
+            class="reporte-servicios-panel d-none"
+          >
+            <div class="reporte-servicios-head">
+              <h6 class="mb-0" id="reporte-servicios-titulo">
+                Estadísticas de servicios básicos
+              </h6>
+              <button
+                type="button"
+                id="reporte-servicios-cerrar"
+                class="btn-close btn-close-panel"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div
+              class="reporte-servicios-body"
+              id="reporte-servicios-body"
+            ></div>
+          </section>
+          <div id="legenda" class="legend"></div>
+          <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div class="popup-title">
+              <i data-feather="info"></i> Información del lote
+            </div>
+            <div id="popup-content"></div>
+          </div>
+
+          <section id="detalle-lote-panel" class="detalle-lote-panel d-none">
+            <div class="detalle-lote-head">
+              <h6 class="mb-0">
+                <i data-feather="info"></i> Detalle de propietarios
+              </h6>
+              <button
+                type="button"
+                id="detalle-lote-cerrar"
+                class="btn-close btn-close-panel"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="table-responsive detalle-lote-table-wrapper">
+              <table class="table table-sm mb-0 detalle-lote-table">
+                <thead>
+                  <tr>
+                    <th>Apellido paterno</th>
+                    <th>Apellido materno</th>
+                    <th>Nombres / Razón social</th>
+                    <th>Documento</th>
+                    <th>Ficha individual</th>
+                  </tr>
+                </thead>
+                <tbody id="detalle-lote-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="listado-lote-panel" class="detalle-lote-panel d-none">
+            <div class="detalle-lote-head">
+              <h6 class="mb-0">Resultados de búsqueda de lotes</h6>
+              <button
+                type="button"
+                id="listado-lote-cerrar"
+                class="btn-close btn-close-panel"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="table-responsive detalle-lote-table-wrapper">
+              <table class="table table-sm mb-0 detalle-lote-table">
+                <thead id="listado-lote-head">
+                  <tr>
+                    <th>ID lote</th>
+                    <th>Área gráfica</th>
+                    <th>Área verificada</th>
+                    <th>Foto</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="listado-lote-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="listado-vias-panel" class="detalle-lote-panel d-none">
+            <div class="detalle-lote-head">
+              <h6 class="mb-0">Resultados de búsqueda</h6>
+              <button
+                type="button"
+                id="listado-vias-cerrar"
+                class="btn-close btn-close-panel"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="table-responsive detalle-lote-table-wrapper">
+              <table class="table table-sm mb-0 detalle-lote-table">
+                <thead id="listado-vias-head">
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Nombre</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="listado-vias-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <div id="button-group" class="button-group">
+            <button
+              id="controlVistaGeneral"
+              class="btn btn-danger"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Vista general"
+            >
+              <i data-feather="home" class="icon-sm"></i>
+            </button>
+            <button
+              id="controlMas"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Acercase al mapa"
+            >
+              <i data-feather="plus" class="icon-sm"></i>
+            </button>
+            <button
+              id="controlMenos"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Alejarse al mapa"
+            >
+              <i data-feather="minus" class="icon-sm"></i>
+            </button>
+            <!--<button
+              data-panel="panel1"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Buscar por Centro Poblado"
+            >
+              <i data-feather="search" class="icon-sm"></i>
+            </button>-->
+            <button
+              data-panel="panel2"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Importar datos geográficos"
+            >
+              <i data-feather="upload-cloud" class="icon-sm"></i>
+            </button>
+            <button
+              data-panel="panel3"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Ubicar coordenadas"
+            >
+              <span class="img-svg-uc"></span>
+            </button>
+            <button
+              id="obtenerCoordenadas"
+              class="btn btn-secondary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Obtener coordenadas"
+            >
+              <i data-feather="crosshair" class="icon-sm"></i>
+            </button>
+
+            <button
+              id="leyenda"
+              class="btn btn-primary"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-title="Ocultar / mostrar leyenda"
+            >
+              <i data-feather="list" class="icon-sm"></i>
+              <span class="legend-label visually-hidden">Ocultar leyenda</span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="modal fade hide"
+          id="filtroLote"
+          tabindex="-1"
+          aria-labelledby="filtroLote"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable filtro-lote-dialog"
+          >
+            <div class="modal-content">
+              <div class="modal-header modal-header-gradient">
+                <h5 class="modal-title text-white">
+                  <i data-feather="filter"></i> Filtro por lote
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <p class="form-label mb-2">
+                    <strong>Mostrar lote por:</strong>
+                  </p>
+                  <div class="filtro-lote-opciones d-flex flex-column gap-2">
+                    <div class="form-check d-flex align-items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="conFichaLote"
+                        class="form-check-input"
+                      />
+                      <label class="form-check-label mb-0" for="conFichaLote"
+                        >Con ficha catastral</label
+                      >
+                      <span class="badge fw-bolder" style="background: #646b63"
+                        >&nbsp;</span
+                      >
+                    </div>
+                    <div class="form-check d-flex align-items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="sinFichaLote"
+                        class="form-check-input"
+                      />
+                      <label class="form-check-label mb-0" for="sinFichaLote"
+                        >Sin ficha catastral</label
+                      >
+                      <span class="badge fw-bolder" style="background: #ff6600"
+                        >&nbsp;</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="filtrarLote"
+                  data-bs-dismiss="modal"
+                >
+                  Mostrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="filtroServicioBasico"
+          tabindex="-1"
+          aria-labelledby="filtroServicioBasico"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable filtro-lote-dialog"
+          >
+            <div class="modal-content">
+              <div class="modal-header modal-header-gradient">
+                <h5 class="modal-title text-white">
+                  <i data-feather="filter"></i> Filtro servicio básico
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p class="form-label mb-2">
+                  <strong>Mostrar servicio por:</strong>
+                </p>
+                <div
+                  id="filtroServicioBasicoOpciones"
+                  class="filtro-lote-opciones d-flex flex-column gap-2"
+                ></div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="filtrarServicioBasico"
+                  data-bs-dismiss="modal"
+                >
+                  Mostrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="filtroClasificacionPredio"
+          tabindex="-1"
+          aria-labelledby="filtroClasificacionPredio"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable filtro-lote-dialog"
+          >
+            <div class="modal-content">
+              <div class="modal-header modal-header-gradient">
+                <h5 class="modal-title text-white">
+                  <i data-feather="filter"></i> Filtro clasificación del predio
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p class="form-label mb-2">
+                  <strong>Mostrar clasificación por:</strong>
+                </p>
+                <div
+                  id="filtroClasificacionPredioOpciones"
+                  class="filtro-lote-opciones d-flex flex-column gap-2"
+                ></div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="filtrarClasificacionPredio"
+                  data-bs-dismiss="modal"
+                >
+                  Mostrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="filtroTipoPersona"
+          tabindex="-1"
+          aria-labelledby="filtroTipoPersona"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable filtro-lote-dialog"
+          >
+            <div class="modal-content">
+              <div class="modal-header modal-header-gradient">
+                <h5 class="modal-title text-white">
+                  <i data-feather="filter"></i> Filtro tipo de persona
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p class="form-label mb-2">
+                  <strong>Mostrar tipo de persona por:</strong>
+                </p>
+                <div
+                  id="filtroTipoPersonaOpciones"
+                  class="filtro-lote-opciones d-flex flex-column gap-2"
+                ></div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="filtrarTipoPersona"
+                  data-bs-dismiss="modal"
+                >
+                  Mostrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="busquedaLote"
+          tabindex="-1"
+          aria-labelledby="busquedaLote"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+          >
+            <div class="modal-content">
+              <div class="modal-header modal-header-gradient">
+                <h5 class="modal-title text-white">
+                  <i data-feather="search"></i> Buscar lote
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label mb-1"
+                    ><strong>Por ID Lote:</strong></label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="buscarPorIdLoteInput"
+                      placeholder="Ej: 08001"
+                    />
+                    <button
+                      class="btn btn-outline-primary"
+                      type="button"
+                      id="btnBuscarPorIdLote"
+                    >
+                      <i class="icon feather icon-search"></i>
+                    </button>
+                  </div>
+                  <div class="mt-1" id="mensajeBuscarLote"></div>
+                </div>
+
+                <!-- Secciones visibles solo cuando está autenticado -->
+                <div id="busquedaLoteAuth" class="d-none">
+                  <hr class="my-2" />
+                  <div class="mb-3">
+                    <label class="form-label mb-1"
+                      ><strong>Por número de documento:</strong></label
+                    >
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="buscarPorDocInput"
+                        placeholder="Ej: 24490290"
+                        maxlength="15"
+                      />
+                      <button
+                        class="btn btn-outline-primary"
+                        type="button"
+                        id="btnBuscarPorDoc"
+                      >
+                        <i class="icon feather icon-search"></i>
+                      </button>
+                    </div>
+                    <div class="mt-1" id="msgBuscarPorDoc"></div>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label mb-1"
+                      ><strong>Por titular:</strong></label
+                    >
+                    <div class="input-group">
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="buscarPorTitularInput"
+                        placeholder="Ej: temoche"
+                      />
+                      <button
+                        class="btn btn-outline-primary"
+                        type="button"
+                        id="btnBuscarPorTitular"
+                      >
+                        <i class="icon feather icon-search"></i>
+                      </button>
+                    </div>
+                    <div class="mt-1" id="msgBuscarPorTitular"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="modal fade"
+          id="busquedaViaHab"
+          tabindex="-1"
+          aria-labelledby="busquedaViaHab"
+          aria-hidden="true"
+        >
+          <div
+            class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+          >
+            <div class="modal-content">
+              <div class="modal-header modal-header-gradient">
+                <h5 class="modal-title text-white" id="busquedaViaHabTitulo">
+                  <i data-feather="search"></i> Buscar habilitación urbana / eje
+                  de vía
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="btn-close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <p class="form-label mb-0" id="busquedaViaHabEtiqueta">
+                    <strong>Nombre de habilitación urbana o vía:</strong>
+                  </p>
+                </div>
+                <div class="mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="valorViaHab"
+                    maxlength="120"
+                    placeholder="Ingresar nombre"
+                  />
+                </div>
+                <div class="mb-3" id="mensajeBuscarViaHab"></div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" id="buscarViaHab">
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel1" class="side-panel card" style="display: none">
+          <div
+            class="panel-header card-header d-flex justify-content-between align-items-center py-2 px-3"
+          >
+            <p class="mb-0 fw-semibold">Buscar por Centro Poblado</p>
+            <button
+              class="btn-close"
+              data-close="panel1"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <label for="txtBuscar" class="form-label fw-semibold"
+                >Buscar:</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="txtBuscar"
+                placeholder="Digite un lugar..."
+                maxlength="100"
+              />
+            </div>
+
+            <div id="mensajeConsulta" class="table-container"></div>
+            <hr class="my-3" />
+            <div class="mb-3" id="resultado"></div>
+          </div>
+        </div>
+
+        <div id="panel2" class="side-panel card" style="display: none">
+          <div
+            class="panel-header card-header d-flex justify-content-between align-items-center py-2 px-3"
+          >
+            <p class="mb-0 fw-semibold">Importar datos geográficos</p>
+            <button
+              class="btn-close"
+              data-close="panel2"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <label for="tablasGeograficas" class="col-form-label-sm">
+                Tabla:
+              </label>
+              <select id="tablasGeograficas" class="form-select form-select-sm">
+                <option value="Sector" selected>Sector</option>
+                <option value="Manzana">Manzana</option>
+                <option value="Lote">Lote</option>
+                <option value="EjeVia">Eje de Vía</option>
+                <option value="HabilitacionUrbana">Habilitación Urbana</option>
+                <option value="Comercio">Comercio</option>
+                <option value="Construccion">Construcción</option>
+                <option value="Parque">Parque</option>
+                <option value="Puerta">Puerta</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="archivoZip" class="col-form-label-sm">
+                Archivo ShapeFile (zip):
+              </label>
+              <input
+                class="form-control form-control-sm"
+                type="file"
+                id="archivoZip"
+                aria-describedby="archivoHelp"
+              />
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+              <button
+                id="btnCargarArchivoZip"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i data-feather="upload-cloud" class="icon-sm"></i> Cargar
+              </button>
+              <button id="limpiarArchivo" class="btn btn-outline-danger btn-sm">
+                <i data-feather="trash" class="icon-sm"></i> Limpiar
+              </button>
+            </div>
+            <hr class="my-2" />
+            <div class="mb-3">
+              <div id="columnasArchivoShape"></div>
+            </div>
+            <div class="mb-3" id="resultadoValidacion"></div>
+            <div class="d-flex justify-content-center gap-2">
+              <button
+                id="btnConfirmarCarga"
+                class="btn btn-success"
+                style="display: none"
+              >
+                <i data-feather="upload" class="icon-sm"></i> Confirmar carga
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel3" class="side-panel card" style="display: none">
+          <div
+            class="panel-header card-header d-flex justify-content-between align-items-center py-2 px-3"
+          >
+            <p class="mb-0 fw-semibold">Ubicar por coordenadas</p>
+            <button
+              class="btn-close"
+              data-close="panel3"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="card-body p-4">
+            <div class="mb-3">
+              <label for="sistemaReferencia" class="col-form-label-sm">
+                Sistema de referencia:
+              </label>
+              <select id="sistemaReferencia" class="form-select form-select-sm">
+                <option value="4326" selected>WGS84 (decimales)</option>
+                <option value="32717">UTM 17</option>
+                <option value="32718">UTM 18</option>
+                <option value="32719">UTM 19</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label
+                for="coordenadaX"
+                class="col-form-label col-form-label-sm"
+                id="labelX"
+                >Longitud:</label
+              >
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="coordenadaX"
+              />
+            </div>
+            <div class="mb-3">
+              <label
+                for="coordenadaY"
+                class="col-form-label col-form-label-sm"
+                id="labelY"
+                >Latitud:</label
+              >
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="coordenadaY"
+              />
+            </div>
+            <div class="mb-3">
+              <div id="mensajeUbicarCoordenadas"></div>
+            </div>
+            <hr class="my-3" />
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button
+                id="ubicarCoordenadas"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i data-feather="crosshair" class="icon-sm"></i> Ir
+              </button>
+              <button
+                id="limpiarCoordenadas"
+                class="btn btn-outline-danger btn-sm"
+              >
+                <i data-feather="trash" class="icon-sm"></i> Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="toast-container-visor p-3">
+          <div
+            id="toastNotificacion"
+            class="toast align-items-center border-0 toast-visor"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <div class="d-flex">
+              <div class="toast-body">¡Este es un mensaje de ejemplo!</div>
+              <button
+                type="button"
+                class="btn-close me-2 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- partial:../../partials/_footer.html -->
+
+        <footer class="footer app-footer px-4 py-3 border-top small center">
+          <div class="footer-rainbow" aria-hidden="true"></div>
+          <div class="footer-content">
+            <div class="footer-row">
+              <div id="proyeccion" class="footer-item">
+                <strong>Proyección:</strong>
+              </div>
+              <div id="escala" class="footer-item">
+                <strong>Escala:</strong>
+              </div>
+            </div>
+            <div class="footer-row">
+              <div id="posicion" class="footer-item">
+                <strong>Posición:</strong>
+              </div>
+            </div>
+          </div>
+        </footer>
+
+        <!-- partial -->
+      </div>
+    </div>
+
+    <!-- endinject -->
+
+    <!-- Plugin js for this page -->
+    <!-- End plugin js for this page -->
+
+    <!-- inject:js -->
+    <script type="module" src="./assets/js/app.js"></script>
+    <!-- endinject -->
+    <script type="module" src="./main.js"></script>
+    <!-- Custom js for this page -->
+    <!-- End custom js for this page -->
+  </body>
+</html>
