@@ -30,7 +30,7 @@ export default defineConfig({
   },
   proxy: {
     "/*": {
-      target: "http://127.0.0.2:5000",
+      target: "http://10.0.10.66:5000",
       changeOrigin: true,
     },
   },

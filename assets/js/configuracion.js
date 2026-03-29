@@ -12,7 +12,7 @@ import imgLogoMpcWhite from "../images/logo-mpc-white.png";
 import imgProyectoCatastroMpc from "../images/proyecto-catastro-mpc.png";
 
 const IS_DEV = false,
-  UBIGEO = "080108";
+  UBIGEO = "080601";
 
 const configuracionPorUbigeo = {
     "080108": {
@@ -189,9 +189,10 @@ export const ubigeo = UBIGEO,
   proyeccion32719 = "EPSG:32719",
   direccionServicioWMS = `${HOST}:${PORT}/servicio/wms?`,
   direccionServicioWFS = `${HOST}:${PORT}/servicio/wfs?`,
-  //direccionServicioMapCache = `${HOST}:${PORT}/mapcache/?`, // Windows
-  direccionServicioMapCache = `${HOST}:${PORT}/cgi-bin/mapcache/?`, //Linux
-  direccionApiGIS = IS_DEV ? `${HOST}:5000/` : `${HOST}:${PORT}/api-gis/`,
+  direccionServicioMapCache = `${HOST}:${PORT}/mapcache/?`, // Windows
+  direccionApiGIS = `${HOST}:5000/`, //Windows
+  //direccionServicioMapCache = `${HOST}:${PORT}/cgi-bin/mapcache/?`, //Linux
+  //direccionApiGIS = IS_DEV ? `${HOST}:5000/` : `${HOST}:5000/api-gis/`, //Linux
   formatoPNG = "image/png",
   formatoJPEG = "image/jpeg",
   formatoJson = "application/json",
