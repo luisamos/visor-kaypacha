@@ -1,0 +1,181 @@
+/* ================================================================
+   IMAGEN NORTE - esquina superior izquierda del mapa
+   ================================================================ */
+.norte-container {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 11;
+}
+
+.norte-imagen {
+  width: 52px;
+  height: auto;
+  cursor: pointer;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.norte-imagen:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.norte-imagen img {
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+}
+
+[data-bs-theme="dark"] .norte-imagen img {
+  filter: invert(0.85) brightness(1.2);
+}
+
+/* ================================================================
+   PANEL MINI MAPA - mismo estilo que foto-lote-panel
+   ================================================================ */
+.minimapa-panel {
+  position: absolute;
+  top: 100px;
+  right: 60px;
+  width: min(300px, calc(100vw - 80px));
+  z-index: 1000;
+  background-color: var(--bs-card-bg, #ffffff);
+  color: var(--detalle-panel-text);
+  border: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(13, 27, 111, 0.2);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+[data-bs-theme="dark"] .minimapa-panel {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+}
+
+.minimapa-head {
+  padding: 0.5rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-accent));
+  color: #ffffff;
+  border-radius: 14px 14px 0 0;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  cursor: grab;
+}
+
+.minimapa-head:active {
+  cursor: grabbing;
+}
+
+.minimapa-head h6 {
+  color: #ffffff;
+  margin: 0;
+}
+
+.minimapa-body {
+  padding: 0;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+}
+
+#minimapa-map {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+/* ================================================================
+   SEPARADOR VISUAL EN BUTTON-GROUP
+   ================================================================ */
+.button-group-sep {
+  width: 26px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+  margin: 2px auto;
+}
+
+[data-bs-theme="dark"] .button-group-sep {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ================================================================
+   TOOLTIPS DE MEDICIÓN (superficie / perímetro)
+   ================================================================ */
+.ol-tooltip {
+  position: relative;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 4px;
+  color: #ffffff;
+  padding: 4px 8px;
+  opacity: 0.9;
+  white-space: nowrap;
+  font-size: 12px;
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
+}
+
+.ol-tooltip-measure {
+  opacity: 1;
+  font-weight: bold;
+}
+
+.ol-tooltip-static {
+  background-color: #ffcc33;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
+
+.ol-tooltip-measure::before,
+.ol-tooltip-static::before {
+  border-top: 6px solid rgba(0, 0, 0, 0.55);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  margin-left: -7px;
+  left: 50%;
+}
+
+.ol-tooltip-static::before {
+  border-top-color: #ffcc33;
+}
+
+/* ================================================================
+   DESCARGA SHP - ocultar cuando no está autenticado
+   ================================================================ */
+body:not(.usuario-autenticado) .dropdown-menu [data-name^="d"] {
+  display: none !important;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 600px) {
+  .norte-container {
+    top: 10px;
+    left: 8px;
+  }
+
+  .norte-imagen {
+    width: 44px;
+  }
+
+  .minimapa-panel {
+    top: auto;
+    right: 10px;
+    left: 10px;
+    bottom: 90px;
+    width: auto;
+  }
+
+  #minimapa-map {
+    height: 180px;
+  }
+}
