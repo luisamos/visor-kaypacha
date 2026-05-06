@@ -155,6 +155,18 @@ function insertarBotonesBarraDerecha() {
     >
       <i data-feather="printer" class="icon-sm"></i>
     </button>
+
+    <div class="button-group-sep"></div>
+
+    <button
+      id="btnGrillado"
+      class="btn btn-secondary"
+      data-bs-toggle="tooltip"
+      data-bs-placement="left"
+      data-bs-title="Grillado UTM"
+    >
+      <i data-feather="grid" class="icon-sm"></i>
+    </button>
   `;
 
   buttonGroup.insertAdjacentHTML('beforeend', html);

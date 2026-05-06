@@ -408,6 +408,27 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* Botón limpiar búsqueda en cabecera del panel */
+.btn-limpiar-busqueda {
+  font-size: 0.72rem;
+  padding: 0.18rem 0.55rem;
+  line-height: 1.4;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.btn-limpiar-busqueda:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 .detalle-lote-table-wrapper {
   max-height: 230px;
 }
@@ -432,9 +453,25 @@ body {
     transparent
   ) !important;
   background: transparent !important;
+  color: var(--detalle-panel-text) !important;
   font-size: 0.78rem;
   vertical-align: middle;
   white-space: nowrap;
+}
+
+[data-bs-theme="dark"] .detalle-lote-table thead th {
+  color: #ecf1ff !important;
+  background: rgba(124, 160, 255, 0.1) !important;
+  border-color: rgba(124, 160, 255, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .detalle-lote-table tbody td {
+  color: #d8e2ff !important;
+  border-color: rgba(124, 160, 255, 0.18) !important;
+}
+
+[data-bs-theme="dark"] .detalle-lote-table .btn-link {
+  color: #9cc0ff !important;
 }
 
 .detalle-lote-table td.text-wrap-cell {

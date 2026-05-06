@@ -299,12 +299,22 @@
           <section id="listado-lote-panel" class="detalle-lote-panel d-none">
             <div class="detalle-lote-head">
               <h6 class="mb-0">Resultados de búsqueda de lotes</h6>
-              <button
-                type="button"
-                id="listado-lote-cerrar"
-                class="btn-close btn-close-panel"
-                aria-label="Cerrar"
-              ></button>
+              <div class="d-flex align-items-center gap-2">
+                <button
+                  type="button"
+                  id="listado-lote-limpiar"
+                  class="btn btn-sm btn-limpiar-busqueda"
+                  title="Limpiar búsqueda y quitar selección del mapa"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Limpiar
+                </button>
+                <button
+                  type="button"
+                  id="listado-lote-cerrar"
+                  class="btn-close btn-close-panel"
+                  aria-label="Cerrar"
+                ></button>
+              </div>
             </div>
             <div class="table-responsive detalle-lote-table-wrapper">
               <table class="table table-sm mb-0 detalle-lote-table">

@@ -135,6 +135,9 @@ import "./assets/js/controlCalcular";
 // 14. Imprimir mapa
 import "./assets/js/controlImprimir";
 
+// 15. Grillado UTM
+import "./assets/js/controlGrillado";
+
 // Control de carga inicial
 const loadingScreen = document.getElementById("loading-screen");
 global.mapa.once("rendercomplete", function () {

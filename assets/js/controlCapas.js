@@ -1529,6 +1529,12 @@ detalleLoteCerrar?.addEventListener("click", () => {
 });
 
 listadoLoteCerrar?.addEventListener("click", () => {
+  limpiarCapaBusquedaLotes();
+  ocultarListadoLotes();
+});
+
+document.getElementById("listado-lote-limpiar")?.addEventListener("click", () => {
+  limpiarCapaBusquedaLotes();
   ocultarListadoLotes();
 });
 
