@@ -188,10 +188,21 @@ function limpiarCanvas() {
 // ── Wire up button ───────────────────────────────────────────────────────────
 const btnGrillado = document.getElementById("btnGrillado");
 
+let eventosRegistrados = false;
+
+function registrarEventosMapa() {
+  if (eventosRegistrados || !global.mapa) return;
+  global.mapa.on("moveend", dibujar);
+  global.mapa.on("change:size", dibujar);
+  eventosRegistrados = true;
+}
+
 btnGrillado?.addEventListener("click", () => {
   activo = !activo;
   btnGrillado.classList.toggle("btn-primary", activo);
   btnGrillado.classList.toggle("btn-secondary", !activo);
+
+  registrarEventosMapa();
 
   if (activo) {
     if (!overlay) {
@@ -205,9 +216,6 @@ btnGrillado?.addEventListener("click", () => {
     limpiarCanvas();
   }
 });
-
-global.mapa.on("moveend", dibujar);
-global.mapa.on("change:size", dibujar);
 
 // Redraw when theme changes
 new MutationObserver(() => {
