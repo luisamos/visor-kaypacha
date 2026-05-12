@@ -71,13 +71,16 @@ function dibujar() {
   const ctx = overlay.getContext("2d");
   ctx.clearRect(0, 0, W, H);
 
-  const isDark =
-    document.documentElement.getAttribute("data-bs-theme") === "dark";
-  const lineCol = isDark
-    ? "rgba(124,160,255,0.45)"
-    : "rgba(13,27,111,0.28)";
-  const textCol = isDark ? "#e6ebff" : "#1f2a44";
-  const bgCol = isDark ? "rgba(8,16,42,0.82)" : "rgba(255,255,255,0.88)";
+  // ── Colores ──────────────────────────────────────────────────────────────
+  // Las líneas usan doble trazo: sombra oscura + línea blanca encima,
+  // para que sean visibles sobre cualquier capa base (satélite, OSM, etc.)
+  const LINE_SHADOW = "rgba(0,0,0,0.55)";   // contorno oscuro
+  const LINE_COLOR  = "rgba(255,255,255,0.80)"; // línea principal blanca
+  const LINE_DASH   = [5, 7];
+
+  const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+  const textCol = "#ffffff";
+  const bgCol   = isDark ? "rgba(0,0,0,0.72)" : "rgba(20,20,20,0.65)";
 
   const c00 = map.getCoordinateFromPixel([0, 0]);
   const cWH = map.getCoordinateFromPixel([W, H]);
@@ -96,11 +99,26 @@ function dibujar() {
   const xInt = niceInterval(xMax - xMin);
   const yInt = niceInterval(yMax - yMin);
 
-  ctx.strokeStyle = lineCol;
-  ctx.lineWidth = 0.9;
-  ctx.setLineDash([4, 7]);
   ctx.font = "bold 10px Roboto, Arial, sans-serif";
   ctx.textBaseline = "middle";
+
+  function traceLine(x1, y1, x2, y2) {
+    // Shadow pass
+    ctx.strokeStyle = LINE_SHADOW;
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash(LINE_DASH);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    // Bright pass
+    ctx.strokeStyle = LINE_COLOR;
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
 
   // ── Vertical lines (X = const in UTM) ───────────────────────────────────
   const x0 = Math.ceil(xMin / xInt) * xInt;
@@ -109,12 +127,9 @@ function dibujar() {
     const pBot = toPixel([x, yMin - yInt]);
     if (!pTop || !pBot) continue;
 
-    ctx.beginPath();
-    ctx.moveTo(pTop[0], 0);
-    ctx.lineTo(pBot[0], H);
-    ctx.stroke();
+    traceLine(pTop[0], 0, pBot[0], H);
 
-    const px = (pTop[0] * 0.1 + pBot[0] * 0.9);
+    const px = pTop[0] * 0.1 + pBot[0] * 0.9;
     if (px > 40 && px < W - 40) {
       drawLabel(ctx, `X ${fmt(x)}`, px, H - 12, "center", bgCol, textCol);
     }
@@ -127,10 +142,7 @@ function dibujar() {
     const pRight = toPixel([xMax + xInt, y]);
     if (!pLeft || !pRight) continue;
 
-    ctx.beginPath();
-    ctx.moveTo(0, pLeft[1]);
-    ctx.lineTo(W, pRight[1]);
-    ctx.stroke();
+    traceLine(0, pLeft[1], W, pRight[1]);
 
     const py = pLeft[1];
     if (py > 15 && py < H - 20) {
@@ -140,6 +152,7 @@ function dibujar() {
 
   // ── Corner coordinate labels ─────────────────────────────────────────────
   ctx.setLineDash([]);
+  ctx.lineWidth = 1;
   ctx.font = "bold 10px Roboto, Arial, sans-serif";
 
   const corners = [
