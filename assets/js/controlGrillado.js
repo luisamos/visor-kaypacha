@@ -1,9 +1,8 @@
 import proj4 from "proj4";
-
-proj4.defs(
-  "EPSG:32719",
-  "+proj=utm +zone=19 +south +datum=WGS84 +units=m +no_defs",
-);
+import { proyeccion3857, proyeccionDisplay } from "./configuracion";
+// Las defs de proj4 ya están registradas en configuracion.js.
+// proyeccionDisplay es la proyección de visualización activa del municipio
+// (p.ej. "EPSG:32719"); cambiarla en configuracion.js actualiza todo el visor.
 
 let activo = false;
 let overlay = null;
@@ -16,11 +15,11 @@ function niceInterval(range) {
 }
 
 function toUTM(c3857) {
-  return proj4("EPSG:3857", "EPSG:32719", c3857);
+  return proj4(proyeccion3857, proyeccionDisplay, c3857);
 }
 
 function toPixel(utmCoord) {
-  const c = proj4("EPSG:32719", "EPSG:3857", utmCoord);
+  const c = proj4(proyeccionDisplay, proyeccion3857, utmCoord);
   return global.mapa.getPixelFromCoordinate(c);
 }
 

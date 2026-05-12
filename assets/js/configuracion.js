@@ -1,4 +1,5 @@
 import * as bootstrap from "bootstrap";
+import proj4 from "proj4";
 
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
@@ -13,6 +14,18 @@ import imgProyectoCatastroMpc from "../images/proyecto-catastro-mpc.png";
 
 const IS_DEV = true,
   UBIGEO = "080108";
+
+// ── Definiciones proj4 centralizadas ───────────────────────────────────────
+// Agrega aquí cualquier proyección que necesite un municipio.
+// Solo hay que registrarla una vez; todos los módulos la heredan.
+const PROJ4_DEFINICIONES = {
+  "EPSG:4326":  "+proj=longlat +datum=WGS84 +no_defs",
+  "EPSG:3857":  "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs",
+  "EPSG:32717": "+proj=utm +zone=17 +south +datum=WGS84 +units=m +no_defs +type=crs",
+  "EPSG:32718": "+proj=utm +zone=18 +south +datum=WGS84 +units=m +no_defs +type=crs",
+  "EPSG:32719": "+proj=utm +zone=19 +south +datum=WGS84 +units=m +no_defs +type=crs",
+};
+Object.entries(PROJ4_DEFINICIONES).forEach(([epsg, def]) => proj4.defs(epsg, def));
 
 const configuracionPorUbigeo = {
     "080108": {
@@ -30,6 +43,10 @@ const configuracionPorUbigeo = {
       ruta_fotografia:
         "https://catastro.muniwanchaq.gob.pe:9100/storage/img/imageneslotes/",
       ortofotos: "ortofoto",
+      // Proyección de visualización UTM para este municipio.
+      // Cambiar aquí si se despliega en otra zona UTM o país.
+      proyeccion_display: "EPSG:32719",
+      proyeccion_display_texto: "WGS84 - Zona 19L",
     },
     "080601": {
       HOST: IS_DEV ? "http://127.0.0.2" : "http://10.0.10.66",
@@ -44,6 +61,8 @@ const configuracionPorUbigeo = {
       ficha_individual: "",
       ruta_fotografia: "",
       ortofotos: "mpc_tramo_01,mpc_tramo_02",
+      proyeccion_display: "EPSG:32719",
+      proyeccion_display_texto: "WGS84 - Zona 19L",
     },
   },
   configuracionUbigeo =
@@ -61,6 +80,8 @@ const configuracionPorUbigeo = {
     ficha_individual,
     ruta_fotografia,
     ortofotos,
+    proyeccion_display,
+    proyeccion_display_texto,
   } = configuracionUbigeo;
 
 global.activoInformacion;
@@ -187,6 +208,10 @@ export const ubigeo = UBIGEO,
   proyeccion32717 = "EPSG:32717",
   proyeccion32718 = "EPSG:32718",
   proyeccion32719 = "EPSG:32719",
+  // Proyección activa de visualización del municipio (fuente única de verdad).
+  // Cualquier módulo que necesite mostrar coordenadas al usuario importa estos.
+  proyeccionDisplay = proyeccion_display,
+  proyeccionDisplayTexto = proyeccion_display_texto,
   direccionServicioWMS = `${HOST}:${PORT}/servicio/wms?`,
   direccionServicioWFS = `${HOST}:${PORT}/servicio/wfs?`,
   direccionServicioMapCache = `${HOST}:${PORT}/mapcache/?`,
