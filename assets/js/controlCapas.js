@@ -19,6 +19,7 @@ import {
   CAPAS_BASE,
   DEFINICION_GRUPOS_WMS,
   CONFIG_BUSQUEDA_VIA_HAB,
+  isDarkMode,
 } from "./configuracion";
 import { registrarCapaWmsDinamica } from "./capasGeograficas";
 import ApexCharts from "apexcharts";
@@ -326,7 +327,7 @@ function inicializarGraficasReporte(cfg, sectores) {
   });
   graficasReporte = [];
 
-  const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+  const isDark = isDarkMode();
   const textColor = isDark ? "#e6ebff" : "#1f2a44";
   const gridColor = isDark ? "rgba(124,160,255,0.15)" : "rgba(31,42,68,0.1)";
 

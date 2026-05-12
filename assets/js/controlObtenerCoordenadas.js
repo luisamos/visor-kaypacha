@@ -1,9 +1,11 @@
 // js/controlObtenerCoordenadas.js
 import Overlay from "ol/Overlay";
-import proj4 from "proj4";
-import { proyeccionDisplay, proyeccion3857 } from "./configuracion";
-// proyeccionDisplay es la proyección activa del municipio (definida en configuracion.js).
-// No hardcodear "EPSG:32719" aquí: si cambia la zona UTM solo se actualiza configuracion.js.
+import { coordsToDisplay } from "./configuracion";
+import {
+  activarHerramienta,
+  desactivarHerramienta,
+  registrarDesactivador,
+} from "./herramientas";
 
 const botonObtenerCoordendas = document.getElementById("obtenerCoordenadas");
 
@@ -42,22 +44,19 @@ function ocultarPopupCoordenadas() {
 }
 
 function desactivarObtenerCoordenadas({ reanudarDibujo = true } = {}) {
-  const estabaActiva = botonObtenerCoordendas.classList.contains("active");
-  if (estabaActiva) {
-    botonObtenerCoordendas.classList.remove("active");
-  }
-
+  botonObtenerCoordendas.classList.remove("active");
   ocultarPopupCoordenadas();
-
-  if (global.herramientaActiva === "coordenadas") {
-    global.herramientaActiva = null;
-    if (reanudarDibujo && typeof global.reanudarDibujoTemporal === "function") {
-      global.reanudarDibujoTemporal();
-    }
+  desactivarHerramienta("coordenadas");
+  if (reanudarDibujo && typeof global.reanudarDibujoTemporal === "function") {
+    global.reanudarDibujoTemporal();
   }
 }
 
-global.desactivarObtenerCoordenadas = desactivarObtenerCoordenadas;
+// Registra el desactivador para que herramientas.js lo llame automáticamente
+// cuando otra herramienta tome el foco.
+registrarDesactivador("coordenadas", () =>
+  desactivarObtenerCoordenadas({ reanudarDibujo: false }),
+);
 
 cerrarPopup.addEventListener("click", (e) => {
   e.preventDefault();
@@ -77,7 +76,7 @@ botonObtenerCoordendas.addEventListener("click", function () {
     }
 
     botonObtenerCoordendas.classList.add("active");
-    global.herramientaActiva = "coordenadas";
+    activarHerramienta("coordenadas");
   } else {
     desactivarObtenerCoordenadas();
   }
@@ -85,7 +84,7 @@ botonObtenerCoordendas.addEventListener("click", function () {
 
 export function obtenerCoordenadas(e) {
   if (botonObtenerCoordendas.classList.contains("active")) {
-    const coordenadas = proj4(proyeccion3857, proyeccionDisplay, e.coordinate);
+    const coordenadas = coordsToDisplay(e.coordinate);
     const [x, y] = coordenadas.map((coord) => coord.toFixed(4));
     const texto = `<tr><th>X:</th><td>${x}</td></tr><tr><th>Y:</th><td>${y}</td></tr>`;
 

@@ -1,39 +1,35 @@
 import * as bootstrap from "bootstrap";
+import {
+  registrarPanel,
+  mostrarPanel,
+  ocultarPanel,
+} from "./panelManager";
 
-const buttons = document.querySelectorAll("[data-panel]"),
-  panels = document.querySelectorAll(".side-panel");
-let tooltipList;
-
-function mostrarPanel(panelId) {
-  panels.forEach((panel) => {
-    panel.style.display = panel.id === panelId ? "block" : "none";
-  });
-  OcultarTooltips();
-}
-
-buttons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const panelId = button.getAttribute("data-panel");
-    buttons.forEach((btn) => btn.classList.toggle("active", btn === button));
-    mostrarPanel(panelId);
+// Registrar paneles laterales como exclusivos (solo uno visible a la vez).
+// El botonId sincroniza la clase "active" del botón al mostrar/ocultar.
+document.querySelectorAll(".side-panel").forEach((panel) => {
+  if (!panel.id) return;
+  const boton = document.querySelector(`[data-panel="${panel.id}"]`);
+  registrarPanel(panel.id, {
+    exclusivo: true,
+    botonId: boton?.id ?? null,
   });
 });
 
-document.querySelectorAll(".btn-close").forEach((button) => {
+let tooltipList;
+
+document.querySelectorAll("[data-panel]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const panelId = button.getAttribute("data-panel");
+    mostrarPanel(panelId);
+    OcultarTooltips();
+  });
+});
+
+document.querySelectorAll(".btn-close[data-close]").forEach((button) => {
   button.addEventListener("click", (event) => {
     const panelId = event.target.getAttribute("data-close");
-
-    if (!panelId) return;
-
-    const panel = document.getElementById(panelId);
-    if (!panel) return;
-
-    panel.style.display = "none";
-    buttons.forEach((btn) => {
-      if (btn.getAttribute("data-panel") === panelId) {
-        btn.classList.remove("active");
-      }
-    });
+    if (panelId) ocultarPanel(panelId);
   });
 });
 

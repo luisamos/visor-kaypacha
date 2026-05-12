@@ -444,6 +444,25 @@ export const CONFIG_BUSQUEDA_VIA_HAB = {
   },
 };
 
+// ── Helpers de tema ────────────────────────────────────────────────────────
+// Fuente única de verdad para detectar el modo oscuro.
+// Todos los módulos importan esta función en lugar de repetir
+// document.documentElement.getAttribute("data-bs-theme") === "dark".
+export function isDarkMode() {
+  return document.documentElement.getAttribute("data-bs-theme") === "dark";
+}
+
+// ── Helpers de transformación de coordenadas ───────────────────────────────
+// Las transformaciones más frecuentes: mapa (EPSG:3857) ↔ proyección display.
+// Si proyeccionDisplay cambia en configuracion.js, todos los módulos lo heredan.
+export function coordsToDisplay(c3857) {
+  return proj4(proyeccion3857, proyeccionDisplay, c3857);
+}
+
+export function coordsToMap(cDisplay) {
+  return proj4(proyeccionDisplay, proyeccion3857, cDisplay);
+}
+
 export function fechaHoy() {
   const fecha = new Date(),
     dia = String(fecha.getDate()).padStart(2, "0"),

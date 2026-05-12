@@ -1,8 +1,6 @@
-import proj4 from "proj4";
-import { proyeccion3857, proyeccionDisplay } from "./configuracion";
-// Las defs de proj4 ya están registradas en configuracion.js.
-// proyeccionDisplay es la proyección de visualización activa del municipio
-// (p.ej. "EPSG:32719"); cambiarla en configuracion.js actualiza todo el visor.
+import { isDarkMode, coordsToDisplay, coordsToMap } from "./configuracion";
+// proj4, defs y proyeccionDisplay están centralizados en configuracion.js.
+// isDarkMode(), coordsToDisplay() y coordsToMap() son helpers exportados desde allí.
 
 let activo = false;
 let overlay = null;
@@ -15,12 +13,11 @@ function niceInterval(range) {
 }
 
 function toUTM(c3857) {
-  return proj4(proyeccion3857, proyeccionDisplay, c3857);
+  return coordsToDisplay(c3857);
 }
 
 function toPixel(utmCoord) {
-  const c = proj4(proyeccionDisplay, proyeccion3857, utmCoord);
-  return global.mapa.getPixelFromCoordinate(c);
+  return global.mapa.getPixelFromCoordinate(coordsToMap(utmCoord));
 }
 
 function fmt(v) {
@@ -73,13 +70,12 @@ function dibujar() {
   // ── Colores ──────────────────────────────────────────────────────────────
   // Las líneas usan doble trazo: sombra oscura + línea blanca encima,
   // para que sean visibles sobre cualquier capa base (satélite, OSM, etc.)
-  const LINE_SHADOW = "rgba(0,0,0,0.55)";   // contorno oscuro
-  const LINE_COLOR  = "rgba(255,255,255,0.80)"; // línea principal blanca
+  const LINE_SHADOW = "rgba(0,0,0,0.55)";
+  const LINE_COLOR  = "rgba(255,255,255,0.80)";
   const LINE_DASH   = [5, 7];
 
-  const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
   const textCol = "#ffffff";
-  const bgCol   = isDark ? "rgba(0,0,0,0.72)" : "rgba(20,20,20,0.65)";
+  const bgCol   = isDarkMode() ? "rgba(0,0,0,0.72)" : "rgba(20,20,20,0.65)";
 
   const c00 = map.getCoordinateFromPixel([0, 0]);
   const cWH = map.getCoordinateFromPixel([W, H]);

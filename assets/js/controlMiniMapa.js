@@ -7,10 +7,12 @@ import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
+import { registrarPanel, mostrarPanel, ocultarPanel, esPanelVisible } from './panelManager';
 
 const btnMiniMapa = document.getElementById('btnMiniMapa');
-const minimapaPanel = document.getElementById('minimapa-panel');
 const minimapaCerrar = document.getElementById('minimapa-cerrar');
+const PANEL_ID = 'minimapa-panel';
+registrarPanel(PANEL_ID, { exclusivo: false, botonId: 'btnMiniMapa' });
 
 let miniMapa = null;
 let marcadorSource = null;
@@ -59,7 +61,7 @@ function iniciarMiniMapa() {
     escuchandoCambio = true;
     global.mapa.getView().on('change:center', () => {
       const centro = global.mapa.getView().getCenter();
-      if (miniMapa && !minimapaPanel.classList.contains('d-none')) {
+      if (miniMapa && esPanelVisible(PANEL_ID)) {
         miniMapa.getView().setCenter(centro);
         actualizarMarcador(centro);
       }
@@ -74,12 +76,9 @@ function actualizarMarcador(coord) {
 }
 
 function abrirMiniMapa() {
-  minimapaPanel.classList.remove('d-none');
-  btnMiniMapa.classList.add('active');
+  mostrarPanel(PANEL_ID);
   if (!miniMapa) {
-    setTimeout(() => {
-      iniciarMiniMapa();
-    }, 50);
+    setTimeout(iniciarMiniMapa, 50);
   } else {
     miniMapa.updateSize();
     const centro = global.mapa.getView().getCenter();
@@ -89,17 +88,13 @@ function abrirMiniMapa() {
 }
 
 function cerrarMiniMapa() {
-  minimapaPanel.classList.add('d-none');
-  btnMiniMapa.classList.remove('active');
+  ocultarPanel(PANEL_ID);
 }
 
 if (btnMiniMapa) {
   btnMiniMapa.addEventListener('click', () => {
-    if (minimapaPanel.classList.contains('d-none')) {
-      abrirMiniMapa();
-    } else {
-      cerrarMiniMapa();
-    }
+    if (esPanelVisible(PANEL_ID)) cerrarMiniMapa();
+    else abrirMiniMapa();
   });
 }
 

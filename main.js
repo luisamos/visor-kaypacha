@@ -81,9 +81,10 @@ import "./assets/js/acceso";
 
 // 3. Control de capas
 import { obtenerInformacion } from "./assets/js/controlCapas";
+import { obtenerHerramientaActiva } from "./assets/js/herramientas";
 global.mapa.on("singleclick", function (e) {
   obtenerInformacion(e);
-  if (global.herramientaActiva === "coordenadas") {
+  if (obtenerHerramientaActiva() === "coordenadas") {
     obtenerCoordenadas(e);
     return;
   }
