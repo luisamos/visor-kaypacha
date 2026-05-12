@@ -57,7 +57,7 @@ import * as bootstrap from 'bootstrap';
 
   // Applying perfect-scrollbar
   if (document.querySelector('.sidebar .sidebar-body')) {
-    const sidebarBodyScroll = new PerfectScrollbar('.sidebar-body');
+    new PerfectScrollbar('.sidebar-body');
   }
 
 
@@ -90,22 +90,6 @@ import * as bootstrap from 'bootstrap';
     }, true);
 
   }
-
-
-
-  //  sidebar-folded on min-width:992px and max-width: 1199px (in lg only not in xl)
-  // Warning!!! this results apex chart width issue
-  //
-  // const desktopMedium = window.matchMedia('(min-width:992px) and (max-width: 1199px)');
-  // function iconSidebar() {
-  //   if (desktopMedium.matches) {
-  //     body.classList.add('sidebar-folded');
-  //   } else {
-  //     body.classList.remove('sidebar-folded');
-  //   }
-  // }
-  // window.addEventListener('resize', iconSidebar)
-  // iconSidebar();
 
 
 
@@ -244,75 +228,6 @@ import * as bootstrap from 'bootstrap';
       }
     });
   }
-
-  // Prevent body scrolling while sidebar scroll
-  // 
-  // if (sidebarBody) {
-  //   sidebarBody.addEventListener('mouseover', function () {
-  //     body.classList.add('overflow-hidden');
-  //   });
-  //   sidebarBody.addEventListener('mouseout', function () {
-  //     body.classList.remove('overflow-hidden');
-  //   });
-  // }
-
-  // Setup clipboard.js plugin (https://github.com/zenorocha/clipboard.js)
-  const clipboardButtons = document.querySelectorAll('.btn-clipboard');
-
-  if (clipboardButtons.length) {
-
-    clipboardButtons.forEach(btn => {
-      btn.addEventListener('mouseover', function () {
-        this.innerText = 'copy to clipboard';
-      });
-      btn.addEventListener('mouseout', function () {
-        this.innerText = 'copy';
-      });
-    });
-
-    const clipboard = new ClipboardJS('.btn-clipboard');
-
-    clipboard.on('success', function (e) {
-      e.trigger.innerHTML = 'copied';
-      setTimeout(function () {
-        e.trigger.innerHTML = 'copy';
-        e.clearSelection();
-      }, 300)
-    });
-  }
-
-
-  /*
-    // Buy Now & Doc buttons [only for server]
-    const buyNowWrapper  = document.createElement('div'),
-          docLink        = document.createElement('a'),
-          docLinkIcon    = document.createElement('i'),
-          buyNowLink     = document.createElement('a'),
-          buyNowLinkIcon = document.createElement('i'),
-          docLinkHref    = 'https://www.nobleui.com/html/documentation/docs.html',
-          buyNowLinkHref = 'https://1.envato.market/nobleui_admin';
-
-    buyNowWrapper.classList.add('buy-now-wrapper');
-
-    docLink.classList.add('btn', 'btn-primary');
-    docLink.setAttribute('href', docLinkHref);
-    docLink.setAttribute('target', '_blank');
-    docLinkIcon.classList.add('icon-lg');
-    docLinkIcon.setAttribute('data-feather', 'file-text');
-
-    buyNowLink.classList.add('btn', 'btn-danger', 'ms-2');
-    buyNowLink.innerText = '';
-    buyNowLink.setAttribute('href', buyNowLinkHref);
-    buyNowLink.setAttribute('target', '_blank');
-    buyNowLinkIcon.classList.add('icon-lg', 'me-1');
-    buyNowLinkIcon.setAttribute('data-feather', 'shopping-cart');
-
-    docLink.append(docLinkIcon);
-    buyNowLink.prepend(buyNowLinkIcon);
-    buyNowWrapper.append(docLink, buyNowLink);
-    body.append(buyNowWrapper);
-
-  */
 
   // Enable feather-icons with SVG markup
   feather.replace();

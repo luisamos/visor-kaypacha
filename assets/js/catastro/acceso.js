@@ -1,4 +1,5 @@
 import { direccionApiGIS, mostrarToast } from "../core/configuracion";
+import { ocultarPanel } from "../core/panelManager";
 
 const loginForm = document.getElementById("loginForm");
 const inputUsuario = document.getElementById("loginUsuario");
@@ -6,7 +7,6 @@ const inputContrasena = document.getElementById("loginContrasena");
 const nombreEl = document.getElementById("nombres_apellidos");
 const correoEl = document.getElementById("correo_electronico");
 const panel2Button = document.querySelector('button[data-panel="panel2"]');
-const panel2 = document.getElementById("panel2");
 const logoutItem = document.getElementById("logoutItem");
 
 const actualizarEstadoAutenticacion = (autenticado) => {
@@ -23,9 +23,7 @@ const ocultarPanel2 = () => {
     panel2Button.style.display = "none";
     panel2Button.classList.remove("active");
   }
-  if (panel2) {
-    panel2.style.display = "none";
-  }
+  ocultarPanel("panel2");
 };
 
 const mostrarPanel2 = () => {

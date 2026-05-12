@@ -1,4 +1,26 @@
 /* ================================================================
+   PANELES DE HERRAMIENTAS — clases de presentación
+   ================================================================ */
+
+/* Etiqueta de sección dentro de un panel (ej. "Tipo de medición") */
+.panel-section-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+/* Texto de estado dentro de un panel (ej. resultado de medición) */
+.panel-status-text {
+  font-size: 0.82rem;
+}
+
+/* Icono SVG inline dentro de un botón */
+.btn-icon-sm {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* ================================================================
    IMAGEN NORTE - esquina superior izquierda del mapa
    ================================================================ */
 .norte-container {
