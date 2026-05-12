@@ -3,7 +3,7 @@ import {
   registrarPanel,
   mostrarPanel,
   ocultarPanel,
-} from "./panelManager";
+} from "../core/panelManager";
 
 // Registrar paneles laterales como exclusivos (solo uno visible a la vez).
 // El botonId sincroniza la clase "active" del botón al mostrar/ocultar.

@@ -3,7 +3,7 @@ import {
   direccionApiGIS,
   construirHeadersConCsrf,
   mostrarToast,
-} from "./configuracion.js";
+} from "../core/configuracion.js";
 
 export function initControlBackupConfig() {
   document.addEventListener("estado-autenticacion", ({ detail }) => {

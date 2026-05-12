@@ -1,4 +1,4 @@
-import { direccionApiGIS, mostrarToast } from "./configuracion";
+import { direccionApiGIS, mostrarToast } from "../core/configuracion";
 
 const loginForm = document.getElementById("loginForm");
 const inputUsuario = document.getElementById("loginUsuario");

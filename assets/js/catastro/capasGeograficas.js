@@ -4,7 +4,7 @@ import {
   formatoJPEG,
   direccionServicioMapCache,
   ortoFotos,
-} from "./configuracion.js";
+} from "../core/configuracion.js";
 
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";

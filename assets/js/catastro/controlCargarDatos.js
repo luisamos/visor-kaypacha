@@ -3,7 +3,7 @@ import {
   direccionApiGIS,
   mostrarToast,
   construirHeadersConCsrf,
-} from "./configuracion";
+} from "../core/configuracion";
 
 const configuracionCapas = {
   Sector: {

@@ -1,11 +1,11 @@
 // js/controlObtenerCoordenadas.js
 import Overlay from "ol/Overlay";
-import { coordsToDisplay } from "./configuracion";
+import { coordsToDisplay } from "../core/configuracion";
 import {
   activarHerramienta,
   desactivarHerramienta,
   registrarDesactivador,
-} from "./herramientas";
+} from "../core/herramientas";
 
 const botonObtenerCoordendas = document.getElementById("obtenerCoordenadas");
 

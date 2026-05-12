@@ -7,9 +7,9 @@ import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
-import { registrarPanel, mostrarPanel, ocultarPanel, esPanelVisible } from './panelManager';
-import { MINI_MAPA_ZOOM_OFFSET, proyeccion3857 } from './configuracion';
-import { el } from './elements';
+import { registrarPanel, mostrarPanel, ocultarPanel, esPanelVisible } from '../core/panelManager';
+import { MINI_MAPA_ZOOM_OFFSET, proyeccion3857 } from '../core/configuracion';
+import { el } from '../core/elements';
 
 const btnMiniMapa = el('btnMiniMapa');
 const minimapaCerrar = el('minimapa-cerrar');

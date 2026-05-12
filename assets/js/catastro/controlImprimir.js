@@ -1,4 +1,4 @@
-import { logoMiniLight, buscarCapaId, CAPAS_BASE } from './configuracion';
+import { logoMiniLight, buscarCapaId, CAPAS_BASE } from '../core/configuracion';
 
 const btnExportarPNG = document.getElementById('btnExportarPNG');
 

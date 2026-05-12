@@ -1,5 +1,5 @@
-import { isDarkMode, coordsToDisplay, coordsToMap } from "./configuracion";
-import { el } from "./elements";
+import { isDarkMode, coordsToDisplay, coordsToMap } from "../core/configuracion";
+import { el } from "../core/elements";
 // proj4, defs y proyeccionDisplay están centralizados en configuracion.js.
 // isDarkMode(), coordsToDisplay() y coordsToMap() son helpers exportados desde allí.
 

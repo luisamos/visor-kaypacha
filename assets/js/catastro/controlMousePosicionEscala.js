@@ -5,7 +5,7 @@ import {
   proyeccion3857,
   proyeccionDisplayTexto,
   coordsToDisplay,
-} from "./configuracion.js";
+} from "../core/configuracion.js";
 // proj4, defs y la transformación display están centralizados en configuracion.js.
 
 const projectionDiv = document.getElementById("proyeccion");

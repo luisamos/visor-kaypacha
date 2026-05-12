@@ -4,13 +4,13 @@ import proj4 from "proj4";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 
-import imagenVerde from "../images/ubicacionVerde.png";
-import imgLogoMdw from "../images/logo-mdw.png";
-import imgLogoMdwWhite from "../images/logo-mdw-white.png";
-import imgProyectoCatastroMdw from "../images/proyecto-catastro-mdw.jpg";
-import imgLogoMpc from "../images/logo-mpc.png";
-import imgLogoMpcWhite from "../images/logo-mpc-white.png";
-import imgProyectoCatastroMpc from "../images/proyecto-catastro-mpc.png";
+import imagenVerde from "../../images/ubicacionVerde.png";
+import imgLogoMdw from "../../images/logo-mdw.png";
+import imgLogoMdwWhite from "../../images/logo-mdw-white.png";
+import imgProyectoCatastroMdw from "../../images/proyecto-catastro-mdw.jpg";
+import imgLogoMpc from "../../images/logo-mpc.png";
+import imgLogoMpcWhite from "../../images/logo-mpc-white.png";
+import imgProyectoCatastroMpc from "../../images/proyecto-catastro-mpc.png";
 
 const IS_DEV = true,
   UBIGEO = "080108";

@@ -1,4 +1,4 @@
-import { centroide3857 } from "./configuracion";
+import { centroide3857 } from "../core/configuracion";
 
 const controlVistaGeneral = document.getElementById("controlVistaGeneral"),
   controlMas = document.getElementById("controlMas"),

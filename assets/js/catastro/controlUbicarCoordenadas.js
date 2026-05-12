@@ -10,7 +10,7 @@ import {
   proyeccion4326,
   proyeccion3857,
   estiloMarcadorVerde,
-} from "./configuracion";
+} from "../core/configuracion";
 
 const ubicarCoordenadas = document.getElementById("ubicarCoordenadas"),
   limpiarCoordenadas = document.getElementById("limpiarCoordenadas"),

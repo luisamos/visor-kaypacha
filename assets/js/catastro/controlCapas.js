@@ -20,7 +20,7 @@ import {
   DEFINICION_GRUPOS_WMS,
   CONFIG_BUSQUEDA_VIA_HAB,
   isDarkMode,
-} from "./configuracion";
+} from "../core/configuracion";
 import { registrarCapaWmsDinamica } from "./capasGeograficas";
 import ApexCharts from "apexcharts";
 import feather from "feather-icons";

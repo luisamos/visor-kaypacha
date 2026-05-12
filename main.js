@@ -16,12 +16,12 @@ import {
   logoMiniLight,
   logoMiniDark,
   logoContainer,
-} from "./assets/js/configuracion";
-import { capasGeograficas } from "./assets/js/capasGeograficas";
+} from "./assets/js/core/configuracion";
+import { capasGeograficas } from "./assets/js/catastro/capasGeograficas";
 import {
   obtenerCoordenadas,
   registrarOverlayCoordenadas,
-} from "./assets/js/controlObtenerCoordenadas";
+} from "./assets/js/catastro/controlObtenerCoordenadas";
 
 // 0. Configuración global
 global.cubrir = new Overlay({
@@ -70,17 +70,17 @@ global.mapa = new Map({
 window.addEventListener("resize", () => global.mapa.updateSize());
 
 // ── PRIMERO: inyectar HTML de nuevos controles en el DOM ───────────────────────────
-import "./assets/js/initControlesHTML";
+import "./assets/js/ui/initControlesHTML";
 
 // 1. Barra de controles (inicializa tooltips, incluidos los nuevos botones)
-import "./assets/js/barraControles";
+import "./assets/js/ui/barraControles";
 
 // 2. Acceso al módulo
-import "./assets/js/acceso";
+import "./assets/js/catastro/acceso";
 
 // 3. Control de capas
-import { obtenerInformacion } from "./assets/js/controlCapas";
-import { obtenerHerramientaActiva } from "./assets/js/herramientas";
+import { obtenerInformacion } from "./assets/js/catastro/controlCapas";
+import { obtenerHerramientaActiva } from "./assets/js/core/herramientas";
 global.mapa.on("singleclick", function (e) {
   obtenerInformacion(e);
   if (obtenerHerramientaActiva() === "coordenadas") {
@@ -99,44 +99,44 @@ cerrar.onclick = function () {
 import {
   mousePosicion,
   actualizarEscala,
-} from "./assets/js/controlMousePosicionEscala";
+} from "./assets/js/catastro/controlMousePosicionEscala";
 global.mapa.on("pointermove", mousePosicion);
 global.mapa.getView().on("change:resolution", actualizarEscala);
 
 // 5. Controles de vista
-import "./assets/js/controlVistaInicioMasMenos";
+import "./assets/js/catastro/controlVistaInicioMasMenos";
 
 // 6. Carga masiva
-import "./assets/js/controlCargarDatos";
+import "./assets/js/catastro/controlCargarDatos";
 
 // 7. Ubicar coordenadas
-import "./assets/js/controlUbicarCoordenadas";
+import "./assets/js/catastro/controlUbicarCoordenadas";
 
 // 8. Obtener ubicación
 registrarOverlayCoordenadas();
 
 // 9. Botón Norte
-import "./assets/js/controlNorte";
+import "./assets/js/catastro/controlNorte";
 
 // 10. Paneles arrastrables
-import { initDraggablePanels } from "./assets/js/draggable";
+import { initDraggablePanels } from "./assets/js/ui/draggable";
 initDraggablePanels();
 
 // 11. Configuración de backup
-import { initControlBackupConfig } from "./assets/js/controlBackupConfig.js";
+import { initControlBackupConfig } from "./assets/js/catastro/controlBackupConfig.js";
 initControlBackupConfig();
 
 // 12. Mini mapa
-import "./assets/js/controlMiniMapa";
+import "./assets/js/catastro/controlMiniMapa";
 
 // 13. Cálculo de superficie y perímetro
-import "./assets/js/controlCalcular";
+import "./assets/js/catastro/controlCalcular";
 
 // 14. Imprimir mapa
-import "./assets/js/controlImprimir";
+import "./assets/js/catastro/controlImprimir";
 
 // 15. Grillado UTM
-import "./assets/js/controlGrillado";
+import "./assets/js/catastro/controlGrillado";
 
 // Control de carga inicial
 const loadingScreen = document.getElementById("loading-screen");
