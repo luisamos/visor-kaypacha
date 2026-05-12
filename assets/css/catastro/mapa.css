@@ -1,42 +1,11 @@
-@import "../../node_modules/ol/ol.css";
+/* ================================================================
+   MAPA — estilos del dominio catastral
+   Popup, leyenda, paneles de detalle, toolbar, paneles laterales.
+   ================================================================ */
 
-html,
-body {
-  margin: 0;
-  height: 100%;
-  overflow: auto;
-}
+@import "ol/ol.css";
 
-:root {
-  --navbar-height: 60px;
-  --brand-deep: #0d1b6f;
-  --brand-accent: #4d6bff;
-  --brand-bright: #7ca0ff;
-  --brand-surface: #f6f8ff;
-  --popup-bg: #ffffff;
-  --popup-border: #dbe3f5;
-  --popup-text: #1f2a44;
-  --popup-muted-text: #44516f;
-  --popup-title-bg: #f4f7ff;
-  --popup-shadow: 0 14px 30px rgba(13, 27, 111, 0.2);
-  --detalle-panel-bg: rgba(255, 255, 255, 0.95);
-  --detalle-panel-border: rgba(31, 42, 68, 0.16);
-  --detalle-panel-text: #1f2a44;
-  --detalle-panel-link: #2a58c7;
-}
-
-[data-bs-theme="dark"] {
-  --popup-bg: #101a34;
-  --popup-border: rgba(124, 160, 255, 0.35);
-  --popup-text: #e6ebff;
-  --popup-muted-text: #bdc7ea;
-  --popup-title-bg: rgba(124, 160, 255, 0.12);
-  --popup-shadow: 0 16px 32px rgba(3, 8, 24, 0.55);
-  --detalle-panel-bg: rgba(8, 16, 42, 0.96);
-  --detalle-panel-border: rgba(124, 160, 255, 0.45);
-  --detalle-panel-text: #ecf1ff;
-  --detalle-panel-link: #9cc0ff;
-}
+/* ── Contenedor del mapa ───────────────────────────────────────── */
 
 #map {
   width: 100%;
@@ -46,36 +15,7 @@ body {
   position: relative;
 }
 
-.main-wrapper {
-  align-items: stretch;
-}
-
-.page-wrapper {
-  margin-top: 0;
-  min-height: 100vh;
-  min-width: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  padding-top: 0 !important;
-}
-
-.page-content {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  min-width: 0;
-  position: relative;
-  padding: 0;
-}
-
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1200;
-  background: var(--bs-body-bg);
-}
+/* ── Popup de identificación de features ──────────────────────── */
 
 #popup-content {
   max-height: 390px;
@@ -224,7 +164,7 @@ body {
   stroke: #ffffff;
 }
 
-
+/* ── Logo municipalidad ────────────────────────────────────────── */
 
 #logo-container {
   position: absolute;
@@ -238,6 +178,8 @@ body {
   max-width: 150px;
   transition: all 0.3s ease;
 }
+
+/* ── Overlay popup de OpenLayers ───────────────────────────────── */
 
 .ol-popup {
   position: absolute;
@@ -311,6 +253,8 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* ── Leyenda ───────────────────────────────────────────────────── */
+
 .legend {
   position: absolute;
   bottom: 20px;
@@ -357,6 +301,14 @@ body {
   white-space: normal;
   word-break: break-word;
 }
+
+body.sidebar-folded .legend,
+body.sidebar-open .legend {
+  left: 16px;
+  transform: none;
+}
+
+/* ── Panel de detalle de lote ──────────────────────────────────── */
 
 .detalle-lote-panel {
   position: absolute;
@@ -483,6 +435,8 @@ body {
   font-weight: 600;
 }
 
+/* ── Panel de foto de lote ─────────────────────────────────────── */
+
 .foto-lote-panel {
   position: absolute;
   top: 100px;
@@ -543,6 +497,8 @@ body {
   object-fit: contain;
   background: color-mix(in srgb, var(--detalle-panel-border) 15%, transparent);
 }
+
+/* ── Panel de reportes de servicios ───────────────────────────── */
 
 .reporte-servicios-panel {
   position: absolute;
@@ -681,6 +637,8 @@ body {
   vertical-align: middle;
 }
 
+/* ── Toggle de capas ───────────────────────────────────────────── */
+
 .layer-toggle-item {
   display: flex;
   align-items: flex-start;
@@ -704,51 +662,7 @@ body {
   flex-shrink: 0;
 }
 
-.main-wrapper .page-wrapper .page-content {
-  margin-top: 0 !important;
-  padding: 0 !important;
-}
-
-/* Ajustes de la barra superior */
-.navbar {
-  width: 100% !important;
-  left: 0 !important;
-}
-
-.navbar .navbar-content {
-  width: 100% !important;
-}
-
-.navbar .logo-mini-wrapper {
-  display: flex !important;
-  align-items: center;
-  margin-right: 16px;
-}
-
-.navbar .logo-mini-wrapper .logo-mini {
-  height: 40px;
-}
-
-.main-wrapper > .page-wrapper > .page-content {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-}
-
-.main-wrapper > .page-wrapper > .navbar {
-  margin-bottom: 0;
-}
-
-.navbar .navbar-content {
-  padding-left: 16px;
-  padding-right: 16px;
-  align-items: center;
-}
-
-body.sidebar-folded .legend,
-body.sidebar-open .legend {
-  left: 16px;
-  transform: none;
-}
+/* ── Toolbar de botones (derecha del mapa) ─────────────────────── */
 
 .button-group {
   position: absolute;
@@ -803,203 +717,31 @@ body.sidebar-open .legend {
   filter: invert(0);
 }
 
-.app-footer {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 1.35rem;
+.button-group .btn.active,
+.button-group .btn.btn-primary {
+  background: var(--bs-primary);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(77, 107, 255, 0.35);
 }
 
-.footer-rainbow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    #f44336 0%,
-    #f44336 14.28%,
-    #ff9800 14.28%,
-    #ff9800 28.56%,
-    #ffeb3b 28.56%,
-    #ffeb3b 42.84%,
-    #4caf50 42.84%,
-    #4caf50 57.12%,
-    #00bcd4 57.12%,
-    #00bcd4 71.4%,
-    #2196f3 71.4%,
-    #2196f3 85.68%,
-    #9c27b0 85.68%,
-    #9c27b0 100%
-  );
+[data-bs-theme="dark"] .button-group {
+  box-shadow: none;
 }
 
-.footer-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+[data-bs-theme="dark"] .button-group .btn {
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
 }
 
-.footer-row {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-}
-
-.footer-item {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.toast-container-visor {
-  position: fixed;
-  top: calc(var(--navbar-height) + 16px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1100;
-  width: min(440px, 92vw);
-}
-
-.toast-visor {
-  width: 100%;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
-  border-radius: 12px;
-}
-
-.toast-visor .toast-body {
-  color: inherit;
-}
-
-[data-bs-theme="dark"] .toast-visor {
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-}
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-  gap: 16px;
-  padding: 24px;
-  background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(124, 160, 255, 0.16),
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at 82% 30%,
-      rgba(77, 107, 255, 0.18),
-      transparent 45%
-    ),
-    linear-gradient(135deg, #ffffff, var(--brand-surface));
-  z-index: 3000;
-  transition:
-    opacity 0.35s ease,
-    visibility 0.35s ease;
-}
-
-.loading-icon {
-  position: relative;
-  width: 96px;
-  height: 96px;
-  display: grid;
-  place-items: center;
-}
-
-.loading-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 4px solid rgba(13, 27, 111, 0.12);
-  border-top-color: var(--brand-accent);
-  animation: loading-spin 1.4s linear infinite;
-  box-shadow: 0 10px 36px rgba(77, 107, 255, 0.14);
-}
-
-.loading-pin {
-  width: 38px;
-  height: 38px;
-  color: var(--brand-deep);
-  animation: loading-bounce 1.2s ease-in-out infinite;
-}
-
-.loading-title {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-  font-size: 1.5rem;
-  letter-spacing: 0.35px;
-}
-
-.loading-prefix {
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--brand-accent);
-  margin-right: 4px;
-}
-
-.loading-kay {
-  font-weight: 900;
-  color: var(--brand-deep);
-  text-shadow: 0 4px 12px rgba(13, 27, 111, 0.12);
-}
-
-.loading-pacha {
-  font-weight: 900;
-  background: linear-gradient(90deg, var(--brand-accent), var(--brand-bright));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.loading-subtitle {
-  max-width: 720px;
-  line-height: 1.55;
-  margin-top: 2px;
-  color: #3f4a6b;
-}
-
-.loading-overlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-@keyframes loading-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes loading-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
+/* ── Icono SVG ubicar coordenadas ──────────────────────────────── */
 
 .img-svg-uc {
   transform: scale(1);
   width: 18px;
   height: 18px;
-  background: url("../images/ubicar_coordenadas.svg") no-repeat center center;
+  background: url("../../images/ubicar_coordenadas.svg") no-repeat center center;
   background-size: contain;
   display: inline-block;
   filter: brightness(0) saturate(100%);
@@ -1013,13 +755,6 @@ body.sidebar-open .legend {
 [data-bs-theme="dark"] .img-svg-uc {
   filter: brightness(0) saturate(100%) invert(1) contrast(110%);
   opacity: 0.96;
-}
-
-.button-group .btn.active,
-.button-group .btn.btn-primary {
-  background: var(--bs-primary);
-  color: #ffffff;
-  box-shadow: 0 10px 24px rgba(77, 107, 255, 0.35);
 }
 
 .button-group .btn.active .img-svg-uc,
@@ -1037,6 +772,8 @@ body.sidebar-open .legend {
   filter: brightness(0) saturate(100%) invert(1) contrast(115%) brightness(1.05);
   opacity: 1;
 }
+
+/* ── Paneles laterales (herramientas) ──────────────────────────── */
 
 .side-panel {
   position: absolute;
@@ -1097,24 +834,11 @@ body.sidebar-open .legend {
   opacity: 1;
 }
 
-hr {
-  border-top: 1px solid var(--bs-border-color, #e9ecef);
-}
-
-[data-bs-theme="dark"] .button-group {
-  box-shadow: none;
-}
-
-[data-bs-theme="dark"] .button-group .btn {
-  background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: none;
-}
-
 [data-bs-theme="dark"] .side-panel {
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
 }
+
+/* ── Responsive ────────────────────────────────────────────────── */
 
 /* Dispositivos medianos (tabletas) */
 @media (min-width: 601px) and (max-width: 1024px) {

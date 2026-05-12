@@ -1,5 +1,7 @@
-import "./assets/css/style.css";
-import "./assets/css/controles-mapa.css";
+import "./assets/css/core/tokens.css";
+import "./assets/css/ui/layout.css";
+import "./assets/css/catastro/mapa.css";
+import "./assets/css/catastro/controles-mapa.css";
 import "bootstrap";
 
 import Map from "ol/Map";
