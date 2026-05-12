@@ -1,7 +1,9 @@
 // js/controlObtenerCoordenadas.js
 import Overlay from "ol/Overlay";
 import proj4 from "proj4";
-import { proyeccion32719, proyeccion3857 } from "./configuracion";
+import { proyeccionDisplay, proyeccion3857 } from "./configuracion";
+// proyeccionDisplay es la proyección activa del municipio (definida en configuracion.js).
+// No hardcodear "EPSG:32719" aquí: si cambia la zona UTM solo se actualiza configuracion.js.
 
 const botonObtenerCoordendas = document.getElementById("obtenerCoordenadas");
 
@@ -83,7 +85,7 @@ botonObtenerCoordendas.addEventListener("click", function () {
 
 export function obtenerCoordenadas(e) {
   if (botonObtenerCoordendas.classList.contains("active")) {
-    const coordenadas = proj4(proyeccion3857, proyeccion32719, e.coordinate);
+    const coordenadas = proj4(proyeccion3857, proyeccionDisplay, e.coordinate);
     const [x, y] = coordenadas.map((coord) => coord.toFixed(4));
     const texto = `<tr><th>X:</th><td>${x}</td></tr><tr><th>Y:</th><td>${y}</td></tr>`;
 

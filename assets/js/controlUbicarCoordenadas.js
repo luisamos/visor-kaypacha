@@ -54,7 +54,7 @@ ubicarCoordenadas.addEventListener("click", () => {
     return;
   }
 
-  let coordenadasTransformada;
+  let coordenadasTransformada = null;
   switch (sistemaReferencia.value) {
     case "4326":
       coordenadasTransformada = proj4(proyeccion4326, proyeccion3857, [x, y]);
@@ -68,7 +68,16 @@ ubicarCoordenadas.addEventListener("click", () => {
     case "32719":
       coordenadasTransformada = proj4(proyeccion32719, proyeccion3857, [x, y]);
       break;
+    default:
+      mensaje(
+        "mensajeUbicarCoordenadas",
+        `Sistema de referencia no reconocido: "${sistemaReferencia.value}".`,
+        "danger"
+      );
+      return;
   }
+
+  if (!coordenadasTransformada) return;
   irMapa(coordenadasTransformada[0], coordenadasTransformada[1]);
 });
 
@@ -81,8 +90,8 @@ sistemaReferencia.addEventListener("change", () => {
     document.getElementById("labelX").innerHTML = "X";
     document.getElementById("labelY").innerHTML = "Y";
   }
-  document.getElementById("coordenadaX").value = null;
-  document.getElementById("coordenadaY").value = null;
+  document.getElementById("coordenadaX").value = "";
+  document.getElementById("coordenadaY").value = "";
 });
 
 limpiarCoordenadas.addEventListener("click", () => {
