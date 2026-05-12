@@ -196,6 +196,8 @@ export const ubigeo = UBIGEO,
   rutaFotografia = ruta_fotografia,
   ortoFotos = ortofotos,
   zoomMapa = zoom,
+  // Cuántos niveles de zoom se resta al mapa principal para el mini mapa.
+  MINI_MAPA_ZOOM_OFFSET = 4,
   hostServicios = HOST,
   puertoServicios = PORT,
   tituloMunicipalidad = titulo,

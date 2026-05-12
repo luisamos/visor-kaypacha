@@ -1,4 +1,5 @@
 import { isDarkMode, coordsToDisplay, coordsToMap } from "./configuracion";
+import { el } from "./elements";
 // proj4, defs y proyeccionDisplay están centralizados en configuracion.js.
 // isDarkMode(), coordsToDisplay() y coordsToMap() son helpers exportados desde allí.
 
@@ -194,7 +195,7 @@ function limpiarCanvas() {
 }
 
 // ── Wire up button ───────────────────────────────────────────────────────────
-const btnGrillado = document.getElementById("btnGrillado");
+const btnGrillado = el("btnGrillado");
 
 let eventosRegistrados = false;
 

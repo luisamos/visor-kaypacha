@@ -8,9 +8,11 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
 import { registrarPanel, mostrarPanel, ocultarPanel, esPanelVisible } from './panelManager';
+import { MINI_MAPA_ZOOM_OFFSET } from './configuracion';
+import { el } from './elements';
 
-const btnMiniMapa = document.getElementById('btnMiniMapa');
-const minimapaCerrar = document.getElementById('minimapa-cerrar');
+const btnMiniMapa = el('btnMiniMapa');
+const minimapaCerrar = el('minimapa-cerrar');
 const PANEL_ID = 'minimapa-panel';
 registrarPanel(PANEL_ID, { exclusivo: false, botonId: 'btnMiniMapa' });
 
@@ -50,7 +52,7 @@ function iniciarMiniMapa() {
     view: new View({
       projection: 'EPSG:3857',
       center: centroActual,
-      zoom: Math.max(zoomActual - 4, 2)
+      zoom: Math.max(zoomActual - MINI_MAPA_ZOOM_OFFSET, 2)
     }),
     controls: []
   });
