@@ -24,7 +24,6 @@ import {
 } from "./assets/js/controlObtenerCoordenadas";
 
 // 0. Configuración global
-global.herramientaActiva = null;
 global.cubrir = new Overlay({
   element: document.getElementById("popup"),
   autoPan: { animation: { duration: 250 } },
@@ -66,7 +65,7 @@ global.mapa = new Map({
   layers: capasGeograficas,
   view: global.vista,
   controls: controles,
-  overlays: [cubrir],
+  overlays: [global.cubrir],
 });
 window.addEventListener("resize", () => global.mapa.updateSize());
 

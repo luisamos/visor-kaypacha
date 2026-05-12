@@ -8,7 +8,7 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
 import { registrarPanel, mostrarPanel, ocultarPanel, esPanelVisible } from './panelManager';
-import { MINI_MAPA_ZOOM_OFFSET } from './configuracion';
+import { MINI_MAPA_ZOOM_OFFSET, proyeccion3857 } from './configuracion';
 import { el } from './elements';
 
 const btnMiniMapa = el('btnMiniMapa');
@@ -50,7 +50,7 @@ function iniciarMiniMapa() {
     target: 'minimapa-map',
     layers: [capaOsmNoche, capaUbicacion],
     view: new View({
-      projection: 'EPSG:3857',
+      projection: proyeccion3857,
       center: centroActual,
       zoom: Math.max(zoomActual - MINI_MAPA_ZOOM_OFFSET, 2)
     }),

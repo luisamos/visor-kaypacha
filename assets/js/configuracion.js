@@ -84,8 +84,6 @@ const configuracionPorUbigeo = {
     proyeccion_display_texto,
   } = configuracionUbigeo;
 
-global.activoInformacion;
-
 const SERVICIOS_BASICOS = [
   { key: "luz", label: "Luz", color: "#00aae4" },
   { key: "agua", label: "Agua", color: "#6ae1ff" },
