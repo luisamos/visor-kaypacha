@@ -65,6 +65,7 @@ export function mostrarPanel(id) {
   }
 
   entry.el.classList.remove("d-none");
+  entry.el.classList.add("active");
   entry.el.style.removeProperty("display");
   _sincronizarBoton(id, true);
 }
@@ -78,6 +79,7 @@ function _ocultarSinBoton(id) {
   const entry = _paneles.get(id);
   if (!entry) return;
   entry.el.classList.add("d-none");
+  entry.el.classList.remove("active");
   entry.el.style.removeProperty("display");
 }
 
