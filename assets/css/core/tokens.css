@@ -1,0 +1,35 @@
+/* ================================================================
+   DESIGN TOKENS — fuente única de verdad de colores y espaciados
+   Cambiar aquí afecta toda la aplicación. No duplicar en otros archivos.
+   ================================================================ */
+
+:root {
+  --navbar-height: 60px;
+  --brand-deep: #0d1b6f;
+  --brand-accent: #4d6bff;
+  --brand-bright: #7ca0ff;
+  --brand-surface: #f6f8ff;
+  --popup-bg: #ffffff;
+  --popup-border: #dbe3f5;
+  --popup-text: #1f2a44;
+  --popup-muted-text: #44516f;
+  --popup-title-bg: #f4f7ff;
+  --popup-shadow: 0 14px 30px rgba(13, 27, 111, 0.2);
+  --detalle-panel-bg: rgba(255, 255, 255, 0.95);
+  --detalle-panel-border: rgba(31, 42, 68, 0.16);
+  --detalle-panel-text: #1f2a44;
+  --detalle-panel-link: #2a58c7;
+}
+
+[data-bs-theme="dark"] {
+  --popup-bg: #101a34;
+  --popup-border: rgba(124, 160, 255, 0.35);
+  --popup-text: #e6ebff;
+  --popup-muted-text: #bdc7ea;
+  --popup-title-bg: rgba(124, 160, 255, 0.12);
+  --popup-shadow: 0 16px 32px rgba(3, 8, 24, 0.55);
+  --detalle-panel-bg: rgba(8, 16, 42, 0.96);
+  --detalle-panel-border: rgba(124, 160, 255, 0.45);
+  --detalle-panel-text: #ecf1ff;
+  --detalle-panel-link: #9cc0ff;
+}
