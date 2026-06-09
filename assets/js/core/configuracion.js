@@ -76,8 +76,8 @@ const configuracionPorUbigeo = {
     "081304": {
       HOST: IS_DEV ? "http://127.0.0.2" : "http://192.168.1.201",
       PORT: IS_DEV ? "80" : "80",
-      xy: [-8070680.565559075, -1482761.9409198675],
-      zoom: 15,
+      xy: [-8073572.088342987, -1477751.8954943947],
+      zoom: 14,
       titulo: "Municipalidad Distrital de Machupicchu",
       siglas: "MDM",
       logo_light: imgLogoMdm,
