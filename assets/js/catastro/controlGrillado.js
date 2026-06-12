@@ -78,17 +78,23 @@ function dibujar() {
   const textCol = "#ffffff";
   const bgCol   = isDarkMode() ? "rgba(0,0,0,0.72)" : "rgba(20,20,20,0.65)";
 
-  const c00 = map.getCoordinateFromPixel([0, 0]);
-  const cWH = map.getCoordinateFromPixel([W, H]);
-  if (!c00 || !cWH) return;
+  // Esquinas visibles del viewport en UTM. Se usan las cuatro porque la vista
+  // está rotada (convergencia de meridianos) y dos diagonales no cubren todo.
+  const esquinasUTM = [
+    [0, 0],
+    [W, 0],
+    [0, H],
+    [W, H],
+  ].map((p) => {
+    const c = map.getCoordinateFromPixel(p);
+    return c ? toUTM(c) : null;
+  });
+  if (esquinasUTM.some((u) => !u)) return;
 
-  const u00 = toUTM(c00);
-  const uWH = toUTM(cWH);
-
-  const xMin = Math.min(u00[0], uWH[0]);
-  const xMax = Math.max(u00[0], uWH[0]);
-  const yMin = Math.min(u00[1], uWH[1]);
-  const yMax = Math.max(u00[1], uWH[1]);
+  const xMin = Math.min(...esquinasUTM.map((u) => u[0]));
+  const xMax = Math.max(...esquinasUTM.map((u) => u[0]));
+  const yMin = Math.min(...esquinasUTM.map((u) => u[1]));
+  const yMax = Math.max(...esquinasUTM.map((u) => u[1]));
 
   if (xMax <= xMin || yMax <= yMin) return;
 
@@ -152,21 +158,11 @@ function dibujar() {
   ctx.font = "bold 10px Roboto, Arial, sans-serif";
 
   const corners = [
-    { utm: toUTM(c00), px: [2, 2], anchorX: "left", anchorY: "top" },
+    { utm: esquinasUTM[0], px: [2, 2], anchorX: "left", anchorY: "top" },
+    { utm: esquinasUTM[1], px: [W - 2, 2], anchorX: "right", anchorY: "top" },
+    { utm: esquinasUTM[2], px: [2, H - 2], anchorX: "left", anchorY: "bottom" },
     {
-      utm: toUTM(map.getCoordinateFromPixel([W, 0])),
-      px: [W - 2, 2],
-      anchorX: "right",
-      anchorY: "top",
-    },
-    {
-      utm: toUTM(map.getCoordinateFromPixel([0, H])),
-      px: [2, H - 2],
-      anchorX: "left",
-      anchorY: "bottom",
-    },
-    {
-      utm: uWH,
+      utm: esquinasUTM[3],
       px: [W - 2, H - 2],
       anchorX: "right",
       anchorY: "bottom",

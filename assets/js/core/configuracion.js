@@ -490,6 +490,17 @@ export function coordsToMap(cDisplay) {
   return proj4(proyeccionDisplay, proyeccion3857, cDisplay);
 }
 
+// ── Rotación de convergencia de meridianos ─────────────────────────────────
+// Ángulo (rad) entre el norte de cuadrícula de proyeccionDisplay y el norte
+// verdadero en el centro del municipio. La vista del mapa (EPSG:3857) se rota
+// por este ángulo para que la grilla UTM quede vertical/horizontal en pantalla.
+// Se calcula numéricamente con proj4, así funciona con cualquier zona UTM.
+export const rotacionVista = (() => {
+  const u = coordsToDisplay(xy);
+  const n = coordsToMap([u[0], u[1] + 1000]);
+  return -Math.atan2(n[0] - xy[0], n[1] - xy[1]);
+})();
+
 export function fechaHoy() {
   const fecha = new Date(),
     dia = String(fecha.getDate()).padStart(2, "0"),

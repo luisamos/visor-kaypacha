@@ -87,8 +87,9 @@ function componerMapaCanvas(size) {
 }
 
 // Marco + grilla de coordenadas UTM alrededor del área de mapa dibujada.
-// El extent se calcula en EPSG:3857 y las esquinas se transforman a la
-// proyección de visualización (UTM) con coordsToDisplay().
+// Se usan las esquinas visibles del viewport (no calculateExtent, que con la
+// vista rotada por la convergencia devuelve un bbox inflado) y se transforman
+// a la proyección de visualización (UTM) con coordsToDisplay().
 function dibujarMarcoYGrilla(ctx, rect) {
   ctx.strokeStyle = "#555";
   ctx.lineWidth = 1.5;
@@ -97,9 +98,11 @@ function dibujarMarcoYGrilla(ctx, rect) {
   const size = global.mapa.getSize();
   if (!size || !size[0] || !size[1]) return;
 
-  const [minX, minY, maxX, maxY] = global.mapa.getView().calculateExtent(size);
-  const sw = coordsToDisplay([minX, minY]);
-  const ne = coordsToDisplay([maxX, maxY]);
+  const cSW = global.mapa.getCoordinateFromPixel([0, size[1]]);
+  const cNE = global.mapa.getCoordinateFromPixel([size[0], 0]);
+  if (!cSW || !cNE) return;
+  const sw = coordsToDisplay(cSW);
+  const ne = coordsToDisplay(cNE);
   const utmMinX = sw[0],
     utmMaxX = ne[0],
     utmMinY = sw[1],

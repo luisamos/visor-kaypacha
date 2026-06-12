@@ -13,6 +13,7 @@ import {
   proyeccion3857,
   centroide3857,
   zoomMapa,
+  rotacionVista,
   tituloMunicipalidad,
   siglasMunicipalidad,
   logoMiniLight,
@@ -34,11 +35,18 @@ const controles = defaultControls({
   zoom: false,
   attribution: false,
   rotate: true,
+  rotateOptions: {
+    // El "norte" de referencia es el norte de cuadrícula UTM, no el verdadero:
+    // resetear a rotacionVista mantiene la grilla alineada con la pantalla.
+    resetNorth: () =>
+      global.vista.animate({ rotation: rotacionVista, duration: 300 }),
+  },
 });
 global.vista = new View({
   projection: proyeccion3857,
   center: centroide3857,
   zoom: zoomMapa,
+  rotation: rotacionVista,
 });
 
 const logoClaro = document.querySelector(".logo-mini-light"),
