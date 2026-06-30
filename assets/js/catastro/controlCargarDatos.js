@@ -165,6 +165,7 @@ const tablasGeograficas = document.getElementById("tablasGeograficas");
 const btnConfirmarCarga = document.getElementById("btnConfirmarCarga");
 const resultadoValidacion = document.getElementById("resultadoValidacion");
 const btnLimpiarArchivo = document.getElementById("limpiarArchivo");
+const manualCamposTabla = document.getElementById("manualCamposTabla");
 
 let nombreCarpetaActual = null;
 
@@ -789,4 +790,105 @@ function limpiarFormulario({ mantenerResultados = false } = {}) {
   nombreCarpetaActual = null;
   ultimoPayloadValidacion = null;
   validacionEnCurso = false;
+  actualizarManualCampos();
 }
+
+// ── Manual dinámico de campos obligatorios ──────────────────────────────────
+// Muestra, para la tabla seleccionada, qué campos debe preparar el usuario y
+// cuántos dígitos admite cada uno. La información proviene del api-gis
+// (endpoint /campos_tabla/<tabla>), que es la fuente única de las reglas.
+
+const cacheCamposTabla = new Map();
+
+async function obtenerCamposTabla(tabla) {
+  if (cacheCamposTabla.has(tabla)) return cacheCamposTabla.get(tabla);
+
+  const resp = await fetch(`${direccionApiGIS}campos_tabla/${tabla}`, {
+    method: "GET",
+    headers: construirHeadersConCsrf(),
+    credentials: "include",
+  });
+
+  if (!resp.ok) {
+    throw new Error(`No se pudo obtener la información de la tabla (${resp.status}).`);
+  }
+
+  const data = await resp.json();
+  if (!data?.estado || !data.tabla) {
+    throw new Error(data?.mensaje || "Respuesta inválida del servidor.");
+  }
+
+  cacheCamposTabla.set(tabla, data.tabla);
+  return data.tabla;
+}
+
+function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
+  const filas = campos
+    .map((campo) => {
+      const obligatorio = campo.obligatorio
+        ? '<span class="badge bg-danger">Obligatorio</span>'
+        : '<span class="badge bg-secondary">Opcional</span>';
+      const tipo = campo.tipo === "numerico" ? "Numérico" : "Texto";
+      const digitos = campo.digitos
+        ? `${campo.digitos} díg.`
+        : "Variable";
+      return `
+        <tr>
+          <td><code>${campo.etiqueta}</code></td>
+          <td>${tipo}</td>
+          <td class="text-center">${digitos}</td>
+          <td class="text-center">${obligatorio}</td>
+        </tr>`;
+    })
+    .join("");
+
+  return `
+    <div class="alert alert-light border mb-0">
+      <div class="fw-semibold mb-1">
+        <i data-feather="info" class="icon-sm"></i>
+        Campos requeridos para <strong>${tabla}</strong>
+      </div>
+      <div class="small text-muted mb-2">
+        Geometría: <strong>${geometria}</strong> · Proyección: <strong>EPSG:${srid}</strong>.
+        Prepara las columnas del shapefile respetando el número de dígitos indicado.
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th class="text-center">Dígitos</th>
+              <th class="text-center">Requerido</th>
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+async function actualizarManualCampos() {
+  if (!manualCamposTabla) return;
+
+  const tabla = tablasGeograficas.value;
+  manualCamposTabla.innerHTML =
+    '<div class="small text-muted">Cargando campos requeridos...</div>';
+
+  try {
+    const info = await obtenerCamposTabla(tabla);
+    manualCamposTabla.innerHTML = crearManualCampos(info);
+    // Re-renderiza los íconos feather si la librería está disponible.
+    if (window.feather?.replace) window.feather.replace();
+  } catch (error) {
+    console.error("Error al cargar el manual de campos:", error);
+    manualCamposTabla.innerHTML = `<div class="small text-danger">${
+      error?.message || "No se pudieron cargar los campos requeridos."
+    }</div>`;
+  }
+}
+
+tablasGeograficas.addEventListener("change", actualizarManualCampos);
+
+// Render inicial para la tabla seleccionada por defecto.
+actualizarManualCampos();
