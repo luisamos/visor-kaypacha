@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.limit.enabled": false,
+    "workbench.editor.closeOnFileDelete": false,
+  },
+}

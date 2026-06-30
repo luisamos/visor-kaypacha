@@ -1,0 +1,11 @@
+#
+# Geo KayPacha | Visor Catastral
+#
+git init
+git add .
+git commit -m "v.3.9 | 30/06/2026 11:10"
+git branch -M main
+git remote add origin https://github.com/luisamos/visor-kaypacha.git
+git push -u origin main
+
+git pull origin claude/map-zoom-layer-controls-vg8odt
