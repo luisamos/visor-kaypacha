@@ -150,6 +150,10 @@ import "./assets/js/catastro/controlImprimir";
 // 15. Grillado UTM
 import "./assets/js/catastro/controlGrillado";
 
+// 16. Recorrido guiado (ayuda interactiva del footer)
+import { inicializarRecorrido } from "./assets/js/ui/recorridoGuiado";
+inicializarRecorrido();
+
 // Control de carga inicial
 const loadingScreen = document.getElementById("loading-screen");
 global.mapa.once("rendercomplete", function () {

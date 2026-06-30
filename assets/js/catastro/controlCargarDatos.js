@@ -1,5 +1,6 @@
 import { combine, parseShp, parseDbf } from "shpjs";
 import JSZip from "jszip";
+import feather from "feather-icons";
 import {
   direccionApiGIS,
   mostrarToast,
@@ -878,8 +879,8 @@ async function actualizarManualCampos() {
   try {
     const info = await obtenerCamposTabla(tabla);
     manualCamposTabla.innerHTML = crearManualCampos(info);
-    // Re-renderiza los íconos feather si la librería está disponible.
-    if (window.feather?.replace) window.feather.replace();
+    // Re-renderiza los íconos feather del manual recién insertado.
+    feather.replace();
   } catch (error) {
     console.error("Error al cargar el manual de campos:", error);
     manualCamposTabla.innerHTML = `<div class="small text-danger">${
