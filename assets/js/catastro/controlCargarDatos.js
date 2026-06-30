@@ -136,6 +136,20 @@ const configuracionCapas = {
 
 const tablaPorDefecto = Object.keys(configuracionCapas)[0];
 
+// Configuración del sondeo del progreso de carga en segundo plano.
+// Centralizada aquí para ajustar el ritmo sin tocar la lógica.
+const SONDEO_CARGA = {
+  intervaloMs: 1200, // tiempo entre consultas de estado
+  maxIntentos: 600, // tope de seguridad (~12 min) para no sondear indefinidamente
+};
+
+// Estados que devuelve el backend para un trabajo de importación.
+const ESTADO_TRABAJO = {
+  PROCESANDO: "procesando",
+  COMPLETADO: "completado",
+  ERROR: "error",
+};
+
 const columnasExcluidas = [
   "fid",
   "id",
@@ -461,17 +475,111 @@ btnConfirmarCarga.addEventListener("click", async () => {
       mensajeExito: (info) => `✅ ${info.mensaje}`,
     });
 
-    if (cargarData?.estado) {
+    if (!cargarData?.estado) return;
+
+    // La carga corre en segundo plano: sondeamos el progreso hasta que termine
+    // en lugar de mostrar el mensaje inicial con contadores en cero.
+    if (!cargarData.jobId) {
+      // Compatibilidad: backend antiguo que respondía de forma síncrona.
       resultadoValidacion.innerHTML = crearResumenCarga(cargarData);
       limpiarFormulario({ mantenerResultados: true });
+      return;
+    }
+
+    const trabajo = await sondearEstadoCarga(cargarData.jobId, {
+      onProgress: (estado) =>
+        (resultadoValidacion.innerHTML = crearProgresoCarga(estado)),
+    });
+
+    if (trabajo.estado === ESTADO_TRABAJO.COMPLETADO) {
+      mostrarToast("✅ Carga finalizada correctamente", "success");
+      resultadoValidacion.innerHTML = crearResumenCarga(trabajo);
+      limpiarFormulario({ mantenerResultados: true });
+    } else {
+      const mensajeError = trabajo.mensaje || "La carga no pudo completarse.";
+      mostrarToast(`❌ ${mensajeError}`, "danger");
+      resultadoValidacion.innerHTML = `<div class="alert alert-danger">${mensajeError}</div>`;
     }
   } catch (error) {
     console.error("Error:", error);
     mostrarToast("❌ Error al cargar los datos", "danger");
+    resultadoValidacion.innerHTML = `<div class="alert alert-danger">${
+      error?.message || "Ocurrió un problema durante la carga."
+    }</div>`;
   } finally {
     btnConfirmarCarga.disabled = false;
   }
 });
+
+// Espera asíncrona reutilizable.
+const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Consulta periódicamente el estado de un trabajo de importación hasta que
+ * finaliza (completado/error) o se agota el número de intentos.
+ * Devuelve el último estado conocido del trabajo.
+ */
+async function sondearEstadoCarga(jobId, { onProgress } = {}) {
+  let ultimoEstado = {
+    estado: ESTADO_TRABAJO.PROCESANDO,
+    mensaje: "Iniciando carga...",
+    porcentaje: 0,
+  };
+
+  for (let intento = 0; intento < SONDEO_CARGA.maxIntentos; intento += 1) {
+    if (typeof onProgress === "function") onProgress(ultimoEstado);
+
+    const resp = await fetch(`${direccionApiGIS}estado_carga/${jobId}`, {
+      method: "GET",
+      headers: construirHeadersConCsrf(),
+      credentials: "include",
+    });
+
+    if (resp.ok) {
+      const data = await resp.json().catch(() => null);
+      if (data?.estado && data.trabajo) {
+        ultimoEstado = data.trabajo;
+        if (typeof onProgress === "function") onProgress(ultimoEstado);
+        if (
+          ultimoEstado.estado === ESTADO_TRABAJO.COMPLETADO ||
+          ultimoEstado.estado === ESTADO_TRABAJO.ERROR
+        ) {
+          return ultimoEstado;
+        }
+      } else if (resp.status === 404) {
+        // El trabajo expiró del registro: no podemos seguir sondeando.
+        break;
+      }
+    }
+
+    await esperar(SONDEO_CARGA.intervaloMs);
+  }
+
+  return {
+    ...ultimoEstado,
+    estado: ESTADO_TRABAJO.ERROR,
+    mensaje:
+      ultimoEstado.mensaje ||
+      "No se pudo confirmar el estado de la carga (tiempo de espera agotado).",
+  };
+}
+
+/** Renderiza la barra de progreso durante la carga en segundo plano. */
+function crearProgresoCarga({ mensaje, porcentaje = 0, procesados, total } = {}) {
+  const pct = Math.max(0, Math.min(100, Math.round(porcentaje) || 0));
+  const detalle =
+    Number.isFinite(total) && total > 0
+      ? `<div class="small text-muted mt-1">${procesados ?? 0} / ${total} registros</div>`
+      : "";
+
+  return `
+        <div class="mb-2 fw-semibold">${mensaje || "Procesando carga..."}</div>
+        <div class="progress" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: ${pct}%">${pct}%</div>
+        </div>
+        ${detalle}
+    `;
+}
 
 function mostrarResultadoValidacion(reporte, configActual) {
   if (!reporte.length) {
@@ -545,14 +653,22 @@ function mostrarResultadoValidacion(reporte, configActual) {
     `;
 }
 
-function crearResumenCarga({
-  registrosHistorico = 0,
-  registrosInsertados = 0,
-}) {
+function crearResumenCarga(trabajo = {}) {
+  // El backend (endpoint estado_carga) expone las claves: insertados, historico
+  // y procesados. Se mantienen alias por compatibilidad con respuestas previas.
+  const insertados = trabajo.insertados ?? trabajo.registrosInsertados ?? 0;
+  const historico = trabajo.historico ?? trabajo.registrosHistorico ?? 0;
+  const procesados = trabajo.procesados ?? trabajo.total;
+  const lineaProcesados = Number.isFinite(procesados)
+    ? `<p class="mb-1">Registros procesados: <strong>${procesados}</strong></p>`
+    : "";
+
   return `
         <div class="alert alert-success mt-2">
-            <p class="mb-1">Registros históricos actualizados: <strong>${registrosHistorico}</strong></p>
-            <p class="mb-0">Registros insertados: <strong>${registrosInsertados}</strong></p>
+            <p class="mb-1 fw-semibold">${trabajo.mensaje || "Carga finalizada correctamente."}</p>
+            ${lineaProcesados}
+            <p class="mb-1">Registros insertados: <strong>${insertados}</strong></p>
+            <p class="mb-0">Registros enviados al histórico: <strong>${historico}</strong></p>
         </div>
     `;
 }
