@@ -1250,6 +1250,88 @@
       </div>
     </div>
 
+    <div
+      class="modal fade"
+      id="modalBienvenida"
+      tabindex="-1"
+      aria-labelledby="modalBienvenidaTitulo"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-bienvenida-dialog">
+        <div class="modal-content">
+          <div class="modal-header modal-header-gradient">
+            <h5 class="modal-title text-white" id="modalBienvenidaTitulo">
+              <i data-feather="map-pin"></i> Bienvenido a KayPacha
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-4">
+              El visor catastral <strong>KayPacha</strong> te permite explorar,
+              analizar y administrar la información catastral del territorio.
+              Su función se organiza en <strong>3 actividades principales</strong>:
+            </p>
+            <div class="row g-3 bienvenida-tarjetas">
+              <div class="col-12 col-md-4">
+                <div class="bienvenida-tarjeta">
+                  <div class="bienvenida-tarjeta__icono">
+                    <i data-feather="layers"></i>
+                  </div>
+                  <h6 class="bienvenida-tarjeta__titulo">
+                    Gestión de la base catastral
+                  </h6>
+                  <p class="bienvenida-tarjeta__texto">
+                    Consulta, visualiza y actualiza sectores, manzanas, lotes y
+                    demás capas del catastro urbano, incluida la carga masiva
+                    de shapefiles.
+                  </p>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="bienvenida-tarjeta">
+                  <div class="bienvenida-tarjeta__icono">
+                    <i data-feather="bar-chart-2"></i>
+                  </div>
+                  <h6 class="bienvenida-tarjeta__titulo">Reportes temáticos</h6>
+                  <p class="bienvenida-tarjeta__texto">
+                    Genera reportes por territorio (departamento, provincia o
+                    distrito) con los principales indicadores y estadísticas.
+                  </p>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="bienvenida-tarjeta">
+                  <div class="bienvenida-tarjeta__icono">
+                    <i data-feather="database"></i>
+                  </div>
+                  <h6 class="bienvenida-tarjeta__titulo">Backup</h6>
+                  <p class="bienvenida-tarjeta__texto">
+                    Programa y administra copias de seguridad de la
+                    información catastral para mantenerla siempre respaldada.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="btnEntrarVisor"
+              data-bs-dismiss="modal"
+            >
+              Entrar al visor
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- endinject -->
 
     <!-- Plugin js for this page -->

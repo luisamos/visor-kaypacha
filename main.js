@@ -154,11 +154,17 @@ import "./assets/js/catastro/controlGrillado";
 import { inicializarRecorrido } from "./assets/js/ui/recorridoGuiado";
 inicializarRecorrido();
 
+// 17. Modal de bienvenida (explica las 3 actividades principales al entrar)
+import { inicializarModalBienvenida } from "./assets/js/ui/modalBienvenida";
+
 // Control de carga inicial
 const loadingScreen = document.getElementById("loading-screen");
 global.mapa.once("rendercomplete", function () {
   actualizarEscala();
   if (loadingScreen) {
-    setTimeout(() => loadingScreen.classList.add("hidden"), 1000);
+    setTimeout(() => {
+      loadingScreen.classList.add("hidden");
+      inicializarModalBienvenida();
+    }, 1000);
   }
 });
