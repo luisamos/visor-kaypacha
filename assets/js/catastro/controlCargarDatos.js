@@ -829,12 +829,19 @@ function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
       const obligatorio = campo.obligatorio
         ? '<span class="badge bg-danger">Obligatorio</span>'
         : '<span class="badge bg-secondary">Opcional</span>';
-      const tipo = campo.tipo === "numerico" ? "Numérico" : "Texto";
+      // Usa el booleano 'numerico' (confiable); si un backend antiguo no lo
+      // envía, cae al string 'tipo'.
+      const esNumerico =
+        typeof campo.numerico === "boolean"
+          ? campo.numerico
+          : campo.tipo === "numerico";
+      const tipo = esNumerico ? "Numérico" : "Texto";
       const digitos = campo.digitos
         ? `${campo.digitos} díg.`
         : "Variable";
+      const titulo = campo.descripcion ? ` title="${campo.descripcion}"` : "";
       return `
-        <tr>
+        <tr${titulo}>
           <td><code>${campo.etiqueta}</code></td>
           <td>${tipo}</td>
           <td class="text-center">${digitos}</td>
