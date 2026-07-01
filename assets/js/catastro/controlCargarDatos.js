@@ -875,8 +875,21 @@ function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
     </div>`;
 }
 
+function estaAutenticado() {
+  return document.body.classList.contains("usuario-autenticado");
+}
+
 async function actualizarManualCampos() {
   if (!manualCamposTabla) return;
+
+  // El panel "Importar datos geográficos" solo es accesible autenticado; no
+  // tiene sentido (y desperdicia red/recursos del backend) pedir
+  // /campos_tabla si el usuario todavía no inició sesión.
+  if (!estaAutenticado()) {
+    manualCamposTabla.innerHTML = "";
+    posicionarManualFlotante();
+    return;
+  }
 
   const tabla = tablasGeograficas.value;
   manualCamposTabla.innerHTML =
@@ -978,5 +991,15 @@ if (panel2) {
 
 tablasGeograficas.addEventListener("change", actualizarManualCampos);
 
-// Render inicial para la tabla seleccionada por defecto.
+// acceso.js emite este evento al iniciar/cerrar sesión (ver
+// "estado-autenticacion" en assets/js/catastro/acceso.js). Al iniciar sesión
+// recién se pide /campos_tabla; al salir se limpia el callout (y su caché
+// en memoria del cliente sigue siendo válida, ya que la respuesta no
+// depende del usuario).
+document.addEventListener("estado-autenticacion", () => {
+  actualizarManualCampos();
+});
+
+// Render inicial para la tabla seleccionada por defecto: si el usuario aún
+// no inició sesión, esto solo limpia/oculta el callout sin llamar al backend.
 actualizarManualCampos();

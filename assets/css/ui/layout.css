@@ -325,18 +325,25 @@ hr {
 
 /* ── Recorrido guiado (tour) ───────────────────────────────────── */
 
+/* z-index muy por encima de todo lo demás en la app (la pantalla de carga
+   usa 3000, el mayor valor existente) para garantizar que el recorrido
+   siempre quede visible encima de cualquier elemento, sea cual sea su
+   contexto de apilamiento. */
 .tour-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 5000;
   pointer-events: auto;
 }
 
 /* Capa oscura con un "agujero" sobre el elemento resaltado mediante
-   box-shadow gigante, así no tapa el elemento del paso actual. */
+   box-shadow gigante, así no tapa el elemento del paso actual.
+   position:fixed (no absolute): así sus coordenadas coinciden exactamente
+   con las de getBoundingClientRect() del elemento resaltado, sin depender
+   del scroll de la página ni de qué ancestro resulte ser positioned. */
 .tour-highlight {
-  position: absolute;
-  z-index: 1201;
+  position: fixed;
+  z-index: 5001;
   border-radius: 8px;
   box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.6);
   outline: 2px solid var(--bs-primary, #2196f3);
@@ -346,8 +353,8 @@ hr {
 }
 
 .tour-popover {
-  position: absolute;
-  z-index: 1202;
+  position: fixed;
+  z-index: 5002;
   width: min(320px, 90vw);
   background: var(--bs-body-bg, #fff);
   color: var(--bs-body-color, #1f2937);
