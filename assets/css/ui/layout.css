@@ -145,14 +145,78 @@ hr {
 }
 
 @media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
   .footer-recorrido {
     position: static;
     transform: none;
-    margin-top: 0.5rem;
+    align-self: center;
+    width: auto;
+    padding: 0.3rem 0.75rem;
   }
+  /* En móvil se muestra solo el ícono para ahorrar espacio, pero el botón
+     sigue siendo plenamente accesible (con título descriptivo). */
   .footer-recorrido span {
     display: none;
   }
+}
+
+/* ── Manual de campos (callout tipo "nube" junto al selector) ───── */
+
+.manual-callout {
+  position: relative;
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-primary, #2196f3);
+  border-radius: 10px;
+  padding: 0.85rem 0.9rem 0.75rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Flecha superior que "apunta" al control select ubicado encima. */
+.manual-callout::before,
+.manual-callout::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 24px;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+}
+
+.manual-callout::before {
+  border-bottom-color: var(--bs-primary, #2196f3);
+}
+
+.manual-callout::after {
+  left: 25px;
+  border: 8px solid transparent;
+  border-bottom-color: var(--bs-body-bg, #fff);
+}
+
+.manual-callout__title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  padding-right: 1.25rem;
+}
+
+.manual-callout__close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.manual-callout__close:hover {
+  opacity: 1;
 }
 
 .footer-row {

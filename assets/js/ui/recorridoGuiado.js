@@ -5,16 +5,36 @@
  * de modo que añadir, quitar o reordenar un paso no requiere tocar la lógica.
  * La presentación usa variables de Bootstrap (--bs-*), por lo que se adapta
  * automáticamente al modo claro/oscuro (data-bs-theme).
+ *
+ * Los pasos cuyo elemento no exista o no esté visible (p. ej. "Importar datos"
+ * cuando el usuario no ha iniciado sesión) se omiten automáticamente.
  */
 
-// Cada paso apunta a un selector existente en el DOM. Si el elemento no está
-// presente (p. ej. una herramienta oculta), el paso se omite con elegancia.
+// Cada paso apunta a un selector existente en el DOM.
 export const PASOS_RECORRIDO = [
+  {
+    selector: "#profileDropdown",
+    titulo: "Autenticación",
+    texto:
+      "Inicia sesión aquí. Con tu cuenta se habilitan acciones como importar datos y configurar el sistema.",
+  },
+  {
+    selector: ".theme-switcher-wrapper",
+    titulo: "Modo claro u oscuro",
+    texto:
+      "Cambia entre tema claro y oscuro para trabajar cómodo en cualquier condición de luz.",
+  },
   {
     selector: "#sidebarNav",
     titulo: "Catálogo y navegación",
     texto:
       "Aquí encuentras las capas y secciones del visor. Actívalas para mostrarlas en el mapa.",
+  },
+  {
+    selector: "#left-button-group",
+    titulo: "Vista y zoom",
+    texto:
+      "Controles del mapa: vista general (inicio), acercarse (+) y alejarse (−).",
   },
   {
     selector: "#btnCapaBase",
@@ -29,6 +49,12 @@ export const PASOS_RECORRIDO = [
       "Sube tus shapefiles (.zip) para validarlos y cargarlos junto a las capas del catastro.",
   },
   {
+    selector: '[data-panel="panel3"]',
+    titulo: "Ubicar coordenadas",
+    texto:
+      "Escribe una coordenada para desplazar el mapa exactamente a ese punto.",
+  },
+  {
     selector: "#obtenerCoordenadas",
     titulo: "Obtener coordenadas",
     texto:
@@ -41,10 +67,28 @@ export const PASOS_RECORRIDO = [
       "Muestra u oculta la leyenda para interpretar los símbolos y colores de las capas activas.",
   },
   {
-    selector: "#theme-switcher",
-    titulo: "Modo claro u oscuro",
+    selector: "#btnMiniMapa",
+    titulo: "Mini mapa",
     texto:
-      "Cambia entre tema claro y oscuro para trabajar cómodo en cualquier condición de luz.",
+      "Abre un mapa de referencia para ubicarte dentro del territorio mientras navegas.",
+  },
+  {
+    selector: '[data-panel="panelCalcular"]',
+    titulo: "Medir distancia y área",
+    texto:
+      "Mide longitudes y superficies dibujando directamente sobre el mapa.",
+  },
+  {
+    selector: "#btnGrillado",
+    titulo: "Grillado UTM",
+    texto:
+      "Activa o desactiva la cuadrícula de coordenadas UTM sobre el mapa.",
+  },
+  {
+    selector: '[data-panel="panelImprimir"]',
+    titulo: "Exportar / imprimir mapa",
+    texto:
+      "Genera una imagen del mapa actual con título y logo para imprimir o compartir.",
   },
   {
     selector: "#btnRecorridoAyuda",
@@ -55,6 +99,17 @@ export const PASOS_RECORRIDO = [
 ];
 
 const MARGEN = 12; // separación entre el resaltado y el popover
+const ANCHO_MOVIL = 768; // px: por debajo, el popover se ancla abajo
+
+/** Indica si un elemento está presente y visible (ocupa espacio en pantalla). */
+function esVisible(el) {
+  if (!el) return false;
+  if (el.offsetParent === null && getComputedStyle(el).position !== "fixed") {
+    return false;
+  }
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.height > 0;
+}
 
 class RecorridoGuiado {
   constructor(pasos) {
@@ -69,9 +124,9 @@ class RecorridoGuiado {
   }
 
   iniciar() {
-    // Filtra a los pasos cuyo elemento existe en este momento.
+    // Solo pasos cuyo elemento existe y está visible en este momento.
     this.pasosVisibles = this.pasos.filter((p) =>
-      document.querySelector(p.selector),
+      esVisible(document.querySelector(p.selector)),
     );
     if (!this.pasosVisibles.length) return;
 
@@ -110,17 +165,16 @@ class RecorridoGuiado {
   // -- interno ---------------------------------------------------------------
 
   _construirDom() {
+    // Capa que atenúa e impide interactuar con la página durante el recorrido.
+    // No se cierra al hacer clic: solo se sale con la ✕ o la tecla Esc.
     this._overlay = document.createElement("div");
     this._overlay.className = "tour-overlay";
-    this._overlay.addEventListener("click", () => this.finalizar());
 
     this._highlight = document.createElement("div");
     this._highlight.className = "tour-highlight";
 
     this._popover = document.createElement("div");
     this._popover.className = "tour-popover";
-    // Evita que el clic dentro del popover cierre el recorrido.
-    this._popover.addEventListener("click", (e) => e.stopPropagation());
 
     document.body.append(this._overlay, this._highlight, this._popover);
   }
@@ -134,7 +188,7 @@ class RecorridoGuiado {
   _render() {
     const paso = this.pasosVisibles[this.indice];
     const objetivo = document.querySelector(paso.selector);
-    if (!objetivo) {
+    if (!esVisible(objetivo)) {
       // El elemento desapareció: continúa con el siguiente paso válido.
       this.siguiente();
       return;
@@ -146,7 +200,7 @@ class RecorridoGuiado {
     const esPrimero = this.indice === 0;
 
     this._popover.innerHTML = `
-      <button type="button" class="tour-popover__close" aria-label="Cerrar">&times;</button>
+      <button type="button" class="tour-popover__close" aria-label="Salir del recorrido">&times;</button>
       <div class="tour-popover__title">${paso.titulo}</div>
       <div class="tour-popover__body">${paso.texto}</div>
       <div class="tour-popover__footer">
@@ -184,11 +238,21 @@ class RecorridoGuiado {
       height: `${r.height + 8}px`,
     });
 
-    // Coloca el popover en el lado con más espacio disponible.
     const pop = this._popover.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
+    // En pantallas pequeñas el popover se ancla al centro inferior, evitando
+    // que quede fuera de la vista con objetivos grandes (p. ej. el catálogo).
+    if (vw <= ANCHO_MOVIL) {
+      const left = Math.max(MARGEN, (vw - pop.width) / 2);
+      const top = Math.max(MARGEN, vh - pop.height - MARGEN);
+      this._popover.style.left = `${left}px`;
+      this._popover.style.top = `${top}px`;
+      return;
+    }
+
+    // En escritorio: debajo del objetivo o encima si no cabe.
     let top = r.bottom + MARGEN;
     if (top + pop.height > vh) top = r.top - pop.height - MARGEN;
     if (top < MARGEN) top = MARGEN;

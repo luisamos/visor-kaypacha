@@ -844,8 +844,9 @@ function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
     .join("");
 
   return `
-    <div class="alert alert-light border mb-0">
-      <div class="fw-semibold mb-1">
+    <div class="manual-callout">
+      <button type="button" class="manual-callout__close" id="cerrarManualCampos" aria-label="Cerrar ayuda">&times;</button>
+      <div class="manual-callout__title">
         <i data-feather="info" class="icon-sm"></i>
         Campos requeridos para <strong>${tabla}</strong>
       </div>
@@ -879,6 +880,9 @@ async function actualizarManualCampos() {
   try {
     const info = await obtenerCamposTabla(tabla);
     manualCamposTabla.innerHTML = crearManualCampos(info);
+    // Permite cerrar la ayuda; se vuelve a mostrar al cambiar de tabla.
+    const cerrar = document.getElementById("cerrarManualCampos");
+    if (cerrar) cerrar.onclick = () => (manualCamposTabla.innerHTML = "");
     // Re-renderiza los íconos feather del manual recién insertado.
     feather.replace();
   } catch (error) {
