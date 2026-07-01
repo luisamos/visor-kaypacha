@@ -828,24 +828,24 @@ function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
   const filas = campos
     .map((campo) => {
       const obligatorio = campo.obligatorio
-        ? '<span class="badge bg-danger">Obligatorio</span>'
-        : '<span class="badge bg-secondary">Opcional</span>';
+        ? '<span class="badge bg-danger" title="Obligatorio">Sí</span>'
+        : '<span class="badge bg-secondary" title="Opcional">No</span>';
       // Usa el booleano 'numerico' (confiable); si un backend antiguo no lo
       // envía, cae al string 'tipo'.
       const esNumerico =
         typeof campo.numerico === "boolean"
           ? campo.numerico
           : campo.tipo === "numerico";
+      // Tipo y dígitos se combinan en una sola celda compacta (p. ej.
+      // "Numérico · 2 díg.") para que las 3 columnas quepan sin necesidad
+      // de scroll horizontal dentro del ancho fijo del callout.
       const tipo = esNumerico ? "Numérico" : "Texto";
-      const digitos = campo.digitos
-        ? `${campo.digitos} díg.`
-        : "Variable";
+      const detalleTipo = campo.digitos ? `${tipo} · ${campo.digitos} díg.` : tipo;
       const titulo = campo.descripcion ? ` title="${campo.descripcion}"` : "";
       return `
         <tr${titulo}>
           <td><code>${campo.etiqueta}</code></td>
-          <td>${tipo}</td>
-          <td class="text-center">${digitos}</td>
+          <td>${detalleTipo}</td>
           <td class="text-center">${obligatorio}</td>
         </tr>`;
     })
@@ -862,19 +862,16 @@ function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
         Geometría: <strong>${geometria}</strong> · Proyección: <strong>EPSG:${srid}</strong>.
         Prepara las columnas del shapefile respetando el número de dígitos indicado.
       </div>
-      <div class="table-responsive">
-        <table class="table table-sm table-bordered align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Campo</th>
-              <th>Tipo</th>
-              <th class="text-center">Dígitos</th>
-              <th class="text-center">Requerido</th>
-            </tr>
-          </thead>
-          <tbody>${filas}</tbody>
-        </table>
-      </div>
+      <table class="table table-sm table-bordered align-middle mb-0 manual-callout__tabla">
+        <thead class="table-light">
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th class="text-center">Obl.</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
     </div>`;
 }
 
@@ -909,12 +906,19 @@ async function actualizarManualCampos() {
 // El callout vive fuera del panel (ver index.html) para que la tabla de
 // campos nunca fuerce el ancho de #panel2; en su lugar se ancla junto al
 // selector de tabla, como una nube que apunta hacia él.
+//
+// Importante: #panel2 y #manualCamposTabla son hermanos dentro de
+// .page-wrapper (no de .page-content), y ese contenedor tiene
+// "position: static", por lo que el offsetParent real de ambos termina
+// siendo <body>. Por eso el marco de referencia para las cuentas de
+// posición debe ser panel2.offsetParent (no ".page-content", que ni
+// siquiera es su ancestro) — de lo contrario "left/top" se calculan bien
+// pero se interpretan en un sistema de coordenadas distinto.
 
 const panel2 = document.getElementById("panel2");
-const pageContent = document.querySelector(".page-content");
 
 function posicionarManualFlotante() {
-  if (!manualCamposTabla || !panel2 || !pageContent) return;
+  if (!manualCamposTabla || !panel2) return;
 
   if (!manualCamposTabla.childElementCount || !esPanelVisible("panel2")) {
     // Oculta explícitamente: si el panel está cerrado no debe verse el
@@ -923,11 +927,18 @@ function posicionarManualFlotante() {
     return;
   }
 
-  manualCamposTabla.style.display = "";
+  // Se fija explícitamente "block": la base CSS es "display: none" y no
+  // existe una regla ":not(:empty)" que lo revierta, así que basta con
+  // limpiar el inline style no alcanza para mostrarlo.
+  manualCamposTabla.style.display = "block";
+
+  // panel2.offsetParent solo es null si el propio panel2 estuviera oculto,
+  // lo cual ya se descartó arriba con esPanelVisible("panel2").
+  const contenedor = panel2.offsetParent || document.body;
 
   const MARGEN = 8;
   const GAP = 16;
-  const contRect = pageContent.getBoundingClientRect();
+  const contRect = contenedor.getBoundingClientRect();
   const panelRect = panel2.getBoundingClientRect();
   const selectRect = tablasGeograficas.getBoundingClientRect();
   const anchoManual = manualCamposTabla.offsetWidth || 300;

@@ -167,11 +167,13 @@ hr {
 
 .manual-callout {
   position: relative;
+  width: 340px;
   background: var(--bs-body-bg, #fff);
   border: 1px solid var(--bs-primary, #2196f3);
   border-radius: 10px;
   padding: 0.85rem 0.9rem 0.75rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
 }
 
 /* Flecha superior que "apunta" al control select ubicado encima
@@ -220,11 +222,51 @@ hr {
   border-bottom-color: transparent;
 }
 
+/* Tabla compacta (3 columnas: Campo, Tipo, Oblig.) dimensionada para caber
+   siempre dentro del ancho fijo del callout, sin generar scroll horizontal.
+   El texto se ajusta en varias líneas (no se trunca con "…"): el usuario
+   necesita leer el nombre completo del campo para preparar su shapefile. */
+.manual-callout__tabla {
+  table-layout: fixed;
+  width: 100%;
+  font-size: 0.78rem;
+}
+
+.manual-callout__tabla th,
+.manual-callout__tabla td {
+  padding: 0.3rem 0.35rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.manual-callout__tabla th:nth-child(1),
+.manual-callout__tabla td:nth-child(1) {
+  width: 46%;
+}
+
+.manual-callout__tabla th:nth-child(2),
+.manual-callout__tabla td:nth-child(2) {
+  width: 37%;
+}
+
+.manual-callout__tabla th:nth-child(3),
+.manual-callout__tabla td:nth-child(3) {
+  width: 17%;
+}
+
+.manual-callout__tabla code {
+  font-size: 0.78rem;
+}
+
 /* Contenedor flotante e independiente del panel2: fijo en ancho para que la
-   tabla de campos nunca fuerce el crecimiento de "Importar datos geográficos". */
+   tabla de campos nunca fuerce el crecimiento de "Importar datos geográficos".
+   Es 18px más ancho que ".manual-callout" (300px) para reservar el espacio
+   que ocupa la flecha al sobresalir hacia la derecha; así nunca hay overflow
+   real y no aparece scroll horizontal en ningún navegador. */
 .manual-callout-flotante {
   position: absolute;
-  width: 300px;
+  width: 358px;
   max-height: 60vh;
   overflow-y: auto;
   z-index: 999; /* justo debajo de .side-panel (1000) */
@@ -233,10 +275,6 @@ hr {
 
 .manual-callout-flotante:empty {
   display: none;
-}
-
-.manual-callout-flotante:not(:empty) {
-  display: block;
 }
 
 @media (max-width: 768px) {
