@@ -174,7 +174,8 @@ hr {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* Flecha superior que "apunta" al control select ubicado encima. */
+/* Flecha superior que "apunta" al control select ubicado encima
+   (variante por defecto, usada cuando el callout va arriba/abajo). */
 .manual-callout::before,
 .manual-callout::after {
   content: "";
@@ -194,6 +195,57 @@ hr {
   left: 25px;
   border: 8px solid transparent;
   border-bottom-color: var(--bs-body-bg, #fff);
+}
+
+/* Flecha lateral que apunta hacia la derecha (cuando el callout se ubica
+   a la izquierda del panel "Importar datos geográficos"). */
+.manual-callout--flecha-derecha::before,
+.manual-callout--flecha-derecha::after {
+  top: 28px;
+  left: 100%;
+  bottom: auto;
+  border: 9px solid transparent;
+}
+
+.manual-callout--flecha-derecha::before {
+  border-left-color: var(--bs-primary, #2196f3);
+  border-bottom-color: transparent;
+}
+
+.manual-callout--flecha-derecha::after {
+  left: 100%;
+  margin-left: -1px;
+  border: 8px solid transparent;
+  border-left-color: var(--bs-body-bg, #fff);
+  border-bottom-color: transparent;
+}
+
+/* Contenedor flotante e independiente del panel2: fijo en ancho para que la
+   tabla de campos nunca fuerce el crecimiento de "Importar datos geográficos". */
+.manual-callout-flotante {
+  position: absolute;
+  width: 300px;
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 999; /* justo debajo de .side-panel (1000) */
+  display: none;
+}
+
+.manual-callout-flotante:empty {
+  display: none;
+}
+
+.manual-callout-flotante:not(:empty) {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  /* En pantallas angostas no hay espacio a un costado: se apila debajo. */
+  .manual-callout-flotante {
+    position: static;
+    width: auto;
+    margin-top: 0.5rem;
+  }
 }
 
 .manual-callout__title {

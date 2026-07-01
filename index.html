@@ -887,7 +887,6 @@
                 <option value="Puerta">Puerta</option>
               </select>
             </div>
-            <div class="mb-3" id="manualCamposTabla"></div>
             <div class="mb-3">
               <label for="archivoZip" class="col-form-label-sm">
                 Archivo ShapeFile (zip):
@@ -928,6 +927,10 @@
             </div>
           </div>
         </div>
+
+        <!-- Manual de campos: flotante junto a #panel2, no forma parte de su
+             card-body para que la tabla de campos no ensanche el panel. -->
+        <div id="manualCamposTabla" class="manual-callout-flotante"></div>
 
         <div id="panel3" class="side-panel card" style="display: none">
           <div

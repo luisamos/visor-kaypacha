@@ -1,6 +1,7 @@
 import { combine, parseShp, parseDbf } from "shpjs";
 import JSZip from "jszip";
 import feather from "feather-icons";
+import { esPanelVisible } from "../core/panelManager";
 import {
   direccionApiGIS,
   mostrarToast,
@@ -851,7 +852,7 @@ function crearManualCampos({ tabla, geometria, srid, campos = [] }) {
     .join("");
 
   return `
-    <div class="manual-callout">
+    <div class="manual-callout manual-callout--flecha-derecha">
       <button type="button" class="manual-callout__close" id="cerrarManualCampos" aria-label="Cerrar ayuda">&times;</button>
       <div class="manual-callout__title">
         <i data-feather="info" class="icon-sm"></i>
@@ -882,7 +883,8 @@ async function actualizarManualCampos() {
 
   const tabla = tablasGeograficas.value;
   manualCamposTabla.innerHTML =
-    '<div class="small text-muted">Cargando campos requeridos...</div>';
+    '<div class="small text-muted p-2">Cargando campos requeridos...</div>';
+  posicionarManualFlotante();
 
   try {
     const info = await obtenerCamposTabla(tabla);
@@ -894,10 +896,73 @@ async function actualizarManualCampos() {
     feather.replace();
   } catch (error) {
     console.error("Error al cargar el manual de campos:", error);
-    manualCamposTabla.innerHTML = `<div class="small text-danger">${
+    manualCamposTabla.innerHTML = `<div class="small text-danger p-2">${
       error?.message || "No se pudieron cargar los campos requeridos."
     }</div>`;
   }
+
+  // Se posiciona tras pintar para medir el tamaño real del contenido.
+  requestAnimationFrame(posicionarManualFlotante);
+}
+
+// ── Posicionamiento del callout flotante junto al panel "Importar datos" ───
+// El callout vive fuera del panel (ver index.html) para que la tabla de
+// campos nunca fuerce el ancho de #panel2; en su lugar se ancla junto al
+// selector de tabla, como una nube que apunta hacia él.
+
+const panel2 = document.getElementById("panel2");
+const pageContent = document.querySelector(".page-content");
+
+function posicionarManualFlotante() {
+  if (!manualCamposTabla || !panel2 || !pageContent) return;
+
+  if (!manualCamposTabla.childElementCount || !esPanelVisible("panel2")) {
+    // Oculta explícitamente: si el panel está cerrado no debe verse el
+    // callout aunque conserve contenido en caché.
+    manualCamposTabla.style.display = "none";
+    return;
+  }
+
+  manualCamposTabla.style.display = "";
+
+  const MARGEN = 8;
+  const GAP = 16;
+  const contRect = pageContent.getBoundingClientRect();
+  const panelRect = panel2.getBoundingClientRect();
+  const selectRect = tablasGeograficas.getBoundingClientRect();
+  const anchoManual = manualCamposTabla.offsetWidth || 300;
+  const altoManual = manualCamposTabla.offsetHeight || 0;
+
+  let left = panelRect.left - contRect.left - anchoManual - GAP;
+  left = Math.max(MARGEN, left);
+
+  // Alinea la flecha (a 28px del borde superior del callout) con el centro
+  // vertical del select, para que apunte visualmente hacia él.
+  let top = selectRect.top + selectRect.height / 2 - contRect.top - 28;
+  const maxTop = Math.max(MARGEN, contRect.height - altoManual - MARGEN);
+  top = Math.max(MARGEN, Math.min(top, maxTop));
+
+  manualCamposTabla.style.left = `${left}px`;
+  manualCamposTabla.style.top = `${top}px`;
+}
+
+window.addEventListener("resize", posicionarManualFlotante);
+
+// Reacciona a que el panel se abra/cierre (incluye clic en el botón de la
+// barra derecha y en el botón de cerrar del panel).
+document
+  .querySelector('[data-panel="panel2"]')
+  ?.addEventListener("click", () => requestAnimationFrame(posicionarManualFlotante));
+document
+  .querySelector('.btn-close[data-close="panel2"]')
+  ?.addEventListener("click", posicionarManualFlotante);
+
+// Sigue al panel mientras se arrastra (draggable.js cambia left/top en línea).
+if (panel2) {
+  new MutationObserver(posicionarManualFlotante).observe(panel2, {
+    attributes: true,
+    attributeFilter: ["style", "class"],
+  });
 }
 
 tablasGeograficas.addEventListener("change", actualizarManualCampos);

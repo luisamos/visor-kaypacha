@@ -13,7 +13,9 @@
 // Cada paso apunta a un selector existente en el DOM.
 export const PASOS_RECORRIDO = [
   {
-    selector: "#profileDropdown",
+    // Se apunta a la imagen (no al <a> completo) para que el resaltado
+    // coincida con el ícono circular visible, sin el padding del enlace.
+    selector: "#profileDropdown img",
     titulo: "Autenticación",
     texto:
       "Inicia sesión aquí. Con tu cuenta se habilitan acciones como importar datos y configurar el sistema.",
