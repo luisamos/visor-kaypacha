@@ -1299,8 +1299,10 @@
                   </div>
                   <h6 class="bienvenida-tarjeta__titulo">Reportes temáticos</h6>
                   <p class="bienvenida-tarjeta__texto">
-                    Genera reportes por territorio (departamento, provincia o
-                    distrito) con los principales indicadores y estadísticas.
+                    Genera reportes catastrales (servicios básicos,
+                    clasificación del predio, tipo de persona, etc.) con las
+                    principales capas geográficas realizando el cruce con la
+                    base alfanumérica.
                   </p>
                 </div>
               </div>
@@ -1318,14 +1320,22 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer justify-content-center">
+          <div class="modal-footer justify-content-center gap-2">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              id="btnRecorridoDesdeBienvenida"
+              data-bs-dismiss="modal"
+            >
+              <i data-feather="compass" class="icon-sm"></i> Hacer un recorrido
+            </button>
             <button
               type="button"
               class="btn btn-primary"
               id="btnEntrarVisor"
               data-bs-dismiss="modal"
             >
-              Entrar al visor
+              Entrar al visor <i data-feather="arrow-right" class="icon-sm"></i>
             </button>
           </div>
         </div>

@@ -26,6 +26,16 @@ export function inicializarModalBienvenida() {
 
   const modal = Modal.getOrCreateInstance(elemento);
 
+  // El botón "Hacer un recorrido" cierra este modal y, una vez cerrado,
+  // dispara el recorrido guiado reutilizando el botón del footer (evita
+  // duplicar la lógica de recorridoGuiado.js).
+  let iniciarRecorridoAlCerrar = false;
+  document
+    .getElementById("btnRecorridoDesdeBienvenida")
+    ?.addEventListener("click", () => {
+      iniciarRecorridoAlCerrar = true;
+    });
+
   elemento.addEventListener(
     "hidden.bs.modal",
     () => {
@@ -33,6 +43,9 @@ export function inicializarModalBienvenida() {
         localStorage.setItem(CLAVE_VISTO, "1");
       } catch (error) {
         console.warn("No se pudo guardar en localStorage:", error);
+      }
+      if (iniciarRecorridoAlCerrar) {
+        document.getElementById("btnRecorridoAyuda")?.click();
       }
     },
     { once: true },
