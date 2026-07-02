@@ -1,0 +1,554 @@
+/* ================================================================
+   LAYOUT — estructura genérica de la aplicación
+   No contiene lógica de negocio catastral.
+   ================================================================ */
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+.main-wrapper {
+  align-items: stretch;
+}
+
+.page-wrapper {
+  margin-top: 0;
+  min-height: 100vh;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 0 !important;
+}
+
+.page-content {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  padding: 0;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  background: var(--bs-body-bg);
+}
+
+/* Ajustes de la barra superior */
+.navbar {
+  width: 100% !important;
+  left: 0 !important;
+}
+
+.navbar .navbar-content {
+  width: 100% !important;
+}
+
+.navbar .logo-mini-wrapper {
+  display: flex !important;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.navbar .logo-mini-wrapper .logo-mini {
+  height: 40px;
+}
+
+.main-wrapper .page-wrapper .page-content {
+  margin-top: 0 !important;
+  padding: 0 !important;
+}
+
+.main-wrapper > .page-wrapper > .page-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.main-wrapper > .page-wrapper > .navbar {
+  margin-bottom: 0;
+}
+
+.navbar .navbar-content {
+  padding-left: 16px;
+  padding-right: 16px;
+  align-items: center;
+}
+
+hr {
+  border-top: 1px solid var(--bs-border-color, #e9ecef);
+}
+
+/* ── Footer ────────────────────────────────────────────────────── */
+
+.app-footer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1.35rem;
+}
+
+.footer-rainbow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    #f44336 0%,
+    #f44336 14.28%,
+    #ff9800 14.28%,
+    #ff9800 28.56%,
+    #ffeb3b 28.56%,
+    #ffeb3b 42.84%,
+    #4caf50 42.84%,
+    #4caf50 57.12%,
+    #00bcd4 57.12%,
+    #00bcd4 71.4%,
+    #2196f3 71.4%,
+    #2196f3 85.68%,
+    #9c27b0 85.68%,
+    #9c27b0 100%
+  );
+}
+
+.footer-content {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Botón del recorrido guiado, anclado al extremo derecho del footer. */
+.footer-recorrido {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.footer-recorrido .icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .footer-recorrido {
+    position: static;
+    transform: none;
+    align-self: center;
+    width: auto;
+    padding: 0.3rem 0.75rem;
+  }
+  /* En móvil se muestra solo el ícono para ahorrar espacio, pero el botón
+     sigue siendo plenamente accesible (con título descriptivo). */
+  .footer-recorrido span {
+    display: none;
+  }
+}
+
+/* ── Manual de campos (callout tipo "nube" junto al selector) ───── */
+
+.manual-callout {
+  position: relative;
+  width: 340px;
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-primary, #2196f3);
+  border-radius: 10px;
+  padding: 0.85rem 0.9rem 0.75rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+}
+
+/* Flecha superior que "apunta" al control select ubicado encima
+   (variante por defecto, usada cuando el callout va arriba/abajo). */
+.manual-callout::before,
+.manual-callout::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 24px;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+}
+
+.manual-callout::before {
+  border-bottom-color: var(--bs-primary, #2196f3);
+}
+
+.manual-callout::after {
+  left: 25px;
+  border: 8px solid transparent;
+  border-bottom-color: var(--bs-body-bg, #fff);
+}
+
+/* Flecha lateral que apunta hacia la derecha (cuando el callout se ubica
+   a la izquierda del panel "Importar datos geográficos"). */
+.manual-callout--flecha-derecha::before,
+.manual-callout--flecha-derecha::after {
+  top: 28px;
+  left: 100%;
+  bottom: auto;
+  border: 9px solid transparent;
+}
+
+.manual-callout--flecha-derecha::before {
+  border-left-color: var(--bs-primary, #2196f3);
+  border-bottom-color: transparent;
+}
+
+.manual-callout--flecha-derecha::after {
+  left: 100%;
+  margin-left: -1px;
+  border: 8px solid transparent;
+  border-left-color: var(--bs-body-bg, #fff);
+  border-bottom-color: transparent;
+}
+
+/* Tabla compacta (3 columnas: Campo, Tipo, Oblig.) dimensionada para caber
+   siempre dentro del ancho fijo del callout, sin generar scroll horizontal.
+   El texto se ajusta en varias líneas (no se trunca con "…"): el usuario
+   necesita leer el nombre completo del campo para preparar su shapefile. */
+.manual-callout__tabla {
+  table-layout: fixed;
+  width: 100%;
+  font-size: 0.78rem;
+}
+
+.manual-callout__tabla th,
+.manual-callout__tabla td {
+  padding: 0.3rem 0.35rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.manual-callout__tabla th:nth-child(1),
+.manual-callout__tabla td:nth-child(1) {
+  width: 46%;
+}
+
+.manual-callout__tabla th:nth-child(2),
+.manual-callout__tabla td:nth-child(2) {
+  width: 37%;
+}
+
+.manual-callout__tabla th:nth-child(3),
+.manual-callout__tabla td:nth-child(3) {
+  width: 17%;
+}
+
+.manual-callout__tabla code {
+  font-size: 0.78rem;
+}
+
+/* Contenedor flotante e independiente del panel2: fijo en ancho para que la
+   tabla de campos nunca fuerce el crecimiento de "Importar datos geográficos".
+   Es 18px más ancho que ".manual-callout" (300px) para reservar el espacio
+   que ocupa la flecha al sobresalir hacia la derecha; así nunca hay overflow
+   real y no aparece scroll horizontal en ningún navegador. */
+.manual-callout-flotante {
+  position: absolute;
+  width: 358px;
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 999; /* justo debajo de .side-panel (1000) */
+  display: none;
+}
+
+.manual-callout-flotante:empty {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* En pantallas angostas no hay espacio a un costado: se apila debajo. */
+  .manual-callout-flotante {
+    position: static;
+    width: auto;
+    margin-top: 0.5rem;
+  }
+}
+
+.manual-callout__title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  padding-right: 1.25rem;
+}
+
+.manual-callout__close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.manual-callout__close:hover {
+  opacity: 1;
+}
+
+.footer-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ── Recorrido guiado (tour) ───────────────────────────────────── */
+
+/* z-index muy por encima de todo lo demás en la app (la pantalla de carga
+   usa 3000, el mayor valor existente) para garantizar que el recorrido
+   siempre quede visible encima de cualquier elemento, sea cual sea su
+   contexto de apilamiento. */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  pointer-events: auto;
+}
+
+/* Capa oscura con un "agujero" sobre el elemento resaltado mediante
+   box-shadow gigante, así no tapa el elemento del paso actual.
+   position:fixed (no absolute): así sus coordenadas coinciden exactamente
+   con las de getBoundingClientRect() del elemento resaltado, sin depender
+   del scroll de la página ni de qué ancestro resulte ser positioned. */
+.tour-highlight {
+  position: fixed;
+  z-index: 5001;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.6);
+  outline: 2px solid var(--bs-primary, #2196f3);
+  outline-offset: 2px;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.tour-popover {
+  position: fixed;
+  z-index: 5002;
+  width: min(320px, 90vw);
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #1f2937);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 12px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.28);
+  padding: 1rem 1.1rem;
+}
+
+.tour-popover__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.tour-popover__close:hover {
+  opacity: 1;
+}
+
+.tour-popover__title {
+  font-weight: 600;
+  color: var(--bs-primary, #2196f3);
+  margin-bottom: 0.35rem;
+  padding-right: 1rem;
+}
+
+.tour-popover__body {
+  font-size: 0.9rem;
+  margin-bottom: 0.85rem;
+}
+
+.tour-popover__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tour-popover__progress {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.tour-popover__actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* ── Toast de notificación ─────────────────────────────────────── */
+
+.toast-container-visor {
+  position: fixed;
+  top: calc(var(--navbar-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  width: min(440px, 92vw);
+}
+
+.toast-visor {
+  width: 100%;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+}
+
+.toast-visor .toast-body {
+  color: inherit;
+}
+
+[data-bs-theme="dark"] .toast-visor {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Pantalla de carga ─────────────────────────────────────────── */
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  gap: 16px;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(124, 160, 255, 0.16),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 82% 30%,
+      rgba(77, 107, 255, 0.18),
+      transparent 45%
+    ),
+    linear-gradient(135deg, #ffffff, var(--brand-surface));
+  z-index: 3000;
+  transition:
+    opacity 0.35s ease,
+    visibility 0.35s ease;
+}
+
+.loading-icon {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+}
+
+.loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid rgba(13, 27, 111, 0.12);
+  border-top-color: var(--brand-accent);
+  animation: loading-spin 1.4s linear infinite;
+  box-shadow: 0 10px 36px rgba(77, 107, 255, 0.14);
+}
+
+.loading-pin {
+  width: 38px;
+  height: 38px;
+  color: var(--brand-deep);
+  animation: loading-bounce 1.2s ease-in-out infinite;
+}
+
+.loading-title {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 1.5rem;
+  letter-spacing: 0.35px;
+}
+
+.loading-prefix {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--brand-accent);
+  margin-right: 4px;
+}
+
+.loading-kay {
+  font-weight: 900;
+  color: var(--brand-deep);
+  text-shadow: 0 4px 12px rgba(13, 27, 111, 0.12);
+}
+
+.loading-pacha {
+  font-weight: 900;
+  background: linear-gradient(90deg, var(--brand-accent), var(--brand-bright));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.loading-subtitle {
+  max-width: 720px;
+  line-height: 1.55;
+  margin-top: 2px;
+  color: #3f4a6b;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
